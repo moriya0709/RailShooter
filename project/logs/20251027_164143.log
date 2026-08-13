@@ -1,0 +1,5 @@
+logs/20251027_164143.log
+Begin CompileShader, path:Resource/shaders/Object3D.VS.hlsl,profile:vs_6_0
+
+Begin CompileShader, path:Resource/shaders/Object3D.PS.hlsl,profile:ps_6_0
+

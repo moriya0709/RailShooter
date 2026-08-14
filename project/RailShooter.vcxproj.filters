@@ -247,8 +247,12 @@
     <ClCompile Include="engine\3d\Line.cpp">
       <Filter>ソース ファイル\engine\3d</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp" />
     <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="Player.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerBullet.cpp" />
+    <ClCompile Include="PlayerBulletNormal.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -423,8 +427,12 @@
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="engine\3d\Object.h" />
     <ClInclude Include="AnimatorComponent.h" />
-    <ClInclude Include="Player.h" />
     <ClInclude Include="GameTimer.h" />
+    <ClInclude Include="Player.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerBullet.h" />
+    <ClInclude Include="PlayerBulletNormal.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

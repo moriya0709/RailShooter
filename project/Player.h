@@ -1,7 +1,12 @@
 ﻿#pragma once
 #include <cmath>
+#include <memory>
+#include <list>
+#include <Windows.h>
 
 #include "Calc.h"
+#include "Sprite.h"
+#include "PlayerBullet.h"
 
 // プレイヤーの操作入力値 (-1.0 ～ 1.0)
 struct PlayerInput {
@@ -11,8 +16,10 @@ struct PlayerInput {
 
 class Player {
 public:
+	void Initialize();
     void Update(float deltaTime);
-  
+    void Draw();
+
     void SetRotate(const Vector3& rotate) { baseRot = rotate; }
     void SetTranslate(const Vector3& translate) { basePos = translate; }
     Vector3 GetRotate() const { return rotate_; }
@@ -62,6 +69,16 @@ private:
     float moveLimitX = 10.0f;                            // 左右の移動限界
     float moveLimitY = 10.0f;                            // 上下の移動限界
     float cameraFollowRatio = 0.3f;                      // カメラが機体の移動にどれだけ追従するか (0.0=追従なし, 1.0=完全追従)
+
+    // 弾
+    std::list<std::unique_ptr<PlayerBullet>> bullets_;
+	float bulletCoolTime = 0.5f; // 弾の発射間隔
+
+    // レティクル
+	std::unique_ptr <Sprite> reticle = nullptr;
+	Vector2 reticlePosition = { 960.0f, 540.0f };
+    Vector2 reticleSize = { 800.0f, 800.0f };
+	float reticleRotation = 0.0f;
 
     // 移動
     void Move();

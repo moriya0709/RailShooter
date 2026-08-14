@@ -1,5 +1,14 @@
 ﻿#include "Player.h"
 #include "Input.h"
+#include "PlayerBulletNormal.h"
+
+void Player::Initialize() {
+	reticle = std::make_unique<Sprite>();
+	reticle->Initialize("Resource/reticle/reticle.png");
+	reticle->SetPosition(reticlePosition);
+	reticle->SetRotation(reticleRotation);
+	reticle->SetSize(reticleSize);
+}
 
 void Player::Update(float deltaTime) {
 	switch (currentState) {
@@ -14,6 +23,10 @@ void Player::Update(float deltaTime) {
 
 
 
+}
+
+void Player::Draw() {
+	reticle->Draw();
 }
 
 void Player::Move() {
@@ -36,10 +49,34 @@ void Player::Move() {
 	if (input->PushKey(DIK_D)) {
 		playerInput.axisX = 1.0f;
 	}
+
+	// 毎フレームクールダウンを減らす
+	if (bulletCoolTime > 0.0f) {
+		bulletCoolTime -= 1.0f / 60.0f; // 60 FPSを想定
+	}
+
+	// 弾の生成
+	if (input->IsMouseButtonPressed(0) && bulletCoolTime <= 0) {
+		auto bullet = std::make_unique<PlayerBulletNormal>();
+		bullet->Initialize(translate_);
+		bullets_.push_back(std::move(bullet));
+
+		bulletCoolTime = 0.5f; // クールタイムをリセット
+	}
 }
 
 void Player::UpdateNormal(float deltaTime) {
 	Move();
+
+	// ▼▼▼ 追加: 全ての弾を更新 ▼▼▼
+	for (auto& bullet : bullets_) {
+		bullet->Update();
+	}
+
+	// ▼▼▼ 追加: デスフラグが立っている弾をリストから一括削除 ▼▼▼
+	bullets_.remove_if([](const std::unique_ptr<PlayerBullet>& bullet) {
+		return bullet->IsDead();
+		});
 
 	// 1. 傾きなどの目標値算出
 	float targetRoll = -playerInput.axisX * maxRollAngle;
@@ -92,4 +129,10 @@ void Player::UpdateNormal(float deltaTime) {
 	translate_.y = basePos.y + worldOffset.y;
 	translate_.z = basePos.z + worldOffset.z;
 
+	// レティクルの更新
+	reticleRotation = rotate_.z; // レティクルの回転を機体のロールに合わせる
+	reticle->SetPosition(reticlePosition);
+	reticle->SetRotation(reticleRotation);
+	reticle->SetSize(reticleSize);
+	reticle->Update();
 }

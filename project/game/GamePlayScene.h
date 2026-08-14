@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include <DirectXMath.h>
-
 #include "Camera.h"
 #include "Sprite.h"
 #include "Object.h"
@@ -18,7 +17,7 @@
 #include "GameObject.h"
 #include "GameTimer.h"
 #include "Player.h"
-#include <vector>
+#include "Calc.h"
 
 using namespace DirectX;
 

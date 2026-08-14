@@ -48,6 +48,7 @@ void GamePlayScene::Initialize() {
 
 	// プレイヤー
 	player = std::make_unique<Player>();
+	player->Initialize();
 
 }
 
@@ -612,7 +613,7 @@ void GamePlayScene::Draw2D() {
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
 	// スプライト描画
-	//sprite->Draw();
+	player->Draw();
 }
 void GamePlayScene::Draw3D() {
 	// スカイボックス

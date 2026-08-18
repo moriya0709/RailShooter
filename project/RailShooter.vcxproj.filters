@@ -251,8 +251,9 @@
     <ClCompile Include="Player.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerBullet.cpp" />
     <ClCompile Include="PlayerBulletNormal.cpp" />
+    <ClCompile Include="EnemyNormal.cpp" />
+    <ClCompile Include="EnemySpawner.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -433,6 +434,10 @@
     </ClInclude>
     <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="PlayerBulletNormal.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Enemy.h" />
+    <ClInclude Include="EnemyNormal.h" />
+    <ClInclude Include="EnemySpawner.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">
@@ -643,5 +648,8 @@
     <Text Include="externals\imgui\LICENSE.txt">
       <Filter>imgui</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="RailShooter.rc" />
   </ItemGroup>
 </Project>

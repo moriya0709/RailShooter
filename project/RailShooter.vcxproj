@@ -22,6 +22,8 @@
     <ClCompile Include="application\easing\Easing.cpp" />
     <ClCompile Include="application\radarChart\RadarChart.cpp" />
     <ClCompile Include="application\radarChart\RadarChartCommon.cpp" />
+    <ClCompile Include="EnemyNormal.cpp" />
+    <ClCompile Include="EnemySpawner.cpp" />
     <ClCompile Include="engine\3d\AnimationManager.cpp" />
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
     <ClCompile Include="application\rayMarching\RayMarching.cpp" />
@@ -89,7 +91,6 @@
     <ClCompile Include="engine\3d\Skybox.cpp" />
     <ClCompile Include="ModelRendererComponent.cpp" />
     <ClCompile Include="Player.cpp" />
-    <ClCompile Include="PlayerBullet.cpp" />
     <ClCompile Include="PlayerBulletNormal.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -281,6 +282,9 @@
     <ClInclude Include="application\radarChart\RadarChart.h" />
     <ClInclude Include="application\radarChart\RadarChartCommon.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="Enemy.h" />
+    <ClInclude Include="EnemyNormal.h" />
+    <ClInclude Include="EnemySpawner.h" />
     <ClInclude Include="engine\3d\AnimationManager.h" />
     <ClInclude Include="application\railCamera\RailCamera.h" />
     <ClInclude Include="application\rayMarching\RayMarching.h" />
@@ -338,6 +342,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="PlayerBulletNormal.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="TransformComponent.h" />
   </ItemGroup>
   <ItemGroup>
@@ -382,6 +387,9 @@
     <None Include="Resource\shaders\Sprite.hlsli" />
     <None Include="Resource\shaders\Skybox.hlsli" />
     <None Include="Resource\shaders\SkinningObject3d.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="RailShooter.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

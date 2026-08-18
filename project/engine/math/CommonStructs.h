@@ -196,4 +196,22 @@ struct MotionBlur {
     float pad[3];
 };
 
+// 出現情報をまとめた構造体
+struct SpawnData {
+    float spawnTime;   // スポナー起動からの経過時間（秒）
+    Vector3 offset;    // スポナーの中心座標からのズレ（X, Y, Z）
+    std::string type;  // 敵の種類（例："NORMAL", "FAST", "BOSS" など）
+
+};
+
+struct ObjectData {
+    std::string type;
+    std::string name;
+    std::string file_name;
+    Transform transform;
+
+    // スポナー専用の敵配置データリスト
+    std::vector<SpawnData> spawnDataList;
+};
+
 

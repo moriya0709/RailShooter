@@ -41,7 +41,7 @@ void Level::LoadJson(const std::string fileName) {
 		std::string objType = object["type"].get<std::string>();
 
 		// ★ MESH と RAIL の両方に対応させる
-		if (objType == "MESH" || objType == "mesh" || objType == "RAIL" || objType == "rail") {
+		if (objType == "MESH" || objType == "mesh" || objType == "RAIL" || objType == "rail" || objType == "SPAWNER" || objType == "spawner") {
 			ObjectData newData{};
 			newData.type = objType;
 			newData.name = object["name"].get<std::string>();
@@ -61,6 +61,23 @@ void Level::LoadJson(const std::string fileName) {
 
 			if (object.contains("file_name")) {
 				newData.file_name = object["file_name"].get<std::string>();
+			}
+
+			// SPAWNER だった場合、spawnDataList をJSONから復元する
+			if ((objType == "SPAWNER" || objType == "spawner") && object.contains("spawnDataList")) {
+				for (const auto& spawnItem : object["spawnDataList"]) {
+					SpawnData data;
+					data.spawnTime = spawnItem["spawnTime"].get<float>();
+
+					// セーブ時に x, y, z の順で保存したのでそのまま読み込む
+					data.offset.x = (float)spawnItem["offset"][0];
+					data.offset.y = (float)spawnItem["offset"][1];
+					data.offset.z = (float)spawnItem["offset"][2];
+
+					data.type = spawnItem["type"].get<std::string>();
+
+					newData.spawnDataList.push_back(data);
+				}
 			}
 
 			levelData->objects.push_back(newData);
@@ -108,6 +125,26 @@ void Level::SaveJson(const std::string fileName) {
 			obj.transform.scale.z,
 			obj.transform.scale.y
 		};
+
+		// SPAWNER だった場合のみ、spawnDataList をJSON配列として保存
+		if (obj.type == "SPAWNER" || obj.type == "spawner") {
+			nlohmann::json spawnArray = nlohmann::json::array();
+
+			for (const auto& spawn : obj.spawnDataList) {
+				nlohmann::json spawnItem;
+				spawnItem["spawnTime"] = spawn.spawnTime;
+
+				// 読み込み側と合わせるため x, y, z の順で保存
+				spawnItem["offset"] = { spawn.offset.x, spawn.offset.y, spawn.offset.z };
+
+				spawnItem["type"] = spawn.type;
+
+				spawnArray.push_back(spawnItem);
+			}
+
+			// オブジェクトに "spawnDataList" というキーで追加
+			newObjJson["spawnDataList"] = spawnArray;
+		}
 
 		deserialized["objects"].push_back(newObjJson);
 	}

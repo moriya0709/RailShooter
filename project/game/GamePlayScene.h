@@ -18,6 +18,7 @@
 #include "GameTimer.h"
 #include "Player.h"
 #include "Calc.h"
+#include "EnemySpawner.h"
 
 using namespace DirectX;
 

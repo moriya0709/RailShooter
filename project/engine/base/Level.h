@@ -6,15 +6,7 @@
 #include <vector>
 
 #include "Calc.h"
-#include "Calc.h"
-
-// オブジェクト 1個分のデータ
-struct ObjectData {
-	std::string type;
-	std::string name;
-	Transform transform;
-	std::string file_name;
-};
+#include "CommonStructs.h"
 
 // レベルデータ
 struct LevelData {

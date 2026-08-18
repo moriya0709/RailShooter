@@ -63,7 +63,7 @@ void GamePlayScene::Update() {
 	player->Update(deltaTime);
 
 
-	
+
 	// 1. レールカメラの更新（レール上の現在位置・回転を計算）
 	// 2. ★ GameObject の座標を RailCamera の制御点として毎フレーム上書き（同期）する
 	if (railCamera) {
@@ -105,7 +105,9 @@ void GamePlayScene::Update() {
 
 
 	if (isDebugCamera) {
-		camera->DebugCameraUpdate();
+		if (!ImGui::GetIO().WantCaptureMouse) {
+			camera->DebugCameraUpdate();
+		}
 	} else {
 		camera->SetTranslate(player->GetTranslate());
 		camera->SetRotate(player->GetRotate());
@@ -126,7 +128,7 @@ void GamePlayScene::Update() {
 	// 数字の０キーが押されていたら
 	if (input->TriggerKey(DIK_0)) {
 		OutputDebugStringA("Hit 0\n"); // 出力ウィンドウに「Hit ０」と表示
-		
+
 		// エフェクト有効化(色反転)
 		PostEffect::GetInstance()->SetInversion(true);
 	}
@@ -136,7 +138,7 @@ void GamePlayScene::Update() {
 		object[i]->Update();
 	}
 
-	
+
 	// スカイボックス
 	//Skybox::GetInstance()->Update();
 
@@ -444,7 +446,7 @@ void GamePlayScene::Update() {
 		}
 	}
 
-	ImGui::Separator();
+	// レールの制御点
 	if (ImGui::Button("Add Rail Point")) {
 		// 1. 新しい GameObject を生成
 		auto newObject = std::make_unique<GameObject>();
@@ -452,19 +454,7 @@ void GamePlayScene::Update() {
 		// 2. TransformComponent の追加と配置設定
 		auto transformComp = newObject->AddComponent<TransformComponent>();
 
-		// 【便利機能】すでに他の制御点が存在すれば、最後の点の少し前方に配置する
-		Vector3 spawnPos = { 0.0f, 0.0f, 0.0f };
-		if (railCamera && !railCamera->points.empty()) {
-			spawnPos = railCamera->points.back().position;
-			spawnPos.z += 5.0f; // 最後の点から Z 方向に +5.0 ずらす
-		} else {
-			// まだ点が無い場合はカメラの前方などに配置
-			// ※ mainCamera 等の translate を取得できる場合はそれに合わせます
-			spawnPos = { 0.0f, 0.0f, 5.0f };
-		}
-
-		transformComp->transform.translate = spawnPos;
-		transformComp->transform.rotate = { 0.0f, 0.0f, 0.0f };
+		transformComp->transform.translate = camera->GetTranslate();
 		transformComp->transform.scale = { 1.0f, 1.0f, 1.0f };
 
 		// 3. ModelRendererComponent の追加（モデルは固定で "rail.obj" を指定）
@@ -491,7 +481,35 @@ void GamePlayScene::Update() {
 
 		OutputDebugStringA("★★★ Added New Rail Point!\n");
 	}
-	ImGui::Separator();
+	// 敵のスポーンイベント地点
+	if (ImGui::Button("Add Enemy Spawner")) {
+		auto newObject = std::make_unique<GameObject>();
+		auto transformComp = newObject->AddComponent<TransformComponent>();
+
+		// カメラの少し前に配置するなど、出しやすい位置に設定
+		transformComp->transform.translate = camera->GetTranslate();
+		transformComp->transform.translate.z += 10.0f;
+		transformComp->transform.rotate = { 0.0f, 0.0f, 0.0f };
+		transformComp->transform.scale = { 1.0f, 1.0f, 1.0f };
+
+		// エディタ上で視認するためのダミーモデル（例: "cube.obj"）をセット
+		auto modelRenderer = newObject->AddComponent<ModelRendererComponent>();
+		modelRenderer->SetModel("cube.gltf");
+
+		newObject->Initialize();
+		selectedObject = newObject.get(); // 生成してすぐ選択状態に
+		levelObjects.push_back(std::move(newObject));
+
+		// LevelData に「SPAWNER」として登録
+		ObjectData newObjectData;
+		newObjectData.type = "SPAWNER"; // ★ タイプを SPAWNER にする
+		newObjectData.name = "Spawner_" + std::to_string(levelObjects.size());
+		// file_name に「どの敵を出すか」の情報を間借りして保存するのもオススメです
+		newObjectData.file_name = "EnemyTypeA";
+		newObjectData.transform = transformComp->transform;
+
+		level->GetLevelData()->objects.push_back(newObjectData);
+	}
 
 	ImGui::End();
 	// ★ ドラッグ操作中（マウスで何かを掴んでいる時）だけドロップ処理を有効化する
@@ -597,6 +615,92 @@ void GamePlayScene::Update() {
 			ImGui::DragFloat3("Scale", &transformComp->transform.scale.x, 0.1f);
 		}
 
+		// オブジェクト削除ボタン（誤誤爆防止のために赤色スタイル適用）
+		ImGui::Spacing();
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.1f, 0.1f, 1.0f));
+
+		if (ImGui::Button("Delete Object", ImVec2(-1, 0))) { // -1指定で横幅いっぱいに拡大
+			// 1. LevelData(セーブ用)配列から削除
+			level->GetLevelData()->objects.erase(level->GetLevelData()->objects.begin() + selectedIndex);
+
+			// 2. levelObjects(実体)配列から削除
+			levelObjects.erase(levelObjects.begin() + selectedIndex);
+
+			// 3. 選択状態を解除してNULLにする（ポインタ参照エラー・クラッシュ防止）
+			selectedObject = nullptr;
+
+			// スタイルを元に戻して、これ以降の描画処理を行わずに抜ける
+			ImGui::PopStyleColor(3);
+			ImGui::End();
+			return;
+		}
+		ImGui::PopStyleColor(3);
+
+		// =========================================================================
+		// SPAWNER 専用のタイムライン編集 UI
+		// =========================================================================
+		if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+			// 参照として取得し、直接書き換えられるようにする
+			ObjectData& currentObjData = level->GetLevelData()->objects[selectedIndex];
+
+			if (currentObjData.type == "SPAWNER" || currentObjData.type == "spawner") {
+				ImGui::Separator();
+				ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "◆ Spawner Settings");
+
+				if (ImGui::Button("Add Enemy to Spawner")) {
+					// 初期値として追加
+					currentObjData.spawnDataList.push_back({ 0.0f, { 0.0f, 0.0f, 0.0f }, "NORMAL" });
+				}
+
+				ImGui::Spacing();
+
+				// プルダウン（Combo）に表示する敵の種類のリスト
+				const char* enemyTypes[] = { "NORMAL", "FAST", "BOSS" };
+				int typeCount = IM_ARRAYSIZE(enemyTypes);
+
+				// 登録されている敵のリストをループ表示
+				for (size_t i = 0; i < currentObjData.spawnDataList.size(); ++i) {
+					ImGui::PushID(static_cast<int>(i));
+					auto& sData = currentObjData.spawnDataList[i];
+
+					ImGui::Text("Enemy [%zu]", i);
+
+					// 1. 出現タイミング
+					ImGui::DragFloat("Spawn Time(s)", &sData.spawnTime, 0.1f, 0.0f, 100.0f);
+					// 2. 座標オフセット
+					ImGui::DragFloat3("Offset XYZ", &sData.offset.x, 0.1f);
+
+					// 3. 敵のタイプ（Comboボックス）
+					// 現在の sData.type が、配列の何番目と一致するかを探す
+					int currentTypeIndex = 0;
+					for (int j = 0; j < typeCount; j++) {
+						if (sData.type == enemyTypes[j]) {
+							currentTypeIndex = j;
+							break;
+						}
+					}
+
+					// プルダウンのUIを表示し、変更があったら sData.type に文字列を書き戻す
+					if (ImGui::Combo("Type", &currentTypeIndex, enemyTypes, typeCount)) {
+						sData.type = enemyTypes[currentTypeIndex];
+					}
+
+					// 4. 削除ボタン
+					if (ImGui::Button("Delete")) {
+						currentObjData.spawnDataList.erase(currentObjData.spawnDataList.begin() + i);
+						ImGui::PopID();
+						break; // リストのサイズが変わるのでループを抜ける
+					}
+
+					ImGui::Separator();
+					ImGui::PopID();
+				}
+			}
+		}
+
+
 	} else {
 		// オブジェクトが選択されていない時の表示
 		ImGui::TextDisabled("No object selected.");
@@ -621,7 +725,7 @@ void GamePlayScene::Draw3D() {
 
 	// 3Dオブジェクトの描画準備
 	ObjectCommon::GetInstance()->SetCommonPipelineState();
-	
+
 	// レベルオブジェクト
 	for (auto& object : levelObjects) {
 		object->Draw();
@@ -676,7 +780,23 @@ void GamePlayScene::CreateLevel() {
 		} else if (objectData.type == "RAIL" || objectData.type == "rail") {
 			// ★ JSONから読み込んだ座標と回転を RailCamera の制御点として追加
 			railCamera->AddPoint(objectData.transform.translate, objectData.transform.rotate);
+		} else if (objectData.type == "SPAWNER" || objectData.type == "spawner") {
+			// SPAWNER の実体オブジェクトを生成して levelObjects に登録する
+			auto gameObject = std::make_unique<GameObject>();
+
+			auto transform = gameObject->AddComponent<TransformComponent>();
+			transform->transform.translate = objectData.transform.translate;
+			transform->transform.rotate = objectData.transform.rotate;
+			transform->transform.scale = objectData.transform.scale;
+
+			// エディタ表示用のモデルをアタッチ
+			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
+			modelRenderer->SetModel("cube.gltf");
+
+			gameObject->Initialize();
+			levelObjects.push_back(std::move(gameObject));
 		}
+		
 	}
 }
 

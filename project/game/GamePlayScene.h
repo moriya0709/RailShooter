@@ -160,6 +160,8 @@ private:
 	// レベル
 	std::unique_ptr <Level> level = nullptr;
 	std::vector<std::unique_ptr <GameObject>> levelObjects;
+	// スポナーのプレビュー用オブジェクト
+	std::vector<std::unique_ptr<GameObject>> spawnerPreviewObjects;
 	// プレイヤー
 	std::unique_ptr<Player> player = nullptr;
 	// タイマー

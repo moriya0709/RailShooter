@@ -730,6 +730,10 @@ void GamePlayScene::Draw3D() {
 	for (auto& object : levelObjects) {
 		object->Draw();
 	}
+	// スポナーの敵出現プレビューの描画
+	for (auto& preview : spawnerPreviewObjects) {
+		preview->Draw();
+	}
 
 	railCamera->EditorDraw();
 
@@ -962,5 +966,77 @@ void GamePlayScene::GizmoUpdate() {
 
 		// 4. JSON へ書き出し
 		level->SaveJson("scene");
+	}
+
+	// 敵の出現地点のプレビュー表示
+	if (selectedObject != nullptr) {
+		// 選択中オブジェクトのインデックスを探す
+		int selectedIndex = -1;
+		for (size_t i = 0; i < levelObjects.size(); ++i) {
+			if (levelObjects[i].get() == selectedObject) {
+				selectedIndex = (int)i;
+				break;
+			}
+		}
+
+		if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+			auto& currentObjData = level->GetLevelData()->objects[selectedIndex];
+
+			// 選択中が SPAWNER の場合のみプレビューを生成・更新する
+			if (currentObjData.type == "SPAWNER" || currentObjData.type == "spawner") {
+
+				// プレビューオブジェクトの数が足りない場合は生成して追加
+				while (spawnerPreviewObjects.size() < currentObjData.spawnDataList.size()) {
+					auto previewObj = std::make_unique<GameObject>();
+					previewObj->AddComponent<TransformComponent>();
+					auto modelRenderer = previewObj->AddComponent<ModelRendererComponent>();
+
+					// プレビュー用のモデル名（実際の敵モデルや半透明のモデルに変えてください）
+					modelRenderer->SetModel("cube.gltf");
+
+					previewObj->Initialize();
+					spawnerPreviewObjects.push_back(std::move(previewObj));
+				}
+
+				// プレビューオブジェクトが多すぎる場合（敵を削除した時）は末尾を削除
+				while (spawnerPreviewObjects.size() > currentObjData.spawnDataList.size()) {
+					spawnerPreviewObjects.pop_back();
+				}
+
+				// 座標を「スポナーの座標 + 敵のオフセット座標」に更新
+				auto spawnerTransform = selectedObject->GetComponent<TransformComponent>();
+				for (size_t i = 0; i < currentObjData.spawnDataList.size(); ++i) {
+					auto previewTransform = spawnerPreviewObjects[i]->GetComponent<TransformComponent>();
+
+					// スポナーのワールド座標に offset を加算
+					previewTransform->transform.translate.x = spawnerTransform->transform.translate.x + currentObjData.spawnDataList[i].offset.x;
+					previewTransform->transform.translate.y = spawnerTransform->transform.translate.y + currentObjData.spawnDataList[i].offset.y;
+					previewTransform->transform.translate.z = spawnerTransform->transform.translate.z + currentObjData.spawnDataList[i].offset.z;
+
+					// 回転・スケールはスポナーに合わせる（または固定値）
+					previewTransform->transform.rotate = spawnerTransform->transform.rotate;
+					previewTransform->transform.scale = { 1.0f, 1.0f, 1.0f };
+
+					// (応用) 敵の type に応じて表示モデルを切り替えることも可能です			
+					auto renderer = spawnerPreviewObjects[i]->GetComponent<ModelRendererComponent>();
+					
+					if (currentObjData.spawnDataList[i].type == "NORMAL") 
+						renderer->SetModel("cube.gltf");
+					if (currentObjData.spawnDataList[i].type == "FAST")
+						renderer->SetModel("cube.gltf");
+					if (currentObjData.spawnDataList[i].type == "BOSS")
+						renderer->SetModel("cube.gltf");
+					
+
+					spawnerPreviewObjects[i]->Update();
+				}
+			} else {
+				// SPAWNER以外を選択中の時はプレビューを消去
+				spawnerPreviewObjects.clear();
+			}
+		}
+	} else {
+		// 何も選択していない時もプレビューを消去
+		spawnerPreviewObjects.clear();
 	}
 }

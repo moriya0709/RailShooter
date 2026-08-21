@@ -6,7 +6,7 @@ void EnemyNormal::Initialize() {
 	auto camera = CameraManager::GetInstance()->GetActiveCamera();
 	object = std::make_unique<Object>();
 	object->Initialize(camera);
-	object->SetModel("cube.gltf");
+	object->SetModel("ball.gltf");
 	object->SetTranslate(transform.translate);
 	object->SetRotate(transform.rotate);
 	object->SetScale(transform.scale);

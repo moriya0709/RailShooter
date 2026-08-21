@@ -25,6 +25,8 @@ public:
     Vector3 GetRotate() const { return rotate_; }
     Vector3 GetTranslate() const { return translate_; }
 
+    const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }
+
 private:
     enum State {
         Normal,

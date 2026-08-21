@@ -19,6 +19,7 @@
 #include "Player.h"
 #include "Calc.h"
 #include "EnemySpawner.h"
+#include "Enemy.h"
 
 using namespace DirectX;
 
@@ -167,6 +168,10 @@ private:
 	std::vector<std::unique_ptr <GameObject>> levelObjects;
 	// スポナーのプレビュー用オブジェクト
 	std::vector<std::unique_ptr<GameObject>> spawnerPreviewObjects;
+	// 敵スポナー
+	std::vector<std::unique_ptr<EnemySpawner>> enemySpawners;
+	// 敵
+	std::vector<std::unique_ptr<Enemy>> enemies;
 	// プレイヤー
 	std::unique_ptr<Player> player = nullptr;
 	// タイマー

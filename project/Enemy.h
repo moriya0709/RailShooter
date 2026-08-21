@@ -10,4 +10,8 @@ public:
 	virtual void Draw() = 0;
 
 	virtual void SetTransform(const Transform& transform) = 0;
+
+	virtual Vector3 GetTranslate() const = 0;
+	virtual void OnCollision() = 0;
+	virtual bool IsDead() const = 0;
 };

@@ -114,6 +114,29 @@ void GamePlayScene::Update() {
 		camera->Update();
 	}
 
+	// *スポナーの距離判定と敵の更新* //
+	
+	// エディタカメラ操作中ではない（ゲームプレイ中）場合のみ起動・生成を進める
+	if (!isDebugCamera) {
+		// レールカメラ上のプレイヤー座標（またはカメラ座標）を基準にする
+		Vector3 targetPos = player->GetTranslate();
+
+		for (auto& spawner : enemySpawners) {
+			// 一定距離に入ったら起動し、時間経過で敵が生成されて返ってくる
+			auto spawnedEnemies = spawner->Update(deltaTime, targetPos);
+
+			// 返ってきた敵をシーンの敵リストに移動
+			for (auto& newEnemy : spawnedEnemies) {
+				enemies.push_back(std::move(newEnemy));
+			}
+		}
+	}
+
+	// シーンに存在するすべての敵の更新処理
+	for (auto& enemy : enemies) {
+		enemy->Update();
+	}
+
 	// レベルオブジェクト
 	for (auto& object : levelObjects) {
 		object->Update();
@@ -137,6 +160,44 @@ void GamePlayScene::Update() {
 	for (int i = 0; i < 2; i++) {
 		object[i]->Update();
 	}
+
+	// --- 当たり判定（球判定） ---
+	float hitRadius = 2.0f; // 弾の半径 + 敵の半径の合計値（適宜調整してください）
+
+	// プレイヤーの弾リストを取得
+	const auto& bullets = player->GetBullets();
+
+	for (auto& enemy : enemies) {
+		if (enemy->IsDead()) continue;
+
+		for (const auto& bullet : bullets) {
+			if (bullet->IsDead()) continue;
+
+			// 座標の取得
+			Vector3 ePos = enemy->GetTranslate();
+			Vector3 bPos = bullet->GetTranslate();
+
+			// 距離の二乗を計算（平方根の計算負荷を省くため）
+			float dx = bPos.x - ePos.x;
+			float dy = bPos.y - ePos.y;
+			float dz = bPos.z - ePos.z;
+			float distSq = (dx * dx) + (dy * dy) + (dz * dz);
+
+			// 距離が半径の合計以内なら命中
+			if (distSq <= (hitRadius * hitRadius)) {
+				enemy->OnCollision();
+				bullet->OnCollision();
+				break; // この敵に対する判定は終了
+			}
+		}
+	}
+
+	// --- 撃破された敵の削除 ---
+	enemies.erase(
+		std::remove_if(enemies.begin(), enemies.end(),
+			[](const std::unique_ptr<Enemy>& e) { return e->IsDead(); }),
+		enemies.end()
+	);
 
 
 	// スカイボックス
@@ -743,6 +804,11 @@ void GamePlayScene::Draw3D() {
 		preview->Draw();
 	}
 
+	// 敵の描画
+	for (auto& enemy : enemies) {
+		enemy->Draw();
+	}
+
 	railCamera->EditorDraw();
 
 	// 3Dオブジェクト描画
@@ -807,6 +873,14 @@ void GamePlayScene::CreateLevel() {
 
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
+
+			// ゲームロジック用の EnemySpawner を生成してリストに登録
+			auto spawner = std::make_unique<EnemySpawner>();
+
+			// 第3引数（20.0f）が「起動する距離」になります。必要に応じて調整してください。
+			spawner->Initialize(objectData.transform, objectData.spawnDataList, 20.0f);
+
+			enemySpawners.push_back(std::move(spawner));
 		}
 		
 	}

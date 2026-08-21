@@ -41,6 +41,13 @@ cbuffer CloudParam : register(b0)
     float thunderBrightness; // 雷の明るさ
 
     float horizonHeight; // 水平線の高さ
+
+    float fogDensity;
+    float fogHeight;
+    float fogScattering;
+    float pad0;
+    float3 fogColor;
+    float pad1;
     
 }
 
@@ -97,6 +104,7 @@ float Remap(float value, float oldMin, float oldMax, float newMin, float newMax)
     return newMin + saturate((value - oldMin) / (oldMax - oldMin)) * (newMax - newMin);
 }
 
+// 雲の密度を計算する関数
 float CloudDensity(float3 p)
 {
     float height = (p.y - cloudBottom) / (cloudTop - cloudBottom);
@@ -139,6 +147,7 @@ float CloudDensity(float3 p)
     return saturate((localDensity - 0.1) * 2.0);
 }
 
+// 雲のライティングを計算する関数（リアル調）
 float3 RialLightCloud(float3 p)
 {
     float3 lightDir = normalize(sunDir);
@@ -178,6 +187,7 @@ float3 RialLightCloud(float3 p)
     return sunColor * transmission * scatter + ambientColor * (1.0 - transmission * 0.5);
 }
 
+// 雲のライティングを計算する関数（アニメ調）
 float3 AnimeLightCloud(float3 p)
 {
     float3 lightDir = normalize(sunDir);
@@ -357,6 +367,40 @@ float3 CalculateLightning(float3 pos, float time, float3 cameraPos, float cloudB
     }
     
     return totalLightning;
+}
+
+// フォグの密度計算
+float GetFogDensity(float3 p)
+{
+    // 高さによる減衰 (地面に近いほど濃く、fogHeightで0になる)
+    float heightFactor = saturate((fogHeight - p.y) / max(fogHeight, 0.001));
+    
+    // 既存のFBMノイズを流用してもやもや感を出す
+    float3 uv = p * 0.02; // 雲より少し細かめのノイズ
+    uv.xz += cloudOffset.xz * 2.0; // 風で流す
+    
+    float noiseVal = fbm(uv);
+    
+    // 下に行くほど濃く、ノイズで形を崩す
+    return heightFactor * heightFactor * (noiseVal * 0.5 + 0.5) * fogDensity;
+}
+
+// ★ 追加: 太陽光が雲に遮られているかを計算 (0.0 = 完全に影, 1.0 = 直射日光)
+float GetSunVisibility(float3 p, float3 sunDir)
+{
+    float sunVis = 1.0;
+    float shadowStepLen = 40.0;
+    float totalCloudDensity = 0.0;
+    
+    for (int i = 1; i <= 4; i++)
+    {
+        float3 shadowP = p + sunDir * (float(i) * shadowStepLen);
+        
+        // ★ GetCloudDensity から CloudDensity に変更
+        totalCloudDensity += CloudDensity(shadowP);
+    }
+    
+    return exp(-totalCloudDensity * 0.8);
 }
 
 PSOutput main(VSOutput input)
@@ -554,15 +598,107 @@ PSOutput main(VSOutput input)
             t += stepLen;
         }
     }
+    
+    // ==========================================
+    // ★ 追加: ボリューメトリックフォグのレイマーチング
+    // ==========================================
+    float3 fogAccumColor = float3(0, 0, 0);
+    float fogTransmittance = 1.0;
+    
+    // --- 修正箇所：フォグの計算範囲を厳密に制限 ---
+    float tMin = 0.0;
+    float tMax = min(objDist, 2000.0);
+    
+    // カメラから見て、フォグの層(0 〜 fogHeight)と交差する距離を求める
+    if (abs(rayDir.y) > 0.001)
+    {
+        float tFog = (fogHeight - cameraPos.y) / rayDir.y;
+        if (rayDir.y > 0.0)
+        {
+            // 見上げている場合：フォグの上面で計算を打ち切る
+            tMax = min(tMax, max(tFog, 0.0));
+        }
+        else
+        {
+            // 見下ろしている場合：フォグの上面から計算を開始する
+            tMin = max(tMin, tFog);
+        }
+    }
+    
+    // 完全にフォグの範囲外（上空など）を向いている場合はスキップ
+    bool hitFog = (tMin < tMax);
+    
+    if (hitFog && fogDensity > 0.0)
+    {
+        int fogSteps = 24; // 品質調整（重ければ16などに下げる）
+        
+        // ★ 修正: オブジェクトの距離などではなく、実際にフォグの中を通過する距離を使う
+        float fogDistance = tMax - tMin;
+        float fogStepLen = fogDistance / float(fogSteps);
+        
+        // ディザリングでバンディング（層の縞模様）を防ぐ
+        float randomJitterFog = frac(sin(dot(input.uv, float2(127.1, 311.7))) * 43758.5 + time * 0.2);
+        
+        // ★ 修正: ループの開始地点(fogT)を tMin にする
+        float fogT = tMin + fogStepLen * randomJitterFog;
+        float fogMaxDist = tMax; // 打ち切り距離
+        
+        for (int j = 0; j < fogSteps; j++)
+        {
+            if (fogT >= fogMaxDist || fogTransmittance < 0.01)
+                break;
+        
+            float3 p = cameraPos + rayDir * fogT;
+    
+            if (p.y > fogHeight)
+            {
+                fogT += fogStepLen;
+                continue;
+            }
+    
+            float d = GetFogDensity(p);
+            if (d > 0.001)
+            {
+                float opticalDepth = d * fogStepLen;
+        
+                // ★ 追加: 太陽光の到達度（影判定）を計算
+                float sunVis = GetSunVisibility(p, normalizedSunDir);
+        
+                float cosTheta = dot(rayDir, normalizedSunDir);
+                float g = 0.6;
+                float phase = (1.0 - g * g) / pow(abs(1.0 + g * g - 2.0 * g * cosTheta), 1.5) / (4.0 * 3.14159);
+        
+                float3 sunIllum = lerp(float3(1.0, 0.9, 0.8), float3(1.0, 0.4, 0.05), sunsetTime) * dayFactor * 3.0;
+                float3 ambientIllum = fogColor * cloudAmbientSkyColor;
+        
+                // ★ sunIllum に sunVis を掛け合わせることで、雲の影がフォグの中に落ちて光の筋(ゴットレイ)になる
+                float3 directLight = sunIllum * phase * sunVis;
+                float3 stepLight = (directLight + ambientIllum) * d;
+        
+                fogAccumColor += stepLight * fogTransmittance * fogStepLen;
+                fogTransmittance *= exp(-opticalDepth);
+            }
+            fogT += fogStepLen;
+        }
+    }
 
     // *最終合成* //
-    float3 finalColor = color;
-    float outAlpha = 1.0 - transmittance; // 雲自体の不透明度
-
-    // ★ 深度が1.0(オブジェクトがない空)の場合のみ、背景の空を加算して不透明にする
+   // 1. まず雲と空（背景）を合成
+    float3 backgroundAndClouds = color;
     if (depth >= 1.0)
     {
-        finalColor += skyColor * transmittance;
+        backgroundAndClouds += skyColor * transmittance;
+    }
+    
+    // 2. その上に手前のボリューメトリックフォグを合成
+    float3 finalColor = backgroundAndClouds * fogTransmittance + fogAccumColor;
+    
+    // 3. 全体の不透明度（雲とフォグを合わせたもの）
+    float totalTransmittance = transmittance * fogTransmittance;
+    float outAlpha = 1.0 - totalTransmittance;
+    
+    if (depth >= 1.0)
+    {
         outAlpha = 1.0;
     }
 

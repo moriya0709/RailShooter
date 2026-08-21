@@ -67,6 +67,7 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/ball", "ball.gltf");
 	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.gltf");
 	ModelManager::GetInstance()->LoadModel("Resource/human", "walk.gltf");
+	ModelManager::GetInstance()->LoadModel("Resource/mado", "mado.gltf");
 
 	// 追加のアニメーションを読み込む
 	ModelManager::GetInstance()->LoadAnimation("walk.gltf","walk", "Resource/human", "walk.gltf");

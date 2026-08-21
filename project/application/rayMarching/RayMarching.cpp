@@ -44,6 +44,10 @@ void RayMarching::Initialize(SrvManager* srvManager) {
 	cloudParam->thunderFrequency = 0.3f;		// 雷の頻度
 	cloudParam->thunderBrightness = 120.0f;		// 雷の明るさ
 	cloudParam->horizonHeight = 0.2f;			// 水平線の高さ
+	cloudParam->fogDensity = 0.08f;      // 濃さはお好みで調整
+	cloudParam->fogHeight = 40.0f;       // この高さまで霧が出る
+	cloudParam->fogScattering = 0.5f;
+	cloudParam->fogColor = { 0.8f, 0.85f, 0.9f }; // 青白い霧
 
 }
 

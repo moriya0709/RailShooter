@@ -38,6 +38,13 @@ struct CloudParam {
 
 	float horizonHeight;			// 地平線の高さ
 
+	float fogDensity;               // フォグの基本濃度
+	float fogHeight;                // フォグの最高高度
+	float fogScattering;            // 光の散乱具合
+	float pad0;                     // 16バイトアライメント用パディング
+	Vector3 fogColor;               // フォグの色
+	float pad1;                     // パディング
+
 };
 
 
@@ -46,7 +53,7 @@ public:
 	// 初期化
 	void Initialize(SrvManager* srvManager);
 	// 描画
-	void Draw();
+	void Draw(uint32_t depthSrvIndex);
 
 	// カメラ更新
 	void Update(Camera* camera);
@@ -68,6 +75,10 @@ public:
 	void SetThunderFrequency(float thunderFrequency) { cloudParam->thunderFrequency = thunderFrequency; }
 	void SetThunderBrightness(float thunderBrightness) { cloudParam->thunderBrightness = thunderBrightness; }
 	void SetHorizonHeight(float horizonHeight) { cloudParam->horizonHeight = horizonHeight; }
+	void SetFogDensity(float fogDensity) { cloudParam->fogDensity = fogDensity; }
+	void SetFogHeight(float fogHeight) { cloudParam->fogHeight = fogHeight; }
+	void SetFogScattering(float fogScattering) { cloudParam->fogScattering = fogScattering; }
+	void SetFogColor(Vector3 fogColor) { cloudParam->fogColor = fogColor; }
 
 	// getter
 	Vector3 GetSunDir() { return cloudParam->sunDir; }

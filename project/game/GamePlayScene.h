@@ -139,6 +139,11 @@ private:
 	bool isStorm = false;
 	float thunderFrequency = 0.3f;
 	float thunderBrightness = 120.0f;
+	float horizonHeight = 0.2f;
+	float fogDensity = 0.08f;
+	float fogHeight = 40.0f;
+	float fogScattering = 0.5f;
+	Vector3 fogColor = { 0.8f, 0.85f, 0.9f };
 
 	// コントローラー
 	int padX;

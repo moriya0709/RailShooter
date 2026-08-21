@@ -232,7 +232,11 @@ void GamePlayScene::Update() {
 	RayMarching::GetInstance()->SetStorm(isStorm);
 	RayMarching::GetInstance()->SetThunderFrequency(thunderFrequency);
 	RayMarching::GetInstance()->SetThunderBrightness(thunderBrightness);
-
+	RayMarching::GetInstance()->SetHorizonHeight(horizonHeight);
+	RayMarching::GetInstance()->SetFogDensity(fogDensity);
+	RayMarching::GetInstance()->SetFogHeight(fogHeight);
+	RayMarching::GetInstance()->SetFogScattering(fogScattering);
+	RayMarching::GetInstance()->SetFogColor(fogColor);
 
 #pragma endregion
 
@@ -413,7 +417,11 @@ void GamePlayScene::Update() {
 	ImGui::Checkbox("isStorm", &isStorm);
 	ImGui::DragFloat("thunderFrequency", &thunderFrequency, 0.001f, 0.0f, 10.0f);
 	ImGui::DragFloat("thunderBrightness", &thunderBrightness, 0.01f, 0.0f, 300.0f);
-
+	ImGui::DragFloat("horizonHeight", &horizonHeight, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("fogDensity", &fogDensity, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("fogHeight", &fogHeight, 1.0f, 0.0f, 100.0f);
+	ImGui::DragFloat("fogScattering", &fogScattering, 0.01f, 0.0f, 1.0f);
+	ImGui::ColorEdit3("fogColor", &fogColor.x);
 
 #pragma endregion
 

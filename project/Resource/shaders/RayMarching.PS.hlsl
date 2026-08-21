@@ -2,6 +2,7 @@
 
 // 新しく追加する定義
 Texture3D<float4> CloudNoiseTex : register(t0); // 3Dノイズテクスチャ
+Texture2D<float> DepthTex : register(t1); // 深度バッファ
 SamplerState LinearRepeatSampler : register(s0); // リピート（繰り返し）設定のサンプラー
 
 struct PSInput
@@ -40,6 +41,13 @@ cbuffer CloudParam : register(b0)
     float thunderBrightness; // 雷の明るさ
 
     float horizonHeight; // 水平線の高さ
+
+    float fogDensity;
+    float fogHeight;
+    float fogScattering;
+    float pad0;
+    float3 fogColor;
+    float pad1;
     
 }
 
@@ -96,6 +104,7 @@ float Remap(float value, float oldMin, float oldMax, float newMin, float newMax)
     return newMin + saturate((value - oldMin) / (oldMax - oldMin)) * (newMax - newMin);
 }
 
+// 雲の密度を計算する関数
 float CloudDensity(float3 p)
 {
     float height = (p.y - cloudBottom) / (cloudTop - cloudBottom);
@@ -138,6 +147,7 @@ float CloudDensity(float3 p)
     return saturate((localDensity - 0.1) * 2.0);
 }
 
+// 雲のライティングを計算する関数（リアル調）
 float3 RialLightCloud(float3 p)
 {
     float3 lightDir = normalize(sunDir);
@@ -177,6 +187,7 @@ float3 RialLightCloud(float3 p)
     return sunColor * transmission * scatter + ambientColor * (1.0 - transmission * 0.5);
 }
 
+// 雲のライティングを計算する関数（アニメ調）
 float3 AnimeLightCloud(float3 p)
 {
     float3 lightDir = normalize(sunDir);
@@ -358,6 +369,40 @@ float3 CalculateLightning(float3 pos, float time, float3 cameraPos, float cloudB
     return totalLightning;
 }
 
+// フォグの密度計算
+float GetFogDensity(float3 p)
+{
+    // 高さによる減衰 (地面に近いほど濃く、fogHeightで0になる)
+    float heightFactor = saturate((fogHeight - p.y) / max(fogHeight, 0.001));
+    
+    // 既存のFBMノイズを流用してもやもや感を出す
+    float3 uv = p * 0.02; // 雲より少し細かめのノイズ
+    uv.xz += cloudOffset.xz * 2.0; // 風で流す
+    
+    float noiseVal = fbm(uv);
+    
+    // 下に行くほど濃く、ノイズで形を崩す
+    return heightFactor * heightFactor * (noiseVal * 0.5 + 0.5) * fogDensity;
+}
+
+// ★ 追加: 太陽光が雲に遮られているかを計算 (0.0 = 完全に影, 1.0 = 直射日光)
+float GetSunVisibility(float3 p, float3 sunDir)
+{
+    float sunVis = 1.0;
+    float shadowStepLen = 40.0;
+    float totalCloudDensity = 0.0;
+    
+    for (int i = 1; i <= 4; i++)
+    {
+        float3 shadowP = p + sunDir * (float(i) * shadowStepLen);
+        
+        // ★ GetCloudDensity から CloudDensity に変更
+        totalCloudDensity += CloudDensity(shadowP);
+    }
+    
+    return exp(-totalCloudDensity * 0.8);
+}
+
 PSOutput main(VSOutput input)
 {
     float2 ndcXY = input.uv * 2.0f - 1.0f;
@@ -367,6 +412,19 @@ PSOutput main(VSOutput input)
     world.xyz /= world.w;
     float3 rayDir = normalize(world.xyz - cameraPos);
 
+    // 深度バッファを読み込み、オブジェクトのワールド距離を計算
+    float depth = DepthTex.SampleLevel(LinearRepeatSampler, input.uv, 0).r;
+    float4 clipObj = float4(ndcXY, depth, 1.0);
+    float4 worldObj = mul(invViewProj, clipObj);
+    worldObj.xyz /= worldObj.w;
+
+    float objDist = length(worldObj.xyz - cameraPos);
+    // 深度が1.0（無限遠・背景）の場合は、距離を非常に遠く設定
+    if (depth >= 1.0)
+    {
+        objDist = 50000.0;
+    }
+    
     // *大気散乱* //
     float3 normalizedSunDir = normalize(-sunDir);
 
@@ -444,7 +502,7 @@ PSOutput main(VSOutput input)
     float tBottom = (cloudBottom - cameraPos.y) / rayDir.y;
     float tTop = (cloudTop - cameraPos.y) / rayDir.y;
     float tStart = min(tBottom, tTop);
-    float tEnd = min(max(tBottom, tTop), 50000.0);
+    float tEnd = min(max(tBottom, tTop), objDist);
     if (tEnd < 0 || tStart >= tEnd)
         hitClouds = false;
 
@@ -540,63 +598,161 @@ PSOutput main(VSOutput input)
             t += stepLen;
         }
     }
+    
+    // ==========================================
+    // ★ 追加: ボリューメトリックフォグのレイマーチング
+    // ==========================================
+    float3 fogAccumColor = float3(0, 0, 0);
+    float fogTransmittance = 1.0;
+    
+    // --- 修正箇所：フォグの計算範囲を厳密に制限 ---
+    float tMin = 0.0;
+    float tMax = min(objDist, 2000.0);
+    
+    // カメラから見て、フォグの層(0 〜 fogHeight)と交差する距離を求める
+    if (abs(rayDir.y) > 0.001)
+    {
+        float tFog = (fogHeight - cameraPos.y) / rayDir.y;
+        if (rayDir.y > 0.0)
+        {
+            // 見上げている場合：フォグの上面で計算を打ち切る
+            tMax = min(tMax, max(tFog, 0.0));
+        }
+        else
+        {
+            // 見下ろしている場合：フォグの上面から計算を開始する
+            tMin = max(tMin, tFog);
+        }
+    }
+    
+    // 完全にフォグの範囲外（上空など）を向いている場合はスキップ
+    bool hitFog = (tMin < tMax);
+    
+    if (hitFog && fogDensity > 0.0)
+    {
+        int fogSteps = 24; // 品質調整（重ければ16などに下げる）
+        
+        // ★ 修正: オブジェクトの距離などではなく、実際にフォグの中を通過する距離を使う
+        float fogDistance = tMax - tMin;
+        float fogStepLen = fogDistance / float(fogSteps);
+        
+        // ディザリングでバンディング（層の縞模様）を防ぐ
+        float randomJitterFog = frac(sin(dot(input.uv, float2(127.1, 311.7))) * 43758.5 + time * 0.2);
+        
+        // ★ 修正: ループの開始地点(fogT)を tMin にする
+        float fogT = tMin + fogStepLen * randomJitterFog;
+        float fogMaxDist = tMax; // 打ち切り距離
+        
+        for (int j = 0; j < fogSteps; j++)
+        {
+            if (fogT >= fogMaxDist || fogTransmittance < 0.01)
+                break;
+        
+            float3 p = cameraPos + rayDir * fogT;
+    
+            if (p.y > fogHeight)
+            {
+                fogT += fogStepLen;
+                continue;
+            }
+    
+            float d = GetFogDensity(p);
+            if (d > 0.001)
+            {
+                float opticalDepth = d * fogStepLen;
+        
+                // ★ 追加: 太陽光の到達度（影判定）を計算
+                float sunVis = GetSunVisibility(p, normalizedSunDir);
+        
+                float cosTheta = dot(rayDir, normalizedSunDir);
+                float g = 0.6;
+                float phase = (1.0 - g * g) / pow(abs(1.0 + g * g - 2.0 * g * cosTheta), 1.5) / (4.0 * 3.14159);
+        
+                float3 sunIllum = lerp(float3(1.0, 0.9, 0.8), float3(1.0, 0.4, 0.05), sunsetTime) * dayFactor * 3.0;
+                float3 ambientIllum = fogColor * cloudAmbientSkyColor;
+        
+                // ★ sunIllum に sunVis を掛け合わせることで、雲の影がフォグの中に落ちて光の筋(ゴットレイ)になる
+                float3 directLight = sunIllum * phase * sunVis;
+                float3 stepLight = (directLight + ambientIllum) * d;
+        
+                fogAccumColor += stepLight * fogTransmittance * fogStepLen;
+                fogTransmittance *= exp(-opticalDepth);
+            }
+            fogT += fogStepLen;
+        }
+    }
 
     // *最終合成* //
-    float3 finalColor = color + skyColor * transmittance;
+   // 1. まず雲と空（背景）を合成
+    float3 backgroundAndClouds = color;
+    if (depth >= 1.0)
+    {
+        backgroundAndClouds += skyColor * transmittance;
+    }
+    
+    // 2. その上に手前のボリューメトリックフォグを合成
+    float3 finalColor = backgroundAndClouds * fogTransmittance + fogAccumColor;
+    
+    // 3. 全体の不透明度（雲とフォグを合わせたもの）
+    float totalTransmittance = transmittance * fogTransmittance;
+    float outAlpha = 1.0 - totalTransmittance;
+    
+    if (depth >= 1.0)
+    {
+        outAlpha = 1.0;
+    }
 
-    // 夜はexposureを下げて全体を暗く
+    // 露出やコントラストなどのポストプロセス（既存のまま）
     float exposure = lerp(0.6, 1.5, dayFactor);
     finalColor = 1.0 - exp(-finalColor * exposure);
-    // NaN（黒い点）対策の安全装置：マイナス値を0にカットする
     finalColor = max(finalColor, 0.0);
     
     float contrast = 1.5;
     finalColor = pow(finalColor, float3(contrast, contrast, contrast));
     finalColor = finalColor * finalColor * (3.0 - 2.0 * finalColor);
 
-    float saturation = lerp(0.7, 1.2, dayFactor); // ★ 夜は彩度を下げてモノトーンに
+    float saturation = lerp(0.7, 1.2, dayFactor);
     float luminance = dot(finalColor, float3(0.299, 0.587, 0.114));
     finalColor = lerp(float3(luminance, luminance, luminance), finalColor, saturation);
 
-    // *太陽ディスク（HDR）の描画（角度による動的な色変化）* //
-    
-    // 各時間帯の太陽の色を定義（HDRなので大きな値を入れる）
-    float3 colDay = float3(60.0, 55.0, 45.0); // 真昼：白に近い黄色
-    float3 colGolden = float3(80.0, 45.0, 5.0); // 夕方手前：強い黄金色
-    float3 colSunset = float3(100.0, 15.0, 2.0); // 日没直前：燃えるような赤橙
-    float3 colMoon = float3(0.5, 0.8, 2.0); // 夜：淡い月光（青白い）
-
-    // 太陽の高さ（sunHeight）に基づいて色をブレンド
-    float3 dynamicSunColor;
-    if (sunHeight > 0.2)
+    // *太陽ディスク（HDR）の描画* //
+    // ★ オブジェクトの裏に太陽が透けないよう、背景(depth >= 1.0)の時のみ描画
+    if (depth >= 1.0)
     {
-        // 真昼からゴールデンアワーへ
-        dynamicSunColor = lerp(colGolden, colDay, smoothstep(0.2, 0.6, sunHeight));
-    }
-    else if (sunHeight > 0.0)
-    {
-        // ゴールデンアワーから日没（真っ赤）へ
-        dynamicSunColor = lerp(colSunset, colGolden, smoothstep(0.0, 0.2, sunHeight));
-    }
-    else
-    {
-        // 日没から夜（月）へ
-        dynamicSunColor = lerp(colMoon, colSunset, smoothstep(-0.1, 0.0, sunHeight));
+        float3 colDay = float3(60.0, 55.0, 45.0);
+        float3 colGolden = float3(80.0, 45.0, 5.0);
+        float3 colSunset = float3(100.0, 15.0, 2.0);
+        float3 colMoon = float3(0.5, 0.8, 2.0);
+
+        float3 dynamicSunColor;
+        if (sunHeight > 0.2)
+        {
+            dynamicSunColor = lerp(colGolden, colDay, smoothstep(0.2, 0.6, sunHeight));
+        }
+        else if (sunHeight > 0.0)
+        {
+            dynamicSunColor = lerp(colSunset, colGolden, smoothstep(0.0, 0.2, sunHeight));
+        }
+        else
+        {
+            dynamicSunColor = lerp(colMoon, colSunset, smoothstep(-0.1, 0.0, sunHeight));
+        }
+
+        float sunDot = dot(skyRayDir, normalizedSunDir);
+        float sunDisc = smoothstep(0.9998f, 0.99995f, sunDot);
+        float sunAlpha_ = (sunHeight > 0.0) ? 1.0 : 0.2;
+        if (isStorm)
+            sunAlpha_ = 0.0;
+        
+        finalColor += dynamicSunColor * sunDisc * transmittance * sunAlpha_;
     }
 
-    // 太陽の円（ディスク）の計算
-    float sunDot = dot(skyRayDir, normalizedSunDir);
-    float sunDisc = smoothstep(0.9998f, 0.99995f, sunDot);
-
-    // 最終合成
-    // 夜間（sunHeight < 0）は太陽を少し小さく、暗くすると月らしくなります
-    float sunAlpha = (sunHeight > 0.0) ? 1.0 : 0.2;
-    
-    //雷雨時は太陽（月）を完全に隠す
-    if (isStorm)
-        sunAlpha = 0.0;
-    
-    finalColor += dynamicSunColor * sunDisc * transmittance * sunAlpha;
+    // ★ C++側のアルファブレンド(SRC_ALPHA)で正しく合成させるための除算
+    // 雲がオブジェクトの上に描かれる際、二重に暗くなるのを防ぎます
+    if (depth < 1.0 && outAlpha > 0.001)
+    {
+        finalColor /= outAlpha;
+    }
 
     PSOutput output;
     
@@ -624,7 +780,7 @@ PSOutput main(VSOutput input)
         output.Velocity = float2(0, 0);
 
     }
-    output.Color = float4(finalColor, 1.0);
+    output.Color = float4(finalColor, outAlpha);
 
     return output;
 }

@@ -67,6 +67,7 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/ball", "ball.gltf");
 	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.gltf");
 	ModelManager::GetInstance()->LoadModel("Resource/human", "walk.gltf");
+	ModelManager::GetInstance()->LoadModel("Resource/mado", "mado.gltf");
 
 	// 追加のアニメーションを読み込む
 	ModelManager::GetInstance()->LoadAnimation("walk.gltf","walk", "Resource/human", "walk.gltf");
@@ -128,17 +129,27 @@ void Game::Draw() {
 	srvManager->PreDraw();
 	PostEffect::GetInstance()->PreDraw();
 
-	// レイマーチング描画
-	RayMarching::GetInstance()->Draw();
-
 	// シーンマネージャー描画(3D)
 	SceneManager::GetInstance()->Draw3D();
+
+	// ==================================================
+	// ★追加1: レイマーチングの前に深度バッファを「読み込み用」に変更
+	// ==================================================
+	PostEffect::GetInstance()->TransitionDepthBuffer(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE); //[cite: 20, 21]
+
+	// ② PostEffect から深度SRVインデックスを取得してレイマーチングを描画
+	uint32_t depthSrvIndex = PostEffect::GetInstance()->GetDepthSrvIndex();
+	RayMarching::GetInstance()->Draw(depthSrvIndex);
+
+	// ==================================================
+	// ★追加2: パーティクル等のために深度バッファを「書き込み/テスト用」に戻す
+	// ==================================================
+	PostEffect::GetInstance()->TransitionDepthBuffer(D3D12_RESOURCE_STATE_DEPTH_WRITE); //[cite: 20, 21]
 
 	// パーティクル描画
 	ParticleManager::GetInstance()->Draw();
 	// トレイルエフェクト描画
 	TrailEffectManager::GetInstance()->RenderAll();
-
 
 	// ポストエフェクト描画
 	PostEffect::GetInstance()->PostDraw();

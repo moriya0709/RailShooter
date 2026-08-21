@@ -204,6 +204,7 @@ public:
 	// getter
 	float GetLensFlareGhostDispersal() { return effectData->lensFlareGhostDispersal; }
 	D3D12_CPU_DESCRIPTOR_HANDLE GetRtvHandle(uint32_t index) { return rtvHandles[index]; }
+	uint32_t GetDepthSrvIndex() const { return depthSrvIndex_; }
 
 	// シングルトンインスタンスの取得
 	static PostEffect* GetInstance();

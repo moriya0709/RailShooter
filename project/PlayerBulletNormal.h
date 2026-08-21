@@ -11,6 +11,8 @@ public:
 	void Update() override;
 	void Draw() override;
 
+	Vector3 GetTranslate() const override { return transform.translate; }
+
 private:
 	Transform transform = {
 	{0.0f, 0.0f, 0.0f }, // translate

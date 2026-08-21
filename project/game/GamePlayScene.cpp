@@ -161,6 +161,44 @@ void GamePlayScene::Update() {
 		object[i]->Update();
 	}
 
+	// --- 当たり判定（球判定） ---
+	float hitRadius = 2.0f; // 弾の半径 + 敵の半径の合計値（適宜調整してください）
+
+	// プレイヤーの弾リストを取得
+	const auto& bullets = player->GetBullets();
+
+	for (auto& enemy : enemies) {
+		if (enemy->IsDead()) continue;
+
+		for (const auto& bullet : bullets) {
+			if (bullet->IsDead()) continue;
+
+			// 座標の取得
+			Vector3 ePos = enemy->GetTranslate();
+			Vector3 bPos = bullet->GetTranslate();
+
+			// 距離の二乗を計算（平方根の計算負荷を省くため）
+			float dx = bPos.x - ePos.x;
+			float dy = bPos.y - ePos.y;
+			float dz = bPos.z - ePos.z;
+			float distSq = (dx * dx) + (dy * dy) + (dz * dz);
+
+			// 距離が半径の合計以内なら命中
+			if (distSq <= (hitRadius * hitRadius)) {
+				enemy->OnCollision();
+				bullet->OnCollision();
+				break; // この敵に対する判定は終了
+			}
+		}
+	}
+
+	// --- 撃破された敵の削除 ---
+	enemies.erase(
+		std::remove_if(enemies.begin(), enemies.end(),
+			[](const std::unique_ptr<Enemy>& e) { return e->IsDead(); }),
+		enemies.end()
+	);
+
 
 	// スカイボックス
 	//Skybox::GetInstance()->Update();

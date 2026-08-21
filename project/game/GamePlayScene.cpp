@@ -114,6 +114,29 @@ void GamePlayScene::Update() {
 		camera->Update();
 	}
 
+	// *スポナーの距離判定と敵の更新* //
+	
+	// エディタカメラ操作中ではない（ゲームプレイ中）場合のみ起動・生成を進める
+	if (!isDebugCamera) {
+		// レールカメラ上のプレイヤー座標（またはカメラ座標）を基準にする
+		Vector3 targetPos = player->GetTranslate();
+
+		for (auto& spawner : enemySpawners) {
+			// 一定距離に入ったら起動し、時間経過で敵が生成されて返ってくる
+			auto spawnedEnemies = spawner->Update(deltaTime, targetPos);
+
+			// 返ってきた敵をシーンの敵リストに移動
+			for (auto& newEnemy : spawnedEnemies) {
+				enemies.push_back(std::move(newEnemy));
+			}
+		}
+	}
+
+	// シーンに存在するすべての敵の更新処理
+	for (auto& enemy : enemies) {
+		enemy->Update();
+	}
+
 	// レベルオブジェクト
 	for (auto& object : levelObjects) {
 		object->Update();
@@ -743,6 +766,11 @@ void GamePlayScene::Draw3D() {
 		preview->Draw();
 	}
 
+	// 敵の描画
+	for (auto& enemy : enemies) {
+		enemy->Draw();
+	}
+
 	railCamera->EditorDraw();
 
 	// 3Dオブジェクト描画
@@ -807,6 +835,14 @@ void GamePlayScene::CreateLevel() {
 
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
+
+			// ゲームロジック用の EnemySpawner を生成してリストに登録
+			auto spawner = std::make_unique<EnemySpawner>();
+
+			// 第3引数（20.0f）が「起動する距離」になります。必要に応じて調整してください。
+			spawner->Initialize(objectData.transform, objectData.spawnDataList, 20.0f);
+
+			enemySpawners.push_back(std::move(spawner));
 		}
 		
 	}

@@ -46,7 +46,7 @@ public:
 	// 初期化
 	void Initialize(SrvManager* srvManager);
 	// 描画
-	void Draw();
+	void Draw(uint32_t depthSrvIndex);
 
 	// カメラ更新
 	void Update(Camera* camera);

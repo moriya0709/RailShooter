@@ -47,7 +47,7 @@ void RayMarching::Initialize(SrvManager* srvManager) {
 
 }
 
-void RayMarching::Draw() {
+void RayMarching::Draw(uint32_t depthSrvIndex) {
 	auto commandList = dxCommon_->GetCommandList();
 	auto device = dxCommon_->GetDevice();
 
@@ -59,14 +59,20 @@ void RayMarching::Draw() {
 	ID3D12DescriptorHeap* ppHeaps[] = { srvDescriptorHeap.Get() };
 	commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
-	// CBVのセット
+	// [0番目] CBVのセット
 	commandList->SetGraphicsRootConstantBufferView(0, cloudParamResource->GetGPUVirtualAddress());
 
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	
+	// [1番目] 雲ノイズ (t0)
 	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	srvGpuHandle.ptr += (descriptorSize * srvIndex_);
-
 	commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
+
+	// [2番目] 深度バッファ (t1)
+	D3D12_GPU_DESCRIPTOR_HANDLE depthGpuHandle = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	depthGpuHandle.ptr += (descriptorSize * depthSrvIndex);
+	commandList->SetGraphicsRootDescriptorTable(2, depthGpuHandle);
 
 	// 描画
 	commandList->DrawInstanced(3, 1, 0, 0);
@@ -194,19 +200,26 @@ RayMarching* RayMarching::GetInstance() {
 
 
 void RayMarching::CreateRootSignature() {
-	// DescriptorRange作成
+	// t0(3Dテクスチャ)
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0; // 0から始まる
 	descriptorRange[0].NumDescriptors = 1; // 数は1つ
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // offsetを自動計算
 
+	// t1(深度バッファ)
+	D3D12_DESCRIPTOR_RANGE depthRange[1] = {};
+	depthRange[0].BaseShaderRegister = 1; // t1
+	depthRange[0].NumDescriptors = 1;
+	depthRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	depthRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
 	// RootSignature作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	// RootParameter作成
-	D3D12_ROOT_PARAMETER rootParameters[2] = {};
+	D3D12_ROOT_PARAMETER rootParameters[3] = {};
 	// [0番目] パラメーター: CBV
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
@@ -218,6 +231,11 @@ void RayMarching::CreateRootSignature() {
 	rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRange;
 	rootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
 
+	// [2番目] パラメーター: SRV (深度バッファ)
+	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[2].DescriptorTable.pDescriptorRanges = depthRange;
+	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(depthRange);
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーター配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ

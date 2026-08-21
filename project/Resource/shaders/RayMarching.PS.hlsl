@@ -2,6 +2,7 @@
 
 // 新しく追加する定義
 Texture3D<float4> CloudNoiseTex : register(t0); // 3Dノイズテクスチャ
+Texture2D<float> DepthTex : register(t1); // 深度バッファ
 SamplerState LinearRepeatSampler : register(s0); // リピート（繰り返し）設定のサンプラー
 
 struct PSInput
@@ -367,6 +368,19 @@ PSOutput main(VSOutput input)
     world.xyz /= world.w;
     float3 rayDir = normalize(world.xyz - cameraPos);
 
+    // 深度バッファを読み込み、オブジェクトのワールド距離を計算
+    float depth = DepthTex.SampleLevel(LinearRepeatSampler, input.uv, 0).r;
+    float4 clipObj = float4(ndcXY, depth, 1.0);
+    float4 worldObj = mul(invViewProj, clipObj);
+    worldObj.xyz /= worldObj.w;
+
+    float objDist = length(worldObj.xyz - cameraPos);
+    // 深度が1.0（無限遠・背景）の場合は、距離を非常に遠く設定
+    if (depth >= 1.0)
+    {
+        objDist = 50000.0;
+    }
+    
     // *大気散乱* //
     float3 normalizedSunDir = normalize(-sunDir);
 
@@ -444,7 +458,7 @@ PSOutput main(VSOutput input)
     float tBottom = (cloudBottom - cameraPos.y) / rayDir.y;
     float tTop = (cloudTop - cameraPos.y) / rayDir.y;
     float tStart = min(tBottom, tTop);
-    float tEnd = min(max(tBottom, tTop), 50000.0);
+    float tEnd = min(max(tBottom, tTop), objDist);
     if (tEnd < 0 || tStart >= tEnd)
         hitClouds = false;
 
@@ -542,61 +556,67 @@ PSOutput main(VSOutput input)
     }
 
     // *最終合成* //
-    float3 finalColor = color + skyColor * transmittance;
+    float3 finalColor = color;
+    float outAlpha = 1.0 - transmittance; // 雲自体の不透明度
 
-    // 夜はexposureを下げて全体を暗く
+    // ★ 深度が1.0(オブジェクトがない空)の場合のみ、背景の空を加算して不透明にする
+    if (depth >= 1.0)
+    {
+        finalColor += skyColor * transmittance;
+        outAlpha = 1.0;
+    }
+
+    // 露出やコントラストなどのポストプロセス（既存のまま）
     float exposure = lerp(0.6, 1.5, dayFactor);
     finalColor = 1.0 - exp(-finalColor * exposure);
-    // NaN（黒い点）対策の安全装置：マイナス値を0にカットする
     finalColor = max(finalColor, 0.0);
     
     float contrast = 1.5;
     finalColor = pow(finalColor, float3(contrast, contrast, contrast));
     finalColor = finalColor * finalColor * (3.0 - 2.0 * finalColor);
 
-    float saturation = lerp(0.7, 1.2, dayFactor); // ★ 夜は彩度を下げてモノトーンに
+    float saturation = lerp(0.7, 1.2, dayFactor);
     float luminance = dot(finalColor, float3(0.299, 0.587, 0.114));
     finalColor = lerp(float3(luminance, luminance, luminance), finalColor, saturation);
 
-    // *太陽ディスク（HDR）の描画（角度による動的な色変化）* //
-    
-    // 各時間帯の太陽の色を定義（HDRなので大きな値を入れる）
-    float3 colDay = float3(60.0, 55.0, 45.0); // 真昼：白に近い黄色
-    float3 colGolden = float3(80.0, 45.0, 5.0); // 夕方手前：強い黄金色
-    float3 colSunset = float3(100.0, 15.0, 2.0); // 日没直前：燃えるような赤橙
-    float3 colMoon = float3(0.5, 0.8, 2.0); // 夜：淡い月光（青白い）
-
-    // 太陽の高さ（sunHeight）に基づいて色をブレンド
-    float3 dynamicSunColor;
-    if (sunHeight > 0.2)
+    // *太陽ディスク（HDR）の描画* //
+    // ★ オブジェクトの裏に太陽が透けないよう、背景(depth >= 1.0)の時のみ描画
+    if (depth >= 1.0)
     {
-        // 真昼からゴールデンアワーへ
-        dynamicSunColor = lerp(colGolden, colDay, smoothstep(0.2, 0.6, sunHeight));
-    }
-    else if (sunHeight > 0.0)
-    {
-        // ゴールデンアワーから日没（真っ赤）へ
-        dynamicSunColor = lerp(colSunset, colGolden, smoothstep(0.0, 0.2, sunHeight));
-    }
-    else
-    {
-        // 日没から夜（月）へ
-        dynamicSunColor = lerp(colMoon, colSunset, smoothstep(-0.1, 0.0, sunHeight));
+        float3 colDay = float3(60.0, 55.0, 45.0);
+        float3 colGolden = float3(80.0, 45.0, 5.0);
+        float3 colSunset = float3(100.0, 15.0, 2.0);
+        float3 colMoon = float3(0.5, 0.8, 2.0);
+
+        float3 dynamicSunColor;
+        if (sunHeight > 0.2)
+        {
+            dynamicSunColor = lerp(colGolden, colDay, smoothstep(0.2, 0.6, sunHeight));
+        }
+        else if (sunHeight > 0.0)
+        {
+            dynamicSunColor = lerp(colSunset, colGolden, smoothstep(0.0, 0.2, sunHeight));
+        }
+        else
+        {
+            dynamicSunColor = lerp(colMoon, colSunset, smoothstep(-0.1, 0.0, sunHeight));
+        }
+
+        float sunDot = dot(skyRayDir, normalizedSunDir);
+        float sunDisc = smoothstep(0.9998f, 0.99995f, sunDot);
+        float sunAlpha_ = (sunHeight > 0.0) ? 1.0 : 0.2;
+        if (isStorm)
+            sunAlpha_ = 0.0;
+        
+        finalColor += dynamicSunColor * sunDisc * transmittance * sunAlpha_;
     }
 
-    // 太陽の円（ディスク）の計算
-    float sunDot = dot(skyRayDir, normalizedSunDir);
-    float sunDisc = smoothstep(0.9998f, 0.99995f, sunDot);
-
-    // 最終合成
-    // 夜間（sunHeight < 0）は太陽を少し小さく、暗くすると月らしくなります
-    float sunAlpha = (sunHeight > 0.0) ? 1.0 : 0.2;
-    
-    //雷雨時は太陽（月）を完全に隠す
-    if (isStorm)
-        sunAlpha = 0.0;
-    
-    finalColor += dynamicSunColor * sunDisc * transmittance * sunAlpha;
+    // ★ C++側のアルファブレンド(SRC_ALPHA)で正しく合成させるための除算
+    // 雲がオブジェクトの上に描かれる際、二重に暗くなるのを防ぎます
+    if (depth < 1.0 && outAlpha > 0.001)
+    {
+        finalColor /= outAlpha;
+    }
 
     PSOutput output;
     
@@ -624,7 +644,7 @@ PSOutput main(VSOutput input)
         output.Velocity = float2(0, 0);
 
     }
-    output.Color = float4(finalColor, 1.0);
+    output.Color = float4(finalColor, outAlpha);
 
     return output;
 }

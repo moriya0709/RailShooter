@@ -10,6 +10,7 @@
 #include "ImGuiManager.h"
 #include "CommonStructs.h"
 #include "CameraManager.h"
+#include "Line.h"
 
 class Camera;
 
@@ -38,6 +39,10 @@ public:
     Vector3 GetPos()const { return pos; }
     Vector3 GetBasePosition() const { return cameraTransform.translate; }
     Vector3 GetBaseRotation() const { return cameraTransform.rotate; }
+	// 制御点の取得
+	const std::vector<RailPoint>& GetPoints() const { return points; }
+    // 進行度 (railT) を取得する関数
+    float GetRailT() const { return railT; }
 
     // 注視点を設定する関数
     void SetTargetPosition(const Vector3& target) { targetPosition = target; }
@@ -77,22 +82,17 @@ private:
 
     // 3Dオブジェクト
     std::vector<std::unique_ptr<Object>> spheres;
-    std::vector<std::unique_ptr<Object>> railModels;
-  
+    std::unique_ptr<Line> railLine = nullptr;
 
     // DirectXCommonのポインタ
     DirectXCommon* dxCommon_ = nullptr;
     // WindowAPIのポインタ
     std::unique_ptr <WindowAPI> windowAPI_ = nullptr;
 
+    void DrawRailLine();
+
     void UpdateGizmo();
     void SelectPointByMouse();
-
-
-    // レールモデル初期化
-    void InitializeRailModels(int count);
-    // レール描画
-    void DrawRailModels();
 
     Vector3 CatmullRom(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t);
 

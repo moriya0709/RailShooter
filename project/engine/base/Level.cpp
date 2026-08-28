@@ -76,6 +76,20 @@ void Level::LoadJson(const std::string fileName) {
 
 					data.type = spawnItem["type"].get<std::string>();
 
+					// movePattern があれば読み込む（なければ STRAIGHT）
+					if (spawnItem.contains("movePattern")) {
+						data.movePattern = spawnItem["movePattern"].get<std::string>();
+					} else {
+						data.movePattern = "STRAIGHT";
+					}
+
+					// controlPoints があれば配列として読み込む
+					if (spawnItem.contains("controlPoints")) {
+						for (const auto& cp : spawnItem["controlPoints"]) {
+							data.controlPoints.push_back({ (float)cp[0], (float)cp[1], (float)cp[2] });
+						}
+					}
+
 					newData.spawnDataList.push_back(data);
 				}
 			}
@@ -137,7 +151,17 @@ void Level::SaveJson(const std::string fileName) {
 				// 読み込み側と合わせるため x, y, z の順で保存
 				spawnItem["offset"] = { spawn.offset.x, spawn.offset.y, spawn.offset.z };
 
+				// type の保存d
 				spawnItem["type"] = spawn.type;
+				// movePattern の保存
+				spawnItem["movePattern"] = spawn.movePattern;
+
+				// controlPoints の保存
+				nlohmann::json cpArray = nlohmann::json::array();
+				for (const auto& cp : spawn.controlPoints) {
+					cpArray.push_back({ cp.x, cp.y, cp.z });
+				}
+				spawnItem["controlPoints"] = cpArray;
 
 				spawnArray.push_back(spawnItem);
 			}

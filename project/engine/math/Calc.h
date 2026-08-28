@@ -182,6 +182,7 @@ Vector3 GetTranslate(const Matrix4x4& matrix);
 Vector3 GetRotate(const Matrix4x4& matrix);
 // 行列から回転行列 (Matrix4x4) を取り出す (スケール・平行移動を除外)
 Matrix4x4 GetRotateMatrix(const Matrix4x4& matrix);
-
+// Catmull-Rom スプライン補間（p1 から p2 への移動座標を算出）
+Vector3 CatmullRomSpline(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
 
 

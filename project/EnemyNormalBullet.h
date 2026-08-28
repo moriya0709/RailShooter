@@ -1,26 +1,27 @@
 ﻿#pragma once
 #include <memory>
 
-#include "PlayerBullet.h"
-#include "TrailEffect.h"
+#include "EnemyBullet.h"
 #include "Calc.h"
+#include "TrailEffect.h"
 
-class PlayerBulletNormal : public PlayerBullet {
+class EnemyNormalBullet : public EnemyBullet {
 public:
-	void Initialize(const Vector3 position) override;
+	void Initialize(Vector3 position,Vector3 playerPosition) override;
 	void Update() override;
 
-	Vector3 GetTranslate() const override { return transform.translate; }
+
 
 	// OBBを取得
 	OBB GetOBB() override;
 
 private:
-	Transform transform = {
-	{0.0f, 0.0f, 0.0f }, // translate
-	{ 0.0f, 0.0f, 0.0f }, // rotate
-	{ 1.0f, 1.0f, 1.0f }  // scale
+	Transform transform{
+		{ 1.0f, 1.0f, 1.0f }, // scale
+		{ 0.0f, 0.0f, 0.0f }, // rotate
+		{ 0.0f, 0.0f, 0.0f }  // translate
 	};
+
 	float width = 1.0f; // 弾の幅
 	float trailMaxLifeTime = 1.0f; // トレイルの寿命
 	Vector3 velocity = { 0.0f, 0.0f, 10.0f }; // 弾の速度

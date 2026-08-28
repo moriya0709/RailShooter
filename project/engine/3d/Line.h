@@ -32,12 +32,14 @@ public:
 	void SetPositions(const Vector3& start, const Vector3& end);
 	void SetCamera(Camera* camera) { camera_ = camera; }
 	void SetTransform(const Transform& objTransform) { transform = objTransform; }
+	void SetColor(const Vector4& color);
 
 private:
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource;
 	Microsoft::WRL::ComPtr<ID3D12Resource> viewResource;
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
 	
 	// バッファ
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -46,6 +48,7 @@ private:
 	TransformationMatrix* transformationMatrixData = nullptr;
 	ViewData* viewData = nullptr;
 	VertexData* vertexData = nullptr;
+	Vector4* materialData = nullptr;
 
 	// Transform
 	Transform transform;

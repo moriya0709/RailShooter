@@ -7,6 +7,7 @@
 #include "Calc.h"
 #include "Sprite.h"
 #include "PlayerBullet.h"
+#include "CollisionManager.h"
 
 // プレイヤーの操作入力値 (-1.0 ～ 1.0)
 struct PlayerInput {
@@ -24,8 +25,14 @@ public:
     void SetTranslate(const Vector3& translate) { basePos = translate; }
     Vector3 GetRotate() const { return rotate_; }
     Vector3 GetTranslate() const { return translate_; }
+    bool IsHit() const { return isHit; }
 
     const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }
+
+    void OnCollision();
+
+    // OBBを取得
+    OBB GetOBB();
 
 private:
     enum State {
@@ -36,6 +43,7 @@ private:
 
 	Vector3 translate_ = { 0.0f, 0.0f, 0.0f };
 	Vector3 rotate_ = { 0.0f, 0.0f, 0.0f };
+	Vector3 scale_ = { 1.0f, 1.0f, 1.0f };
 
     // 操作入力値
     PlayerInput playerInput{};
@@ -81,6 +89,10 @@ private:
 	Vector2 reticlePosition = { 960.0f, 540.0f };
     Vector2 reticleSize = { 800.0f, 800.0f };
 	float reticleRotation = 0.0f;
+
+    // 当たったか
+    bool isHit = false;
+    float hitTimer_ = 0.0f;
 
     // 移動
     void Move();

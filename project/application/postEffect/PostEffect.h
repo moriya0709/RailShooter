@@ -128,6 +128,7 @@ public:
 	void Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvManager* srvManager);
 	// 更新
 	void Update(Camera* camera);
+	void DamageEffectUpdate();
 	// 描画
 	void Draw();
 

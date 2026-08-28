@@ -1,5 +1,6 @@
 ﻿#include "EnemySpawner.h"
 #include "EnemyNormal.h"
+#include "RailCamera.h"
 
 void EnemySpawner::Initialize(const Transform& transform, const std::vector<SpawnData>& spawnList, float distance) {
 	transform_ = transform;
@@ -51,8 +52,23 @@ std::vector<std::unique_ptr<Enemy>> EnemySpawner::Update(float deltaTime, const 
 				spawnTrans.translate.y += data.offset.y;
 				spawnTrans.translate.z += data.offset.z;
 
+				// 座標をセット
 				enemy->SetTransform(spawnTrans);
-				enemy->Initialize(); //[cite: 5, 6]
+				// 移動パターンをセット
+				enemy->SetMovePattern(data.movePattern);
+				// 制御点をセット
+				enemy->SetControlPoints(data.controlPoints);
+
+				// レールカメラの制御点をセットする
+				if (railCamera_ != nullptr) {
+					std::vector<Vector3> rPoints;
+					for (const auto& p : railCamera_->GetPoints()) {
+						rPoints.push_back(p.position);
+					}
+					enemy->SetRailPoints(rPoints);
+				}
+
+				enemy->Initialize();
 
 				spawnedEnemies.push_back(std::move(enemy));
 			}

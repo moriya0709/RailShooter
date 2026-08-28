@@ -1,6 +1,7 @@
 ﻿#include "Player.h"
 #include "Input.h"
 #include "PlayerBulletNormal.h"
+#include "PostEffect.h"
 
 void Player::Initialize() {
 	reticle = std::make_unique<Sprite>();
@@ -26,7 +27,35 @@ void Player::Update(float deltaTime) {
 }
 
 void Player::Draw() {
-	reticle->Draw();
+	//reticle->Draw();
+}
+
+void Player::OnCollision() {
+	hitTimer_ = 0.2f; // 衝突時に0.2秒間（60FPSで約12フレーム）タイマーをセット
+
+	//PostEffect::GetInstance()->SetDamageEffectRatio(1.0f);
+}
+
+OBB Player::GetOBB() {
+	OBB obb;
+	// 1. 中心座標
+	obb.center = translate_;
+
+	// 2. ハーフサイズ（TransformのScaleを適用）
+	obb.halfExtents = {
+		scale_.x * 0.5f,
+		scale_.y * 0.5f,
+		scale_.z * 0.5f
+	};
+
+	// 3. 回転行列から正規化された3軸を取得 (Rotateから回転行列を作成)
+	Matrix4x4 rotMat = MakeRotateMatrix(rotate_); // 自身のライブラリの回転行列作成関数[cite: 3]
+
+	obb.axes[0] = { rotMat.m[0][0], rotMat.m[0][1], rotMat.m[0][2] }; // X軸
+	obb.axes[1] = { rotMat.m[1][0], rotMat.m[1][1], rotMat.m[1][2] }; // Y軸
+	obb.axes[2] = { rotMat.m[2][0], rotMat.m[2][1], rotMat.m[2][2] }; // Z軸
+
+	return obb;
 }
 
 void Player::Move() {
@@ -66,6 +95,14 @@ void Player::Move() {
 }
 
 void Player::UpdateNormal(float deltaTime) {
+	// タイマーの減算処理と isHit フラグの設定
+	if (hitTimer_ > 0.0f) {
+		hitTimer_ -= deltaTime;
+		isHit = true;
+	} else {
+		isHit = false;
+	}
+
 	Move();
 
 	// ▼▼▼ 追加: 全ての弾を更新 ▼▼▼

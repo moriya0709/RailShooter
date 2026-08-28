@@ -28,6 +28,11 @@ void Line::Initialize(Camera* camera) {
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
+	// マテリアル（色）用のバッファリソースを作成
+	materialResource = dxCommon_->CreateBufferResource(sizeof(Vector4));
+	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	*materialData = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 	// *Transform* //
 	transform = {
 		{1.0f,1.0f,1.0f},
@@ -63,6 +68,8 @@ void Line::Draw() {
 		return;
 	}
 
+	// 色情報
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	// wvp用とWorld用のCBufferの場所を設定
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	// RootSignatureを設定。PSOに設定しているけど別途設定が必要
@@ -95,4 +102,10 @@ void Line::SetPositions(const Vector3& start, const Vector3& end) {
 	vertexData[0].position = { start.x, start.y, start.z, 1.0f };
 	// 2つ目の頂点（終点）
 	vertexData[1].position = { end.x, end.y, end.z, 1.0f };
+}
+
+void Line::SetColor(const Vector4& color) {
+	if (materialData) {
+		*materialData = color;
+	}
 }

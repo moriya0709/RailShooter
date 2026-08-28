@@ -142,7 +142,7 @@ void LineCommon::CreateGraphicsPipeline() {
 
 	// DepthStencilの設定
 	D3D12_DEPTH_STENCIL_DESC lineDepthStencilDesc = dxCommon_->depthStencilDesc;
-	lineDepthStencilDesc.DepthEnable = FALSE;
+	lineDepthStencilDesc.DepthEnable = TRUE;
 	graphicsPipelineStateDesc.DepthStencilState = lineDepthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 

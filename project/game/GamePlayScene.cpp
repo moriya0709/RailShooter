@@ -7,7 +7,8 @@
 #include "ModelRendererComponent.h"
 #include "AnimatorComponent.h"
 #include "SkyBox.h"
-#include <ModelManager.h>
+#include "LineCommon.h"
+#include "ModelManager.h"
 
 void GamePlayScene::Initialize() {
 
@@ -50,6 +51,15 @@ void GamePlayScene::Initialize() {
 	player = std::make_unique<Player>();
 	player->Initialize();
 
+	// 当たり判定の線
+	debugLineNormal = std::make_unique<Line>();
+	debugLineNormal->Initialize(camera.get());
+	debugLineNormal->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f }); // 緑色を固定セット
+
+	debugLineHit = std::make_unique<Line>();
+	debugLineHit->Initialize(camera.get());
+	debugLineHit->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f }); // 赤色を固定セット
+
 }
 
 void GamePlayScene::Update() {
@@ -61,8 +71,6 @@ void GamePlayScene::Update() {
 	deltaTime = gameTimer->Tick();
 
 	player->Update(deltaTime);
-
-
 
 	// 1. レールカメラの更新（レール上の現在位置・回転を計算）
 	// 2. ★ GameObject の座標を RailCamera の制御点として毎フレーム上書き（同期）する
@@ -102,7 +110,7 @@ void GamePlayScene::Update() {
 	player->SetTranslate(basePos);
 	player->SetRotate(baseRot);
 	player->Update(deltaTime);
-
+	
 
 	if (isDebugCamera) {
 		if (!ImGui::GetIO().WantCaptureMouse) {
@@ -132,9 +140,12 @@ void GamePlayScene::Update() {
 		}
 	}
 
+	// カメラの現在の進行度を取得
+	float cameraProgress = railCamera->GetRailT();
+
 	// シーンに存在するすべての敵の更新処理
 	for (auto& enemy : enemies) {
-		enemy->Update();
+		enemy->Update(player->GetTranslate(), cameraProgress);
 	}
 
 	// レベルオブジェクト
@@ -161,36 +172,8 @@ void GamePlayScene::Update() {
 		object[i]->Update();
 	}
 
-	// --- 当たり判定（球判定） ---
-	float hitRadius = 2.0f; // 弾の半径 + 敵の半径の合計値（適宜調整してください）
-
-	// プレイヤーの弾リストを取得
-	const auto& bullets = player->GetBullets();
-
-	for (auto& enemy : enemies) {
-		if (enemy->IsDead()) continue;
-
-		for (const auto& bullet : bullets) {
-			if (bullet->IsDead()) continue;
-
-			// 座標の取得
-			Vector3 ePos = enemy->GetTranslate();
-			Vector3 bPos = bullet->GetTranslate();
-
-			// 距離の二乗を計算（平方根の計算負荷を省くため）
-			float dx = bPos.x - ePos.x;
-			float dy = bPos.y - ePos.y;
-			float dz = bPos.z - ePos.z;
-			float distSq = (dx * dx) + (dy * dy) + (dz * dz);
-
-			// 距離が半径の合計以内なら命中
-			if (distSq <= (hitRadius * hitRadius)) {
-				enemy->OnCollision();
-				bullet->OnCollision();
-				break; // この敵に対する判定は終了
-			}
-		}
-	}
+	// 当たり判定
+	CollisionUpdate();
 
 	// --- 撃破された敵の削除 ---
 	enemies.erase(
@@ -199,9 +182,40 @@ void GamePlayScene::Update() {
 		enemies.end()
 	);
 
+	// *当たり判定の線* //
+	// 毎フレーム描画前に前フレームの線データをクリア
+	debugLineNormal->Clear();
+	debugLineHit->Clear();
+#ifdef _DEBUG
+	// プレイヤーの当たり判定を登録
+	if (player->IsHit()) {
+		DrawOBB(debugLineHit.get(), player->GetOBB()); // 赤用のバッファに追加
+	} else {
+		DrawOBB(debugLineNormal.get(), player->GetOBB()); // 緑用のバッファに追加
+	}
 
-	// スカイボックス
-	//Skybox::GetInstance()->Update();
+	// 敵キャラクターの当たり判定も一括登録可能
+	for (const auto& enemy : enemies) {
+		if (enemy->IsHit()) {
+			DrawOBB(debugLineHit.get(), enemy->GetOBB()); // 赤用のバッファに追加
+		} else {
+			DrawOBB(debugLineNormal.get(), enemy->GetOBB()); // 緑用のバッファに追加
+		}
+	}
+
+	// 弾の当たり判定
+	for (const auto& bullet : player->GetBullets()) {
+		DrawOBB(debugLineNormal.get(), bullet->GetOBB());
+	}
+
+	for (const auto& enemy : enemies) {
+		for (const auto& bullet : enemy->GetBullets()) {
+			DrawOBB(debugLineNormal.get(), bullet->GetOBB());
+		}
+	}
+
+#endif
+
 
 #pragma region ライティング
 	// *ライティング* //
@@ -524,6 +538,7 @@ void GamePlayScene::Update() {
 		auto transformComp = newObject->AddComponent<TransformComponent>();
 
 		transformComp->transform.translate = camera->GetTranslate();
+		transformComp->transform.rotate = camera->GetRotate();
 		transformComp->transform.scale = { 1.0f, 1.0f, 1.0f };
 
 		// 3. ModelRendererComponent の追加（モデルは固定で "rail.obj" を指定）
@@ -727,7 +742,8 @@ void GamePlayScene::Update() {
 
 				// プルダウン（Combo）に表示する敵の種類のリスト
 				const char* enemyTypes[] = { "NORMAL", "FAST", "BOSS" };
-				int typeCount = IM_ARRAYSIZE(enemyTypes);
+				// プルダウン（Combo）に表示する移動パターンのリスト
+				const char* movePatterns[] = { "IDRE", "STRAIGHT", "WAVE", "HOMING", "PATH", "RAIL_FORWARD" };
 
 				// 登録されている敵のリストをループ表示
 				for (size_t i = 0; i < currentObjData.spawnDataList.size(); ++i) {
@@ -744,7 +760,7 @@ void GamePlayScene::Update() {
 					// 3. 敵のタイプ（Comboボックス）
 					// 現在の sData.type が、配列の何番目と一致するかを探す
 					int currentTypeIndex = 0;
-					for (int j = 0; j < typeCount; j++) {
+					for (int j = 0; j < IM_ARRAYSIZE(enemyTypes); j++) {
 						if (sData.type == enemyTypes[j]) {
 							currentTypeIndex = j;
 							break;
@@ -752,8 +768,60 @@ void GamePlayScene::Update() {
 					}
 
 					// プルダウンのUIを表示し、変更があったら sData.type に文字列を書き戻す
-					if (ImGui::Combo("Type", &currentTypeIndex, enemyTypes, typeCount)) {
+					if (ImGui::Combo("Type", &currentTypeIndex, enemyTypes, IM_ARRAYSIZE(enemyTypes))) {
 						sData.type = enemyTypes[currentTypeIndex];
+					}
+
+					// 2. ★移動パターンの選択 (PATH を選択すると制御点編集が展開)
+					int currentPatternIndex = 0;
+					for (int j = 0; j < IM_ARRAYSIZE(movePatterns); j++) {
+						if (sData.movePattern == movePatterns[j]) { currentPatternIndex = j; break; }
+					}
+					if (ImGui::Combo("Move Pattern", &currentPatternIndex, movePatterns, IM_ARRAYSIZE(movePatterns))) {
+						sData.movePattern = movePatterns[currentPatternIndex];
+					}
+
+					// 3. ★移動パターンが "PATH" の場合のみ制御点(controlPoints)の編集UIを表示
+					if (sData.movePattern == "PATH") {
+						if (ImGui::TreeNode("Path Control Points")) {
+
+							// 制御点追加ボタン
+							if (ImGui::Button("+ Add Control Point")) {
+								Vector3 newPoint;
+
+								if (sData.controlPoints.empty()) {
+									// 制御点が0個の場合：スポナーの座標 ＋ エネミーのオフセット をワールド座標として算出
+									newPoint.x = currentObjData.transform.translate.x + sData.offset.x;
+									newPoint.y = currentObjData.transform.translate.y + sData.offset.y;
+									newPoint.z = currentObjData.transform.translate.z + sData.offset.z;
+								} else {
+									// 既に制御点がある場合：最後の制御点をベースにする
+									newPoint = sData.controlPoints.back();
+								}
+
+								sData.controlPoints.push_back(newPoint);
+							}
+
+							// 各制御点の編集と削除
+							for (size_t cpIdx = 0; cpIdx < sData.controlPoints.size(); ++cpIdx) {
+								ImGui::PushID(static_cast<int>(cpIdx));
+
+								// 座標調整ドラッグバー
+								std::string label = "P[" + std::to_string(cpIdx) + "]";
+								ImGui::DragFloat3(label.c_str(), &sData.controlPoints[cpIdx].x, 0.1f);
+
+								// 制御点削除ボタン
+								ImGui::SameLine();
+								if (ImGui::Button("Delete")) {
+									sData.controlPoints.erase(sData.controlPoints.begin() + cpIdx);
+									ImGui::PopID();
+									break;
+								}
+
+								ImGui::PopID();
+							}
+							ImGui::TreePop();
+						}
 					}
 
 					// 4. 削除ボタン
@@ -803,11 +871,28 @@ void GamePlayScene::Draw3D() {
 	for (auto& preview : spawnerPreviewObjects) {
 		preview->Draw();
 	}
+	// 敵の移動制御点プレビューの描画
+	for (auto& preview : pathPreviewObjects) {
+		preview->Draw();
+	}
 
 	// 敵の描画
 	for (auto& enemy : enemies) {
 		enemy->Draw();
 	}
+
+#ifdef _DEBUG
+	// 1. Line専用のグラフィックスパイプラインとルートシグネイチャを設定
+	LineCommon::GetInstance()->SetCommonPipelineState(); //[cite: 18, 19]
+
+	// 2. 蓄積された線の描画コマンドを発行
+	debugLineNormal->Update();
+	debugLineNormal->Draw();
+
+	debugLineHit->Update();
+	debugLineHit->Draw();
+
+#endif
 
 	railCamera->EditorDraw();
 
@@ -858,6 +943,23 @@ void GamePlayScene::CreateLevel() {
 		} else if (objectData.type == "RAIL" || objectData.type == "rail") {
 			// ★ JSONから読み込んだ座標と回転を RailCamera の制御点として追加
 			railCamera->AddPoint(objectData.transform.translate, objectData.transform.rotate);
+		
+			// ★ ここから追加: 実体のGameObjectを生成してシーンに配置する
+			auto gameObject = std::make_unique<GameObject>();
+			auto transform = gameObject->AddComponent<TransformComponent>();
+
+			transform->transform.translate = objectData.transform.translate;
+			transform->transform.rotate = objectData.transform.rotate;
+			transform->transform.scale = objectData.transform.scale;
+
+			// モデルのセット (JSONにファイル名がない場合は "rail.obj" をデフォルトにする)
+			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
+			std::string modelName = objectData.file_name.empty() ? "rail.obj" : objectData.file_name;
+			modelRenderer->SetModel(modelName);
+
+			gameObject->Initialize();
+			levelObjects.push_back(std::move(gameObject));
+
 		} else if (objectData.type == "SPAWNER" || objectData.type == "spawner") {
 			// SPAWNER の実体オブジェクトを生成して levelObjects に登録する
 			auto gameObject = std::make_unique<GameObject>();
@@ -879,6 +981,8 @@ void GamePlayScene::CreateLevel() {
 
 			// 第3引数（20.0f）が「起動する距離」になります。必要に応じて調整してください。
 			spawner->Initialize(objectData.transform, objectData.spawnDataList, 20.0f);
+			// レールカメラをセット
+			spawner->SetRailCamera(railCamera.get());
 
 			enemySpawners.push_back(std::move(spawner));
 		}
@@ -1040,6 +1144,7 @@ void GamePlayScene::GizmoUpdate() {
 			ObjectData railObj;
 			railObj.type = "RAIL";
 			railObj.name = "RailPoint_" + std::to_string(i);
+			railObj.file_name = "rail.obj";
 			railObj.transform.translate = railCamera->points[i].position;
 			railObj.transform.rotate = railCamera->points[i].rotate;
 			railObj.transform.scale = { 1.0f, 1.0f, 1.0f }; // 制御点のスケールはダミー値
@@ -1112,13 +1217,88 @@ void GamePlayScene::GizmoUpdate() {
 
 					spawnerPreviewObjects[i]->Update();
 				}
+
+				// =========================================================
+				// ★追加: 2. 移動パターンの制御点(PATH)プレビュー処理
+				// =========================================================
+				size_t totalPathPoints = 0; // 表示中の制御点の総数
+
+				for (size_t i = 0; i < currentObjData.spawnDataList.size(); ++i) {
+					auto& sData = currentObjData.spawnDataList[i];
+
+					// 移動パターンが PATH の場合のみ制御点モデルを生成・配置
+					if (sData.movePattern == "PATH") {
+						for (size_t j = 0; j < sData.controlPoints.size(); ++j) {
+
+							// オブジェクトが足りなければ追加生成
+							if (pathPreviewObjects.size() <= totalPathPoints) {
+								auto previewObj = std::make_unique<GameObject>();
+								previewObj->AddComponent<TransformComponent>();
+								auto modelRenderer = previewObj->AddComponent<ModelRendererComponent>();
+
+								// 制御点用モデル（敵と区別しやすいように設定）
+								modelRenderer->SetModel("cube.gltf");
+								previewObj->Initialize();
+								pathPreviewObjects.push_back(std::move(previewObj));
+							}
+
+							// 制御点のワールド座標を適用（サイズは半分に縮小）
+							auto pathTransform = pathPreviewObjects[totalPathPoints]->GetComponent<TransformComponent>();
+							pathTransform->transform.translate = sData.controlPoints[j];
+							pathTransform->transform.scale = { 0.5f, 0.5f, 0.5f };
+
+							pathPreviewObjects[totalPathPoints]->Update();
+							totalPathPoints++;
+						}
+					}
+				}
+
+				// 不要になった（制御点が削除された）プレビューを削除
+				while (pathPreviewObjects.size() > totalPathPoints) {
+					pathPreviewObjects.pop_back();
+				}
+
 			} else {
 				// SPAWNER以外を選択中の時はプレビューを消去
 				spawnerPreviewObjects.clear();
+				pathPreviewObjects.clear();
 			}
 		}
 	} else {
 		// 何も選択していない時もプレビューを消去
 		spawnerPreviewObjects.clear();
+		pathPreviewObjects.clear();
+	}
+}
+
+void GamePlayScene::CollisionUpdate() {
+	// 敵とプレイヤーの弾
+	const auto& bullets = player->GetBullets();
+	for (auto& enemy : enemies) {
+		for (auto& bullet : bullets) {
+			if (CheckOBBToOBB(enemy->GetOBB(), bullet->GetOBB())) {
+				enemy->OnCollision();
+				bullet->OnCollision();
+			}
+		}
+	}
+
+	// プレイヤーと敵の弾
+	for (auto& enemy : enemies) {
+		const auto& bullets = enemy->GetBullets();
+		for (auto& bullet : bullets) {
+			if (CheckOBBToOBB(player->GetOBB(), bullet->GetOBB())) {
+				player->OnCollision();
+				bullet->OnCollision();
+			}
+		}
+	}
+
+	// プレイヤーと敵
+	for (auto& enemy : enemies) {
+		if (CheckOBBToOBB(player->GetOBB(), enemy->GetOBB())) {
+			player->OnCollision();
+			enemy->OnCollision();
+		}
 	}
 }

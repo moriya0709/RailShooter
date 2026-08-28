@@ -22,7 +22,9 @@
     <ClCompile Include="application\easing\Easing.cpp" />
     <ClCompile Include="application\radarChart\RadarChart.cpp" />
     <ClCompile Include="application\radarChart\RadarChartCommon.cpp" />
+    <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="EnemyNormal.cpp" />
+    <ClCompile Include="EnemyNormalBullet.cpp" />
     <ClCompile Include="EnemySpawner.cpp" />
     <ClCompile Include="engine\3d\AnimationManager.cpp" />
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
@@ -281,9 +283,12 @@
     <ClInclude Include="application\easing\Easing.h" />
     <ClInclude Include="application\radarChart\RadarChart.h" />
     <ClInclude Include="application\radarChart\RadarChartCommon.h" />
+    <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Enemy.h" />
+    <ClInclude Include="EnemyBullet.h" />
     <ClInclude Include="EnemyNormal.h" />
+    <ClInclude Include="EnemyNormalBullet.h" />
     <ClInclude Include="EnemySpawner.h" />
     <ClInclude Include="engine\3d\AnimationManager.h" />
     <ClInclude Include="application\railCamera\RailCamera.h" />

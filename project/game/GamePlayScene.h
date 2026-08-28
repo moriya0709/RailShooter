@@ -20,6 +20,8 @@
 #include "Calc.h"
 #include "EnemySpawner.h"
 #include "Enemy.h"
+#include "CollisionManager.h"
+#include "Line.h"
 
 using namespace DirectX;
 
@@ -130,7 +132,7 @@ private:
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
-	float rayMarchingCloudCoverage = 1.00f;
+	float rayMarchingCloudCoverage = 0.00f;
 	float rayMarchingCloudBottom = -90.0f;
 	float rayMarchingCloudTop = 2900.0f;
 	bool rayMarchingIsRialLight = false;
@@ -141,8 +143,8 @@ private:
 	float thunderFrequency = 0.3f;
 	float thunderBrightness = 120.0f;
 	float horizonHeight = 0.2f;
-	float fogDensity = 0.08f;
-	float fogHeight = 40.0f;
+	float fogDensity = 0.0f;
+	float fogHeight = 0.0f;
 	float fogScattering = 0.5f;
 	Vector3 fogColor = { 0.8f, 0.85f, 0.9f };
 
@@ -172,15 +174,23 @@ private:
 	std::vector<std::unique_ptr<EnemySpawner>> enemySpawners;
 	// 敵
 	std::vector<std::unique_ptr<Enemy>> enemies;
+	std::vector<std::unique_ptr<GameObject>> pathPreviewObjects; // パス移動の制御点のオブジェクト
 	// プレイヤー
 	std::unique_ptr<Player> player = nullptr;
 	// タイマー
 	std::unique_ptr<GameTimer> gameTimer = nullptr;
 	float deltaTime;
 
+	// 当たり判定の線
+	std::unique_ptr<Line> debugLineNormal;
+	std::unique_ptr<Line> debugLineHit;
+
 	// レベルデータからオブジェクト生成、配置
 	void CreateLevel();
 	// Gizmo
 	void GizmoUpdate();
+
+	// 当たり判定
+	void CollisionUpdate();
 
 };

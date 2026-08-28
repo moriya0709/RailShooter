@@ -1,6 +1,7 @@
 ﻿#include "RailCamera.h"
 #include "Camera.h"
 #include "DirectXCommon.h"
+#include "LineCommon.h"
 
 void RailCamera::Initialize() {
 	// 引数で受け取ってメンバ変数に記録する
@@ -16,7 +17,10 @@ void RailCamera::Initialize() {
 	CameraManager::GetInstance()->AddCamera("main", camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
-	InitializeRailModels(1000);
+	// レールライン初期化
+	railLine = std::make_unique<Line>();
+	railLine->Initialize(camera.get());
+
 }
 
 void RailCamera::Update() {
@@ -104,7 +108,7 @@ void RailCamera::EditorDraw() {
 			spheres[i]->Draw();
 		}
 
-		DrawRailModels();
+		DrawRailLine();
 	}
 
 #endif 
@@ -174,6 +178,39 @@ void RailCamera::AddPoint(Vector3 pos,Vector3 rotate)
 	obj->SetRotate(rotate);
 	spheres.push_back(std::move(obj)); 
 }
+
+void RailCamera::DrawRailLine() {
+	if (points.size() < 4) return;
+
+	// 毎フレーム前回の線をクリアする
+	railLine->Clear();
+
+	float tStart = 0.0f;
+	float tEnd = (float)(points.size() - 2);
+
+	// 線の分割数（数値を大きくするほど滑らかになります）
+	int segmentCount = 200;
+	float step = tEnd / (float)segmentCount;
+
+	Vector3 prevPos = Evaluate(tStart);
+
+	// スプライン曲線を細かく区切って線分を追加していく
+	for (float t = tStart + step; t <= tEnd + 0.001f; t += step) {
+		if (t > tEnd) t = tEnd; // オーバーフロー防止
+
+		Vector3 currentPos = Evaluate(t);
+		railLine->AddLine(prevPos, currentPos); // 始点と終点を追加
+		prevPos = currentPos;
+	}
+
+	// 溜め込んだ頂点データをバッファに更新
+	railLine->Update();
+
+	// ライン用の共通パイプラインを設定して描画
+	LineCommon::GetInstance()->SetCommonPipelineState();
+	railLine->Draw();
+}
+
 void RailCamera::UpdateGizmo() {
 	if (selectedPoint < 0 || selectedPoint >= (int)points.size()) return;
 
@@ -252,38 +289,6 @@ void RailCamera::SelectPointByMouse() {
 	selectedPoint = hit;
 #endif 
 }
-
-
-void RailCamera::InitializeRailModels(int count) { 
-	railModels.clear(); 
-	for (int i = 0; i < count; i++) { 
-		std::unique_ptr<Object> obj = std::make_unique<Object>();
-		obj->Initialize(camera.get()); obj->SetModel("rail.obj");
-		railModels.push_back(std::move(obj));
-	}
-} 
-
-void RailCamera::DrawRailModels() { 
-	if (points.size() < 4) return;
-
-	float tStart = 0.0f;
-	float tEnd = (float)(points.size() - 2);  // Evaluate の maxT と合わせる
-
-	// 間隔
-	float step = tEnd / (float)railModels.size();
-
-	int index = 0;
-	for (float t = tStart; t < tEnd; t += step) {
-		if (index >= (int)railModels.size()) break;
-
-		Vector3 pos = Evaluate(t);
-		railModels[index]->SetTranslate(pos);
-		railModels[index]->SetScale({ 0.1f, 0.1f, 0.1f });
-		railModels[index]->Update();
-		railModels[index]->Draw();
-		index++;
-	}
-} 
 
 Vector3 RailCamera::CatmullRom(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t) { 
 	float t2 = t * t; float t3 = t2 * t;

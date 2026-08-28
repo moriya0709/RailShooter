@@ -201,7 +201,8 @@ struct SpawnData {
     float spawnTime;   // スポナー起動からの経過時間（秒）
     Vector3 offset;    // スポナーの中心座標からのズレ（X, Y, Z）
     std::string type;  // 敵の種類（例："NORMAL", "FAST", "BOSS" など）
-
+	std::string movePattern; // 敵の移動パターン
+    std::vector<Vector3> controlPoints;   // パス移動用の制御点リスト
 };
 
 struct ObjectData {

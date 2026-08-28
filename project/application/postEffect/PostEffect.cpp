@@ -219,6 +219,36 @@ void PostEffect::Update(Camera* camera) {
 	float baseDist = 0.3f; // 太陽が中央のとき（密集）
 	float maxDist = 0.7f;  // 太陽が端のとき（拡散）
 	effectData->lensFlareGhostDispersal = baseDist + (maxDist - baseDist) * lerpFactor;
+
+	// ダメージエフェクト
+	DamageEffectUpdate();
+
+}
+
+void PostEffect::DamageEffectUpdate() {
+	// ダメージエフェクトの統合制御
+	if (isDamegeFade) {
+		if (damageEffectRatio_ > 0.0f) {
+
+			// 毎フレーム進行度を減らす（0.05fなら約20フレームで消失）
+			damageEffectRatio_ -= 0.05f;
+
+			if (damageEffectRatio_ <= 0.0f) {
+				damageEffectRatio_ = 0.0f;
+				// 完全に終わったら両方のフラグをOFFにして軽くする
+				SetFullScreenCA(false);
+				SetVignette(false);
+			} else {
+				// エフェクト再生中ならフラグをON
+				SetFullScreenCA(true);
+				SetVignette(true);
+
+				// 進行度
+				SetFullScreenCAIntensity(damageEffectRatio_ * 0.1f);
+				SetVignetteIntensity(damageEffectRatio_ * 0.8f);
+			}
+		}
+	}
 }
 
 void PostEffect::Draw() {

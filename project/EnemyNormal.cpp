@@ -165,8 +165,13 @@ Vector3 EnemyNormal::GetSplinePosition(const std::vector<Vector3>& points, float
 	return CatmullRomSpline(points[p0_idx], points[p1_idx], points[p2_idx], points[p3_idx], t);
 }
 
-void EnemyNormal::OnCollision() {
+void EnemyNormal::OnCollisionBullet(int damage) {
 	hitTimer_ = 0.2f; // 衝突時に0.2秒間（60FPSで約12フレーム）タイマーをセット
+
+	hp -= damage;
+	if (hp <= 0) {
+		isDead_ = true;
+	}
 }
 
 OBB EnemyNormal::GetOBB() {

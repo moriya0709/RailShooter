@@ -185,6 +185,15 @@ private:
 	std::unique_ptr<Line> debugLineNormal;
 	std::unique_ptr<Line> debugLineHit;
 
+	std::shared_ptr<TrailEffect> trailEffect;
+	Transform trailTransform = {
+	{0.0f, 0.0f, 0.0f }, // translate
+	{ 0.0f, 0.0f, 0.0f }, // rotate
+	{ 1.0f, 1.0f, 1.0f }  // scale
+	};
+	float width = 0.1f; // 弾の幅
+	float trailMaxLifeTime = 1.0f; // トレイルの寿命
+
 	// レベルデータからオブジェクト生成、配置
 	void CreateLevel();
 	// Gizmo

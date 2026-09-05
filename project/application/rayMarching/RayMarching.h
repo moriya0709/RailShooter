@@ -12,6 +12,7 @@
 class DirectXCommon;
 class SrvManager;
 class Camera;
+class WindowAPI;
 
 struct CloudParam {
 	Matrix4x4 invViewProj;
@@ -51,14 +52,14 @@ struct CloudParam {
 class RayMarching {
 public:
 	// 初期化
-	void Initialize(SrvManager* srvManager);
+	void Initialize(SrvManager* srvManager, WindowAPI* windowAPI_);
 	// 描画
-	void Draw(uint32_t depthSrvIndex);
+	void Draw();
 
 	// カメラ更新
 	void Update(Camera* camera);
 	// コンピュートシェーダーを実行
-	void ComputeCloud();
+	void ComputeCloud(uint32_t depthSrvIndex);
 
 	// パラメーター
 	void SetInvViewProj(Matrix4x4 invViewProj) { cloudParam->invViewProj = invViewProj; }
@@ -134,11 +135,20 @@ private:
 	// 初回実行判定用フラグ
 	bool isFirstFrame = true;
 
+	// CSが直接書き込む出力テクスチャ
+	Microsoft::WRL::ComPtr<ID3D12Resource> cloudColorTexture;
+	Microsoft::WRL::ComPtr<ID3D12Resource> cloudVelocityTexture;
+
+	uint32_t noiseSrvIndex_;   // t0: 3Dノイズ(Compute用)
+	uint32_t outputUavIndex_;  // u0,u1: Color/Velocity (2個連続確保)
+	uint32_t outputSrvIndex_;  // t0,t1: Color/Velocity をPSで読む用 (2個連続確保)
 
 	// DirectXCommonポインタ
 	DirectXCommon* dxCommon_ = nullptr;
 	// SRVマネージャーポインタ
 	SrvManager* srvManager_ = nullptr;
+	// WindowAPIポインタ
+	WindowAPI* windowAPI_ = nullptr;
 
 	// ルートシグネイチャの作成
 	void CreateRootSignature();
@@ -151,6 +161,8 @@ private:
 
 	// 3Dテクスチャリソースの生成
 	void Create3DTextureResource();
+	// 2Dテクスチャリソースの生成
+	void CreateOutputTextureResources();
 	// UAVの生成
 	void CreateUAVDescriptor();
 	// SRVの生成

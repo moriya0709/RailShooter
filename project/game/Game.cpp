@@ -84,9 +84,7 @@ void Game::Initialize() {
 	PostEffect::GetInstance()->Initialize(dxCommon, windowAPI.get(),srvManager.get());
 	
 	// レイマーチング
-	RayMarching::GetInstance()->Initialize(srvManager.get());
-	// 3Dテクスチャに雲を書き込む
-	RayMarching::GetInstance()->ComputeCloud();
+	RayMarching::GetInstance()->Initialize(srvManager.get(), windowAPI.get());
 
 	// トレイルエフェクト
 	TrailEffectManager::GetInstance()->Initialize();
@@ -132,19 +130,17 @@ void Game::Draw() {
 	// シーンマネージャー描画(3D)
 	SceneManager::GetInstance()->Draw3D();
 
-	// ==================================================
-	// ★追加1: レイマーチングの前に深度バッファを「読み込み用」に変更
-	// ==================================================
-	PostEffect::GetInstance()->TransitionDepthBuffer(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE); //[cite: 20, 21]
+	PostEffect::GetInstance()->TransitionDepthBuffer(
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
-	// ② PostEffect から深度SRVインデックスを取得してレイマーチングを描画
+	// ★ここで毎フレーム雲を計算する
 	uint32_t depthSrvIndex = PostEffect::GetInstance()->GetDepthSrvIndex();
-	RayMarching::GetInstance()->Draw(depthSrvIndex);
-
-	// ==================================================
-	// ★追加2: パーティクル等のために深度バッファを「書き込み/テスト用」に戻す
-	// ==================================================
-	PostEffect::GetInstance()->TransitionDepthBuffer(D3D12_RESOURCE_STATE_DEPTH_WRITE); //[cite: 20, 21]
+	RayMarching::GetInstance()->ComputeCloud(depthSrvIndex);
+	// 計算結果を画面に合成
+	RayMarching::GetInstance()->Draw();
+	// 深度バッファを「書き込み/テスト用」に戻す
+	PostEffect::GetInstance()->TransitionDepthBuffer(D3D12_RESOURCE_STATE_DEPTH_WRITE);
 
 	// パーティクル描画
 	ParticleManager::GetInstance()->Draw();

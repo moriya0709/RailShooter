@@ -3,15 +3,22 @@
 #include "Calc.h"
 #include "CollisionManager.h"
 
+class Enemy;
+
 class PlayerBullet {
 public:
 	virtual ~PlayerBullet() = default;
 
-	virtual void Initialize(Vector3 position) = 0;
+	virtual void Initialize(Vector3 position, Enemy* target) = 0;
 	virtual void Update() = 0;
 
 	// 消滅しているか
 	bool IsDead() const { return isDead_; }
+
+	// ダメージ量を取得
+	virtual int GetDamage() const = 0;
+	// 削除される敵のポインタを受け取り、もし自分のターゲットなら破棄する
+	virtual void RemoveTarget(const Enemy* enemy) = 0;
 
 	virtual Vector3 GetTranslate() const = 0;
 	virtual void OnCollision() { isDead_ = true; }

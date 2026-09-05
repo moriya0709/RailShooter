@@ -24,7 +24,7 @@ public:
 	void SetTransform(const Transform& transform) override { this->transform = transform; }
 
 	Vector3 GetTranslate() const override { return transform.translate; }
-	void OnCollision() override;
+	void OnCollisionBullet(int damage) override;
 	bool IsDead() const override { return isDead_; }
 	bool IsHit() const override { return isHit; }
 
@@ -78,6 +78,9 @@ public:
 	// 当たったか
 	bool isHit = false;
 	float hitTimer_ = 0.0f;
+
+	// HP
+	int hp = 20;
 
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object = nullptr;

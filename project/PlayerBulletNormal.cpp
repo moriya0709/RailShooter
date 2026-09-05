@@ -1,10 +1,12 @@
 ﻿#include "PlayerBulletNormal.h"
 #include "Camera.h"
 #include "TrailEffectManager.h"
+#include "Enemy.h"
 
-void PlayerBulletNormal::Initialize(const Vector3 position) {
-	// プレイヤーの座標を代入
+void PlayerBulletNormal::Initialize(const Vector3 position, Enemy* target) {
+	// 代入
 	transform.translate = position;
+	target_ = target;
 
 	// カメラの情報を取得して弾の進行方向を設定する
 	Camera* camera = Camera::GetInstance(); // シングルトンインスタンスの取得[cite: 4]
@@ -25,7 +27,7 @@ void PlayerBulletNormal::Initialize(const Vector3 position) {
 	// トレイルエフェクトの初期化
 	trailEffect = std::make_shared<TrailEffect>();
 	trailEffect->Initialize("Resource/trail/trail.png", transform, width, trailMaxLifeTime);
-	trailEffect->LoadCsv("Resource/trail/shot.csv");
+	trailEffect->LoadCsv("Resource/trail/playerShot.csv");
 	TrailEffectManager::GetInstance()->AddTrail(trailEffect);
 
 }
@@ -35,6 +37,36 @@ void PlayerBulletNormal::Update() {
 	deathTimer += 1.0f / 60.0f;
 	if (deathTimer >= kLifeTime) {
 		isDead_ = true; // 寿命が来たら消滅フラグを立てる
+	}
+
+	// ロックオン対象に誘導処理
+	if (target_ && !target_->IsDead()) {
+		Vector3 dir = target_->GetTranslate() - transform.translate;
+		float length = std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+
+		if (length > 0.001f) {
+			// 1. ターゲットへの方向ベクトルを正規化
+			dir.x /= length; dir.y /= length; dir.z /= length;
+
+			// 2. 誘導の強さ（0.01f ～ 0.1f 程度がおすすめ。高すぎると往復します）
+			float homingPower = 0.05f;
+
+			// 3. 現在の速度にターゲット方向の力を加算
+			velocity.x += dir.x * homingPower;
+			velocity.y += dir.y * homingPower;
+			velocity.z += dir.z * homingPower;
+
+			// 4. 加算後の速度ベクトルを再度正規化し、元の speed を掛けて速さを一定に保つ
+			float vLen = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+			if (vLen > 0.001f) {
+				velocity.x = (velocity.x / vLen) * speed;
+				velocity.y = (velocity.y / vLen) * speed;
+				velocity.z = (velocity.z / vLen) * speed;
+			}
+		}
+	} else {
+		// 敵が死んだ場合はターゲットを外して直進させる
+		target_ = nullptr;
 	}
 
 	// 計算しておいた速度ベクトルを現在位置に加算して弾を移動させる
@@ -66,4 +98,10 @@ OBB PlayerBulletNormal::GetOBB() {
 	obb.axes[2] = { rotMat.m[2][0], rotMat.m[2][1], rotMat.m[2][2] }; // Z軸
 
 	return obb;
+}
+
+void PlayerBulletNormal::RemoveTarget(const Enemy* enemy) {
+	if (target_ == enemy) {
+		target_ = nullptr;
+	}
 }

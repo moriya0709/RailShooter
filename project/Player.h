@@ -15,11 +15,17 @@ struct PlayerInput {
     float axisY = 0.0f; // 上下移動入力 (W/S, スティック上下)
 };
 
+class Enemy;
+
 class Player {
 public:
 	void Initialize();
     void Update(float deltaTime);
     void Draw();
+
+    void UpdateLockOn(const std::vector<std::unique_ptr<Enemy>>& enemies);
+    // 削除される敵のポインタを受け取り、もし自分のターゲットなら破棄する
+    void RemoveBulletTarget(const Enemy* enemy);
 
     void SetRotate(const Vector3& rotate) { baseRot = rotate; }
     void SetTranslate(const Vector3& translate) { basePos = translate; }
@@ -82,17 +88,24 @@ private:
 
     // 弾
     std::list<std::unique_ptr<PlayerBullet>> bullets_;
-	float bulletCoolTime = 0.5f; // 弾の発射間隔
+	float bulletCoolTime = 0.1f; // 弾の発射間隔
 
     // レティクル
-	std::unique_ptr <Sprite> reticle = nullptr;
-	Vector2 reticlePosition = { 960.0f, 540.0f };
-    Vector2 reticleSize = { 800.0f, 800.0f };
-	float reticleRotation = 0.0f;
+    std::unique_ptr <Sprite> reticle[3]{};
+	Vector2 reticlePosition[3] = { {960.0f, 540.0f}, {960.0f, 540.0f}, {960.0f, 540.0f} };
+    Vector2 reticleSize[3] = { {800.0f, 800.0f}, {800.0f, 800.0f}, {700.0f, 700.0f} };
+	float reticleRotation[3] = { 0.0f, 0.0f, 0.0f };
 
     // 当たったか
     bool isHit = false;
     float hitTimer_ = 0.0f;
+
+    // ロックオン
+    Enemy* lockedTarget = nullptr;
+	float lockOnRange = 100.0f; // ロックオン可能距離
+	// ロックオン可能範囲の定義（画面中央からのピクセル距離）
+    float lockOnAreaX = 300.0f;
+    float lockOnAreaY = 300.0f;
 
     // 移動
     void Move();

@@ -60,6 +60,10 @@ void GamePlayScene::Initialize() {
 	debugLineHit->Initialize(camera.get());
 	debugLineHit->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f }); // 赤色を固定セット
 
+	// トレイルエフェクト
+	trailEffect = std::make_shared<TrailEffect>();
+	trailEffect->Initialize("Resource/trail/trail.png", trailTransform, width, trailMaxLifeTime);
+
 }
 
 void GamePlayScene::Update() {
@@ -69,6 +73,8 @@ void GamePlayScene::Update() {
 	CameraManager::GetInstance()->Update();
 	// 時間更新
 	deltaTime = gameTimer->Tick();
+
+	trailEffect->Editor();
 
 	player->Update(deltaTime);
 
@@ -109,6 +115,8 @@ void GamePlayScene::Update() {
 	// 3. プレイヤーの入力による傾きなどのローカル更新
 	player->SetTranslate(basePos);
 	player->SetRotate(baseRot);
+
+	player->UpdateLockOn(enemies);
 	player->Update(deltaTime);
 	
 
@@ -176,11 +184,16 @@ void GamePlayScene::Update() {
 	CollisionUpdate();
 
 	// --- 撃破された敵の削除 ---
-	enemies.erase(
-		std::remove_if(enemies.begin(), enemies.end(),
-			[](const std::unique_ptr<Enemy>& e) { return e->IsDead(); }),
-		enemies.end()
-	);
+	for (auto it = enemies.begin(); it != enemies.end();) {
+		if ((*it)->IsDead()) {
+			// 削除(erase)する直前に、プレイヤーと弾へ通知してポインタを外させる
+			player->RemoveBulletTarget(it->get());
+
+			it = enemies.erase(it); // 実際の削除処理
+		} else {
+			++it;
+		}
+	}
 
 	// *当たり判定の線* //
 	// 毎フレーム描画前に前フレームの線データをクリア
@@ -1277,7 +1290,7 @@ void GamePlayScene::CollisionUpdate() {
 	for (auto& enemy : enemies) {
 		for (auto& bullet : bullets) {
 			if (CheckOBBToOBB(enemy->GetOBB(), bullet->GetOBB())) {
-				enemy->OnCollision();
+				enemy->OnCollisionBullet(bullet->GetDamage());
 				bullet->OnCollision();
 			}
 		}
@@ -1291,14 +1304,6 @@ void GamePlayScene::CollisionUpdate() {
 				player->OnCollision();
 				bullet->OnCollision();
 			}
-		}
-	}
-
-	// プレイヤーと敵
-	for (auto& enemy : enemies) {
-		if (CheckOBBToOBB(player->GetOBB(), enemy->GetOBB())) {
-			player->OnCollision();
-			enemy->OnCollision();
 		}
 	}
 }

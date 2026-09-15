@@ -93,6 +93,7 @@
     <ClCompile Include="engine\3d\Skybox.cpp" />
     <ClCompile Include="ModelRendererComponent.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="PlayerBulletMissile.cpp" />
     <ClCompile Include="PlayerBulletNormal.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -346,6 +347,7 @@
     <ClInclude Include="ModelRendererComponent.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerBullet.h" />
+    <ClInclude Include="PlayerBulletMissile.h" />
     <ClInclude Include="PlayerBulletNormal.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TransformComponent.h" />

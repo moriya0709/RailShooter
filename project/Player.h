@@ -107,6 +107,16 @@ private:
     float lockOnAreaX = 300.0f;
     float lockOnAreaY = 300.0f;
 
+    // 6連射ミサイル制御用パラメータ
+    Enemy* previousLockedTarget = nullptr; // 前フレームのターゲット保持用
+    float lockOnTimer = 0.0f;              // ロックオン継続時間
+    float requiredLockOnTime = 2.0f;       // ミサイル発射に必要なロックオン時間（秒）
+    int remainingMissiles = 0;       // 残りの発射可能数
+    float missileBurstTimer = 0.0f;  // 次のミサイル発射までのタイマー
+    float missileInterval = 0.5f;   // ミサイル同士の発射間隔（秒）
+    bool isNextRight = true;         // 次に撃つ位置（true: 右肩, false: 左肩）
+    Enemy* burstTarget = nullptr;    // 連射対象の敵ポインタ
+
     // 移動
     void Move();
     // 通常時更新

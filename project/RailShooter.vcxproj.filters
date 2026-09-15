@@ -256,6 +256,7 @@
     <ClCompile Include="EnemySpawner.cpp" />
     <ClCompile Include="EnemyNormalBullet.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
+    <ClCompile Include="PlayerBulletMissile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -443,6 +444,7 @@
     <ClInclude Include="EnemyBullet.h" />
     <ClInclude Include="EnemyNormalBullet.h" />
     <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="PlayerBulletMissile.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

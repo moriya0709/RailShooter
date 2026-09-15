@@ -1,6 +1,7 @@
 ﻿#include "Player.h"
 #include "Input.h"
 #include "PlayerBulletNormal.h"
+#include "PlayerBulletMissile.h"
 #include "PostEffect.h"
 #include "Enemy.h"
 #include "Camera.h"
@@ -42,15 +43,42 @@ void Player::Draw() {
 	}
 }
 
-void Player::UpdateLockOn(const std::vector<std::unique_ptr<Enemy>>& enemies){
-	lockedTarget = nullptr;
-	float closestDist = lockOnRange;
-
+void Player::UpdateLockOn(const std::vector<std::unique_ptr<Enemy>>& enemies) {
 	// カメラ情報の取得
 	Camera* camera = CameraManager::GetInstance()->GetActiveCamera();
 	Matrix4x4 viewMat = camera->GetViewMatrix();
 	Matrix4x4 projMat = camera->GetProjectionMatrix();
-	Matrix4x4 viewProjMat = Multiply(viewMat, projMat); // 自身の合成関数を使用
+	Matrix4x4 viewProjMat = Multiply(viewMat, projMat);
+
+	// ▼▼▼ 追加: ミサイル発射可能状態（ロックオン完了状態）の判定 ▼▼▼
+	bool isLockOnCompleted = (lockOnTimer >= requiredLockOnTime) && (lockedTarget != nullptr);
+
+	if (isLockOnCompleted) {
+		// ロックオン完了状態の場合：現在のターゲットが生存＆カメラ前方にいるかをチェック
+		bool keepTarget = false;
+		if (!lockedTarget->IsDead()) {
+			Vector3 targetPos = lockedTarget->GetTranslate();
+			float w = targetPos.x * viewProjMat.m[0][3] + targetPos.y * viewProjMat.m[1][3] + targetPos.z * viewProjMat.m[2][3] + viewProjMat.m[3][3];
+
+			// カメラの前方にいるなら範囲外に出てもロックオンを継続する
+			if (w > 0.0f) {
+				keepTarget = true;
+			}
+		}
+
+		// ターゲットが維持できる状態なら新規検索を行わずにリターン
+		if (keepTarget) {
+			return;
+		}
+
+		// 死亡した・背後に回ったなどで維持できない場合はターゲット解除
+		lockedTarget = nullptr;
+	}
+	
+
+	// --- 既存のターゲット検索ロジック（通常時） ---
+	lockedTarget = nullptr;
+	float closestDist = lockOnRange;
 
 	// 画面中央の座標と、ロックオンを許可する範囲（ピクセル）
 	float centerX = 1920.0f * 0.5f;
@@ -63,7 +91,7 @@ void Player::UpdateLockOn(const std::vector<std::unique_ptr<Enemy>>& enemies){
 
 		// 1. W成分を計算してカメラの前方にいるか判定
 		float w = targetPos.x * viewProjMat.m[0][3] + targetPos.y * viewProjMat.m[1][3] + targetPos.z * viewProjMat.m[2][3] + viewProjMat.m[3][3];
-		
+
 		if (w > 0.0f) {
 			// 2. NDCからスクリーン座標へ変換
 			float ndcX = (targetPos.x * viewProjMat.m[0][0] + targetPos.y * viewProjMat.m[1][0] + targetPos.z * viewProjMat.m[2][0] + viewProjMat.m[3][0]) / w;
@@ -73,9 +101,9 @@ void Player::UpdateLockOn(const std::vector<std::unique_ptr<Enemy>>& enemies){
 			float screenY = (1.0f - ndcY) * 0.5f * 1080.0f;
 
 			// 3. 画面中央の指定範囲内にいるかチェック (std::absを使用するために <cmath> が必要です)
-			if (std::abs(screenX - centerX) <= lockOnAreaX && 
-			    std::abs(screenY - centerY) <= lockOnAreaY) {
-				
+			if (std::abs(screenX - centerX) <= lockOnAreaX &&
+				std::abs(screenY - centerY) <= lockOnAreaY) {
+
 				// 4. 範囲内の敵の中で、3D距離が最も近いものを選択
 				Vector3 diff = targetPos - translate_;
 				float dist = std::sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
@@ -93,6 +121,10 @@ void Player::RemoveBulletTarget(const Enemy* enemy) {
 	// プレイヤー自身のロックオン対象が削除対象の敵なら解除
 	if (lockedTarget == enemy) {
 		lockedTarget = nullptr;
+	}
+	// ★ 連射用ターゲットが削除対象なら解除
+	if (burstTarget == enemy) {
+		burstTarget = nullptr;
 	}
 
 	// 発射済みのすべての弾にも通知する
@@ -195,6 +227,19 @@ void Player::Move() {
 
 
 		bulletCoolTime = 0.2f; // クールタイムをリセット
+	} else if (input->IsMouseButtonPressed(1)) {
+		// ロックオン完了時に6連射の予約をセット
+		if (lockOnTimer >= requiredLockOnTime && lockedTarget != nullptr) {
+			remainingMissiles = 6;      // 計6発発射
+			missileBurstTimer = 0.0f;   // 1発目を即時発射
+			isNextRight = true;          // 右側からスタート
+			burstTarget = lockedTarget; // 発射中のターゲットを記録
+
+			// ロックオンタイマーをリセット
+			lockOnTimer = 0.0f;
+		}
+
+		bulletCoolTime = 0.2f; // クールタイムをリセット
 	}
 }
 
@@ -207,7 +252,41 @@ void Player::UpdateNormal(float deltaTime) {
 		isHit = false;
 	}
 
+	// ▼▼▼ 追加: ロックオン時間の計測 ▼▼▼
+	if (lockedTarget != nullptr) {
+		if (lockedTarget == previousLockedTarget) {
+			lockOnTimer += deltaTime; // 同じ敵をロックオンし続けているなら増加
+		} else {
+			lockOnTimer = 0.0f;       // 違う敵に切り替わったらリセット
+		}
+	} else {
+		lockOnTimer = 0.0f;           // ターゲットがいなければリセット
+	}
+	previousLockedTarget = lockedTarget;
+
 	Move();
+
+	// ▼▼▼ 左右交互の6連射ミサイル発射処理 ▼▼▼
+	if (remainingMissiles > 0) {
+		missileBurstTimer -= deltaTime;
+		if (missileBurstTimer <= 0.0f) {
+
+			// 自機中央座標(translate_)で初期化
+			auto missile = std::make_unique<PlayerBulletMissile>();
+			missile->Initialize(translate_, burstTarget);
+
+			// 左右フラグを渡して初期角度をセット
+			missile->SetInitAngle(isNextRight);
+			missile->SetSpiralDirection(isNextRight);
+
+			bullets_.push_back(std::move(missile));
+
+			// 次の弾の設定
+			isNextRight = !isNextRight;
+			remainingMissiles--;
+			missileBurstTimer = missileInterval;
+		}
+	}
 
 	// ▼▼▼ 追加: 全ての弾を更新 ▼▼▼
 	for (auto& bullet : bullets_) {
@@ -249,23 +328,18 @@ void Player::UpdateNormal(float deltaTime) {
 		playerInput.axisX * moveSpeed,
 		playerInput.axisY * moveSpeed
 	};
-
-	// 現在の速度を目標速度に向かって滑らかに変化させる（ここで慣性が生まれる）
 	velocity.x = Lerp(velocity.x, targetVelocity.x, moveT);
 	velocity.y = Lerp(velocity.y, targetVelocity.y, moveT);
 
-	// 速度をもとに画面上の相対位置を更新
 	playerPositionOffset.x += velocity.x * deltaTime;
 	playerPositionOffset.y += velocity.y * deltaTime;
-
-	// 移動範囲が画面外に出ないようにクランプ制限をかける
 	playerPositionOffset.x = std::clamp(playerPositionOffset.x, -moveLimitX, moveLimitX);
 	playerPositionOffset.y = std::clamp(playerPositionOffset.y, -moveLimitY, moveLimitY);
 
-	// ⭕ 修正: ローカルな移動量を、カメラの回転を使ってワールド空間の移動量に変換する
 	Matrix4x4 matBaseRot = MakeRotateMatrix(baseRot);
 	Vector3 worldOffset = VectorTransform(playerPositionOffset, matBaseRot);
 
+	// ★ 自機の最新座標を確定
 	translate_.x = basePos.x + worldOffset.x;
 	translate_.y = basePos.y + worldOffset.y;
 	translate_.z = basePos.z + worldOffset.z;
@@ -322,6 +396,13 @@ void Player::UpdateNormal(float deltaTime) {
 
 	// レティクルの更新
 	for (int i = 0; i < 3; ++i) {
+		// ミサイルを撃てる状態なら赤色に変更
+		if (lockOnTimer >= requiredLockOnTime && lockedTarget != nullptr) {
+			reticle[i]->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f });
+		} else {
+			reticle[i]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+		}
+
 		reticle[i]->SetPosition(reticlePosition[i]);
 		reticle[i]->SetRotation(reticleRotation[i]);
 		reticle[i]->SetSize(reticleSize[i]);

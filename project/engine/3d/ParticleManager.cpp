@@ -80,42 +80,13 @@ void ParticleManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager
 	accelerationField.area.max = { 1.0f,1.0f,1.0f };
 
 	// *エミッタ* //
-	bufferSize = (sizeof(Emitter) + 255) & ~255;
+	bufferSize = kEmitDataStride * kMaxEmitDispatchesPerFrame;
 	emitDataResource_ = dxCommon_->CreateBufferResource(bufferSize);
 
-	// 常にマッピングしておく
+	// 1フレーム中の各 Dispatch が独自の定数データを参照できるよう、
+	// 256-byte アライン済みのスロット列としてマップしておく。
 	hr = emitDataResource_->Map(0, nullptr, reinterpret_cast<void**>(&emitDataMap_));
 	assert(SUCCEEDED(hr));
-
-	// 初期値を設定
-	emitDataMap_->color;
-	emitDataMap_->uvScale;	// UVスケール
-	emitDataMap_->uvOffset;	// UVオフセット
-	emitDataMap_->translate;
-	emitDataMap_->scale;
-	emitDataMap_->rotate;
-	emitDataMap_->isRandPosition;	// ランダムな座標にするかどうか
-	emitDataMap_->isRandScale;	// ランダムなスケールにするかどうか
-	emitDataMap_->isRandRotate;	// ランダムな回転にするかどうか
-	emitDataMap_->isRandVelocity;	// ランダムに動かすかどうか
-	emitDataMap_->isScaleChange;	// スケール変更するかどうか
-	emitDataMap_->isColorChange;	// 色変更するかどうか
-	emitDataMap_->finalColor;
-	emitDataMap_->lifeTime;
-	emitDataMap_->currentTime;
-	emitDataMap_->colorChangeSpeed;
-	emitDataMap_->scaleAdd;			// スケール変更量
-	emitDataMap_->emissive;			// エミッシブ
-	emitDataMap_->uvScrollSpeed;	// UVスクロール速度
-	emitDataMap_->useNoise;		// 0:通常 1:ノイズテクスチャ 2:両方
-	emitDataMap_->burnColor;		// ふちの色
-	emitDataMap_->count; //!< 発生数
-	emitDataMap_->frequency; //!< 発生頻度
-	emitDataMap_->frequencyTime; //!< 頻度用時刻
-	emitDataMap_->randPosition;
-	emitDataMap_->randScale;
-	emitDataMap_->randRotate;
-	emitDataMap_->randVelocity;
 
 	// ルートシグネイチャの作成
 	CreateRootSignature();			// 通常
@@ -262,6 +233,10 @@ void ParticleManager::Draw() {
 		// ★ 修正2: 描画時の1インスタンスあたりの頂点数を、グループのモデルデータから取得する
 		dxCommon_->GetCommandList()->DrawInstanced(static_cast<UINT>(group.modelData.vertices.size()), kMaxParticleInstance, 0, 0);
 	}
+
+	// このフレームの Emit はすべてコマンドリストに記録済み。次のフレームは
+	// DirectXCommon::PostDraw() の GPU 完了待機後に始まるため、スロットを再利用できる。
+	emitDataAllocationCount_ = 0;
 }
 
 // .mtlファイルの読み込み
@@ -468,23 +443,45 @@ void ParticleManager::Emit(
 	// ブレンドモードを設定
 	group.blendMode = blendMode;
 
-	// パラメータ
-	*emitDataMap_ = *emitter;
-
-	// *Dispatch* //
-
-	if (emitDataMap_->count == 0) {
+	if (emitter->count == 0) {
 		return;
 	}
+	assert(emitDataAllocationCount_ < kMaxEmitDispatchesPerFrame);
+
+	// 同一フレームの各 Dispatch に固有の CBV スロットを割り当てる。
+	// 共有すると、左右ミサイルの後の Emit が先の座標を上書きしてしまう。
+	const uint32_t emitDataIndex = emitDataAllocationCount_++;
+	Emitter* emitData = reinterpret_cast<Emitter*>(emitDataMap_ + kEmitDataStride * emitDataIndex);
+	*emitData = *emitter;
 
 	auto commandList = dxCommon_->GetCommandList();
+
+	// Emit() はシーン更新中に呼ばれ、Game::Draw() の srvManager_->PreDraw()
+	// より前に Dispatch される。そのため、このパス自身で shader-visible
+	// CBV/SRV/UAV ヒープを設定してから descriptor table を渡す。
+	ID3D12DescriptorHeap* descriptorHeaps[] = { dxCommon_->GetSrvHeap() };
+	commandList->SetDescriptorHeaps(1, descriptorHeaps);
+
+	// 前フレームの更新／描画後は GENERIC_READ、初回だけは COMMON なので、
+	// Emit 用に UAV へ遷移する。
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Transition.pResource = group.instancingResource.Get();
+	barrier.Transition.StateBefore = group.isFirstUpdate
+		? D3D12_RESOURCE_STATE_COMMON
+		: D3D12_RESOURCE_STATE_GENERIC_READ;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	commandList->ResourceBarrier(1, &barrier);
+	group.isFirstUpdate = false;
 
 	// パイプラインを射出用に切り替え
 	commandList->SetComputeRootSignature(computeRootSignature.Get());
 	commandList->SetPipelineState(emitComputePipelineState.Get());
 
 	// 定数バッファ(b0)とUAV群(u0, u1)をセット
-	commandList->SetComputeRootConstantBufferView(0, emitDataResource_->GetGPUVirtualAddress());
+	commandList->SetComputeRootConstantBufferView(
+		0,
+		emitDataResource_->GetGPUVirtualAddress() + kEmitDataStride * emitDataIndex);
 	// パーティクル配列のUAV
 	commandList->SetComputeRootDescriptorTable(1, srvManager_->GetGPUDescriptorHandle(group.uavIndex));
 	// カウンター等のUAV
@@ -493,8 +490,14 @@ void ParticleManager::Emit(
 	commandList->SetComputeRootDescriptorTable(3, srvManager_->GetGPUDescriptorHandle(group.freeListUavIndex));
 
 	// GPUに射出命令を出す（64スレッド単位で分割）
-	uint32_t threadGroupsX = (emitDataMap_->count + 63) / 64;
+	uint32_t threadGroupsX = (emitData->count + 63) / 64;
 	commandList->Dispatch(threadGroupsX, 1, 1);
+
+	// 続く ParticleManager::Update()／Draw() が GENERIC_READ から遷移できる
+	// ように戻しておく。
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
+	commandList->ResourceBarrier(1, &barrier);
 }
 
 void ParticleManager::CreateParticleGroup(const std::string& groupName, const std::string& directoryPath, const std::string& filename, const std::string textureFilePath, int priority) {

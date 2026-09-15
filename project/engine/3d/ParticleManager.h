@@ -271,7 +271,10 @@ private:
 	Material* materialData = nullptr;
 	ParticleCommonData* commonDataMap_ = nullptr;
 	ParticleCameraData* cameraDataMap_ = nullptr;
-	Emitter* emitDataMap_ = nullptr;
+	uint8_t* emitDataMap_ = nullptr;
+	uint32_t emitDataAllocationCount_ = 0;
+	static constexpr uint32_t kEmitDataStride = (sizeof(Emitter) + 255u) & ~255u;
+	static constexpr uint32_t kMaxEmitDispatchesPerFrame = 256;
 
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;

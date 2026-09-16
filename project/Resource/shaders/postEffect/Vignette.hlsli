@@ -1,4 +1,4 @@
-float3 Vignette(float4 color, float vignetteIntensity, float3 vignetteColor,float2 uv)
+﻿float3 Vignette(float4 color, float vignetteIntensity, float3 vignetteColor,float2 uv)
 {
     // Distance from the center
     float dist = distance(uv, float2(0.5f, 0.5f));

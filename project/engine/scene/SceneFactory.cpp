@@ -1,7 +1,7 @@
 ﻿#include "SceneFactory.h"
 
 std::unique_ptr <BaseScene> SceneFactory::CreateScene(const std::string& sceneName) {
-   // 次のシーンを生成
+	// 生成責務をここに集約し、SceneManager が具象クラスを知る必要をなくす。
 	std::unique_ptr <BaseScene> newScene = nullptr;
 
 	if (sceneName == "TITLE") {

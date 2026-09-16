@@ -136,6 +136,8 @@ public:
 	void PreDraw();
 	// 描画後処理
 	void PostDraw();
+	// 最終合成先を指定する。Editor の Game ウィンドウにだけゲーム映像を表示するために使用する。
+	void SetOutputViewport(float left, float top, float width, float height);
 
 	// 反転
 	void SetInversion(bool isInversion) { effectData->isInversion = isInversion; }
@@ -233,6 +235,9 @@ private:
 	D3D12_VIEWPORT viewport_;
 	// シザー矩形
 	D3D12_RECT scissorRect_;
+	// 最終合成（バックバッファ）専用の表示領域。シーン描画用の viewport_ とは分離する。
+	D3D12_VIEWPORT outputViewport_;
+	D3D12_RECT outputScissorRect_;
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 

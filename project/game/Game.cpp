@@ -29,7 +29,6 @@ void Game::Initialize() {
 	imGuiManager = std::make_unique<ImGuiManager>();
 	imGuiManager->Initialize(windowAPI.get(), dxCommon, srvManager.get());
 
-
 	// テクスチャマネージャの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon, srvManager.get());
 	// 3Dモデルマネージャの初期化

@@ -209,7 +209,13 @@ struct ObjectData {
     std::string type;
     std::string name;
     std::string file_name;
+	std::string sprite_file_name;
     Transform transform;
+	Vector2 rectPosition = { 960.0f, 540.0f };
+	float rectRotation = 0.0f;
+	Vector2 rectScale = { 1.0f, 1.0f };
+	// Unity のように複数の機能を 1 つの GameObject に追加するための型一覧。
+	std::vector<std::string> components;
 
     // スポナー専用の敵配置データリスト
     std::vector<SpawnData> spawnDataList;

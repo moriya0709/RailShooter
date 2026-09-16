@@ -1,4 +1,4 @@
-#include "CommonFunctions.hlsli"
+﻿#include "CommonFunctions.hlsli"
 
 float4 LensFlareMain(
 int lensFlareGhostCount,

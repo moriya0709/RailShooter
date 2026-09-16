@@ -1,4 +1,4 @@
-float DetectEdge(Texture2D<float> depthTex, SamplerState samp, float2 uv, float2 texelSize, float threshold)
+﻿float DetectEdge(Texture2D<float> depthTex, SamplerState samp, float2 uv, float2 texelSize, float threshold)
 {
     float2 offsets[9] =
     {

@@ -2,10 +2,14 @@
 #include "Camera.h"
 #include "TrailEffectManager.h"
 #include "Enemy.h"
+#include "GameObject.h"
 
 void PlayerBulletNormal::Initialize(const Vector3 position, Enemy* target) {
 	// 代入
 	transform.translate = position;
+	if (GetGameObject()) {
+		GetGameObject()->GetTransform()->transform = transform;
+	}
 	target_ = target;
 
 	// カメラの情報を取得して弾の進行方向を設定する
@@ -73,6 +77,9 @@ void PlayerBulletNormal::Update() {
 	transform.translate.x += velocity.x;
 	transform.translate.y += velocity.y;
 	transform.translate.z += velocity.z;
+	if (GetGameObject()) {
+		GetGameObject()->GetTransform()->transform = transform;
+	}
 
 	trailEffect->AddPoint(transform.translate);
 	trailEffect->SetTranslate(transform.translate);

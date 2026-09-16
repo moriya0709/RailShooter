@@ -1,7 +1,7 @@
 ﻿#include "ModelCommon.h"
 
 void ModelCommon::Initialize(DirectXCommon* dxCommon) {
-	// 引数で受け取ってメンバ変数に記録する
+	// 各 Model で重い DirectX 初期化を繰り返さないよう、共有基盤への参照だけを保持する。
 	dxCommon_ = dxCommon;
 
 

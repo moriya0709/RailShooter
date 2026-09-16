@@ -373,7 +373,8 @@ void DirectXCommon::PreDraw() {
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 
 	// 指定した色で画面全体をクリアする
-	float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f };
+	// Editor の各パネル下にゲーム映像を残さないため、バックバッファはニュートラルな暗色で初期化する。
+	float clearColor[] = { 0.055f, 0.060f, 0.070f, 1.0f };
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 	// 指定した深度で画面全体をクリアする
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
@@ -493,8 +494,8 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring
 	shaderSourceBuffer.Encoding = DXC_CP_UTF8;
 
 	LPCWSTR arguments[] = {
-	filePath.c_str(), // コンパイル対象のhlslファイル名
-	L"-E", L"main", // エントリーポイントの指定。基本的にmain以外にはしない
+		filePath.c_str(), // コンパイル対象のhlslファイル名
+		L"-E", L"main", // エントリーポイントの指定。基本的にmain以外にはしない
 	L"-T",profile, // shaderProfileの設定
 	L"-Zi",L"-Qembed_debug", // デバッグ用の情報を埋め込む
 	L"-Od", //最適化を外しておく
@@ -677,4 +678,3 @@ void DirectXCommon::UpdateFixFPS() {
 	// 現在の時間を記録する
 	reference_ = std::chrono::steady_clock::now();
 }
-

@@ -1,9 +1,13 @@
 ﻿#include "EnemyNormalBullet.h"
 #include "TrailEffectManager.h"
+#include "GameObject.h"
 
 void EnemyNormalBullet::Initialize(Vector3 position, Vector3 playerPosition) {
 	// 弾の初期位置を設定
 	transform.translate = position;
+	if (GetGameObject()) {
+		GetGameObject()->GetTransform()->transform = transform;
+	}
 
     // --- プレイヤーに向かう速度を計算 ---
     // ターゲットへの方向ベクトルを求める (終点 - 始点)
@@ -32,6 +36,9 @@ void EnemyNormalBullet::Update() {
     transform.translate.x += velocity.x;
     transform.translate.y += velocity.y;
     transform.translate.z += velocity.z;
+	if (GetGameObject()) {
+		GetGameObject()->GetTransform()->transform = transform;
+	}
 
     // 寿命の管理
     deathTimer += 1.0f / 60.0f;

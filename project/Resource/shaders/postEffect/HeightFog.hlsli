@@ -1,4 +1,4 @@
-float3 HeightFog(
+﻿float3 HeightFog(
 float4 color,
 float3 heightFogColor,
 float heightFogTop,

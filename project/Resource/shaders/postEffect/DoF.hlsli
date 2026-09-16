@@ -1,3 +1,4 @@
+﻿// 深度値から焦点面との距離を求め、円盤状に分布したサンプルで被写界深度のボケを合成する。
 float4 DoF(
 float4 color,
 float zNear,
@@ -11,6 +12,7 @@ Texture2D<float> gDepthTexture,
 SamplerState gSampler)
 {
     float depth = gDepthTexture.Sample(gSampler, uv);
+    // 深度バッファ値をカメラ空間の距離へ戻し、焦点距離と比較できるようにする。
     float linearDepth = (zNear * zFar) / (zFar - depth * (zFar - zNear));
 
     float coc = saturate((abs(linearDepth - focusDistance) - focusRange) / bokehRadius);
@@ -23,6 +25,7 @@ SamplerState gSampler)
         float4 accumColor = 0;
         float totalWeight = 0;
         const int sampleCount = 32;
+        // 黄金角を使い、少ないサンプルでも偏りの少ない円盤分布を作る。
         const float GOLDEN_ANGLE = 2.39996323;
 
         for (int i = 0; i < sampleCount; i++)
@@ -43,6 +46,3 @@ SamplerState gSampler)
     }
     return color;
 }
-
-
-

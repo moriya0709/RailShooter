@@ -1,4 +1,4 @@
-// Pass:1
+﻿// Pass:1
 float4 BloomHighBrightness(float4 color, float bloomThreshold)
 {
     float brightness = dot(color.rgb, float3(0.2126f, 0.7152f, 0.0722f));

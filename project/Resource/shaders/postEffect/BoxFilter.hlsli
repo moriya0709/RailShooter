@@ -1,4 +1,4 @@
-float4 BoxFilter5x5(float2 uv, Texture2D<float4> gCurrentTexture, SamplerState gSampler)
+﻿float4 BoxFilter5x5(float2 uv, Texture2D<float4> gCurrentTexture, SamplerState gSampler)
 {
     uint width, height;
     gCurrentTexture.GetDimensions(width, height);

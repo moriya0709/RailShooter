@@ -65,6 +65,7 @@
     <ClCompile Include="engine\3d\Line.cpp" />
     <ClCompile Include="engine\3d\LineCommon.cpp" />
     <ClCompile Include="engine\base\Level.cpp" />
+    <ClCompile Include="ImGuiFunction.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
@@ -81,6 +82,7 @@
     <ClCompile Include="engine\scene\SceneManager.cpp" />
     <ClCompile Include="engine\audio\SoundManager.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp" />
+    <ClCompile Include="SpriteRendererComponent.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
     <ClCompile Include="engine\base\SrvManager.cpp" />
     <ClCompile Include="engine\math\StringUtility.cpp" />
@@ -291,6 +293,7 @@
     <ClInclude Include="EnemyNormal.h" />
     <ClInclude Include="EnemyNormalBullet.h" />
     <ClInclude Include="EnemySpawner.h" />
+    <ClInclude Include="EnemySpawnerComponent.h" />
     <ClInclude Include="engine\3d\AnimationManager.h" />
     <ClInclude Include="application\railCamera\RailCamera.h" />
     <ClInclude Include="application\rayMarching\RayMarching.h" />
@@ -330,6 +333,8 @@
     <ClInclude Include="engine\scene\SceneManager.h" />
     <ClInclude Include="engine\audio\SoundManager.h" />
     <ClInclude Include="engine\2d\Sprite.h" />
+    <ClInclude Include="ImGuiFunction.h" />
+    <ClInclude Include="SpriteRendererComponent.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\base\SrvManager.h" />
     <ClInclude Include="engine\math\StringUtility.h" />
@@ -345,6 +350,8 @@
     <ClInclude Include="engine\base\Level.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="ModelRendererComponent.h" />
+    <ClInclude Include="RailPointComponent.h" />
+    <ClInclude Include="RectTransformComponent.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="PlayerBulletMissile.h" />

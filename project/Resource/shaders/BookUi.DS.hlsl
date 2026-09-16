@@ -1,4 +1,4 @@
-// めくり制御用の定数バッファ
+﻿// めくり制御用の定数バッファ
 cbuffer PageCurlData : register(b0)
 {
     float curlX; // 曲がり始めるX座標

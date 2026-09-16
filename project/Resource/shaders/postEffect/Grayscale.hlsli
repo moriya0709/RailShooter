@@ -1,4 +1,4 @@
-float3 Grayscale(float4 color, int isTwoColor, float threshold, float contrast)
+﻿float3 Grayscale(float4 color, int isTwoColor, float threshold, float contrast)
 {
     float gray = dot(color.rgb, float3(0.2126, 0.7152, 0.0722));
     if (isTwoColor)

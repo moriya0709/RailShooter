@@ -1,5 +1,6 @@
-#include "Sprite.hlsli"
+﻿#include "Sprite.hlsli"
 
+// SpriteCommon が b0 で渡すワールド変換行列とクリップ空間変換行列。
 struct TransformationMatrix
 {
     float32_t4x4 WVP;
@@ -17,6 +18,7 @@ struct VertexShaderInput
 VertexShaderOutput main(VertexShaderInput input)
 {
     VertexShaderOutput output;
+    // 頂点をクリップ空間へ変換し、UV 座標はそのままピクセルシェーダーへ渡す。
     output.position = mul(input.position, gTransformationMatrix.WVP);
     output.texcoord = input.texcoord;
     output.normal = normalize(mul(input.normal, (float32_t3x3) gTransformationMatrix.World));

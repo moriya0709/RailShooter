@@ -1,11 +1,12 @@
 ﻿#pragma once
 #include "Calc.h"
 #include "CollisionManager.h"
+#include "Component.h"
 
-class EnemyBullet {
+class EnemyBullet : public Component {
 public:
 	virtual void Initialize(Vector3 position, Vector3 playerPosition) = 0;
-	virtual void Update() = 0;
+	virtual void Update() override = 0;
 
 	// 消滅しているか
 	bool IsDead() const { return isDead_; }

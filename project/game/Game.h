@@ -9,6 +9,7 @@
 #include "TextureManager.h"
 #include "ParticleManager.h"
 #include "ImGuiManager.h"
+#include "ImGuiFunction.h"
 #include "M_Framework.h"
 #include "GamePlayScene.h"
 #include "SoundManager.h"

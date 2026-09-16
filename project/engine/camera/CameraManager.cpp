@@ -18,8 +18,9 @@ void CameraManager::AddCamera(const std::string& name, Camera* camera) {
 }
 
 void CameraManager::SetActiveCamera(const std::string& name) {
-    assert(cameras_.count(name));
-    activeCamera_ = cameras_[name];
+	assert(cameras_.count(name));
+	// 描画・更新の対象は常に 1 台だけに限定する。
+	activeCamera_ = cameras_[name];
 }
 
 Camera* CameraManager::GetActiveCamera() const {
@@ -27,9 +28,9 @@ Camera* CameraManager::GetActiveCamera() const {
     return activeCamera_;
 }
 
-// 削除
 void CameraManager::RemoveCamera(const std::string& name) {
-    cameras_.erase(name);
+	// カメラ本体は所有していないため、ここでは登録情報だけを消す。
+	cameras_.erase(name);
 }
 
 void CameraManager::Update() {

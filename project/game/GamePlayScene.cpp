@@ -6,9 +6,17 @@
 #include "TransformComponent.h"
 #include "ModelRendererComponent.h"
 #include "AnimatorComponent.h"
+#include "RailPointComponent.h"
+#include "EnemySpawnerComponent.h"
+#include "EnemyNormal.h"
+#include "SpriteRendererComponent.h"
+#include "RectTransformComponent.h"
 #include "SkyBox.h"
 #include "LineCommon.h"
 #include "ModelManager.h"
+#include <cstring>
+#include <cctype>
+#include <filesystem>
 
 void GamePlayScene::Initialize() {
 
@@ -48,8 +56,10 @@ void GamePlayScene::Initialize() {
 	gameTimer = std::make_unique<GameTimer>();
 
 	// プレイヤー
-	player = std::make_unique<Player>();
-	player->Initialize();
+	defaultPlayerObject = std::make_unique<GameObject>("Player");
+	playerObject = defaultPlayerObject.get();
+	player = playerObject->AddComponent<Player>();
+	playerObject->Initialize();
 
 	// 当たり判定の線
 	debugLineNormal = std::make_unique<Line>();
@@ -76,28 +86,18 @@ void GamePlayScene::Update() {
 
 	trailEffect->Editor();
 
-	player->Update(deltaTime);
-
 	// 1. レールカメラの更新（レール上の現在位置・回転を計算）
 	// 2. ★ GameObject の座標を RailCamera の制御点として毎フレーム上書き（同期）する
 	if (railCamera) {
 		railCamera->points.clear(); // 一旦リセット
 
-		for (size_t i = 0; i < levelObjects.size(); ++i) {
-			// levelData と同期している前提でタイプをチェック
-			if (i < level->GetLevelData()->objects.size()) {
-				std::string objType = level->GetLevelData()->objects[i].type;
-
-				// RAILタイプのオブジェクトを見つけたら、その座標を RailCamera に渡す
-				if (objType == "RAIL" || objType == "rail") {
-					auto transformComp = levelObjects[i]->GetComponent<TransformComponent>();
-					if (transformComp) {
-						RailPoint p{};
-						p.position = transformComp->transform.translate;
-						p.rotate = transformComp->transform.rotate;
-						railCamera->points.push_back(p);
-					}
-				}
+		for (const auto& levelObject : levelObjects) {
+			if (auto* railPoint = levelObject->GetComponent<RailPointComponent>(); railPoint && railPoint->IsEnabled() && levelObject->IsActive()) {
+				auto* transformComp = levelObject->GetTransform();
+				RailPoint p{};
+				p.position = transformComp->transform.translate;
+				p.rotate = transformComp->transform.rotate;
+				railCamera->points.push_back(p);
 			}
 		}
 	}
@@ -116,12 +116,33 @@ void GamePlayScene::Update() {
 	player->SetTranslate(basePos);
 	player->SetRotate(baseRot);
 
-	player->UpdateLockOn(enemies);
-	player->Update(deltaTime);
+	// ロックオン処理の為に敵のポインタをまとめて渡す
+	std::vector<Enemy*> enemyTargets;
+	enemyTargets.reserve(enemies.size() + levelObjects.size());
+	for (const auto& enemyObject : enemies) {
+		if (auto* enemy = enemyObject->GetComponent<Enemy>()) {
+				enemyTargets.push_back(enemy);
+		}
+	}
+	for (const auto& levelObject : levelObjects) {
+		if (levelObject->IsActive()) {
+			if (auto* enemy = levelObject->GetComponent<Enemy>()) {
+				enemyTargets.push_back(enemy);
+			}
+		}
+	}
+	player->SetDeltaTime(deltaTime);
+	playerObject->Update();
 	
 
+	// デバックカメラ処理
 	if (isDebugCamera) {
-		if (!ImGui::GetIO().WantCaptureMouse) {
+		const Vector2 mousePosition = input->GetMouseScreen();
+		const bool isMouseInGameView = ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Game") &&
+			mousePosition.x >= gameViewPosition.x && mousePosition.x < gameViewPosition.x + gameViewSize.x &&
+			mousePosition.y >= gameViewPosition.y && mousePosition.y < gameViewPosition.y + gameViewSize.y;
+		// ImGui の捕捉状態ではなく、Game ビューの中にカーソルがあるかで判定する。
+		if (isMouseInGameView) {
 			camera->DebugCameraUpdate();
 		}
 	} else {
@@ -137,9 +158,11 @@ void GamePlayScene::Update() {
 		// レールカメラ上のプレイヤー座標（またはカメラ座標）を基準にする
 		Vector3 targetPos = player->GetTranslate();
 
-		for (auto& spawner : enemySpawners) {
+		for (auto& levelObject : levelObjects) {
+			auto* spawner = levelObject->GetComponent<EnemySpawnerComponent>();
+			if (!spawner || !spawner->IsEnabled() || !levelObject->IsActive()) continue;
 			// 一定距離に入ったら起動し、時間経過で敵が生成されて返ってくる
-			auto spawnedEnemies = spawner->Update(deltaTime, targetPos);
+			auto spawnedEnemies = spawner->Spawn(deltaTime, targetPos);
 
 			// 返ってきた敵をシーンの敵リストに移動
 			for (auto& newEnemy : spawnedEnemies) {
@@ -152,14 +175,28 @@ void GamePlayScene::Update() {
 	float cameraProgress = railCamera->GetRailT();
 
 	// シーンに存在するすべての敵の更新処理
-	for (auto& enemy : enemies) {
-		enemy->Update(player->GetTranslate(), cameraProgress);
+	for (auto& enemyObject : enemies) {
+		if (auto* enemy = enemyObject->GetComponent<Enemy>()) {
+			enemy->SetUpdateContext(player->GetTranslate(), cameraProgress);
+			enemyObject->Update();
+		}
 	}
 
 	// レベルオブジェクト
 	for (auto& object : levelObjects) {
+		if (object.get() == playerObject) {
+			continue; // 操作対象プレイヤーは上で一度だけ更新する。
+		}
+		if (auto* enemy = object->GetComponent<Enemy>()) {
+			enemy->SetUpdateContext(player->GetTranslate(), cameraProgress);
+		}
 		object->Update();
 	}
+
+	// プレイヤー・カメラ・敵の座標が全て確定した後にロックオンを更新する。
+	// 描画に使うカメラ行列と同じ行列で照準を投影するため、レール移動中もずれない。
+	player->UpdateLockOn(enemyTargets);
+	player->UpdateReticle();
 
 	// ENTERキーを押したら
 	if (input->TriggerKey(DIK_RETURN)) {
@@ -185,13 +222,20 @@ void GamePlayScene::Update() {
 
 	// --- 撃破された敵の削除 ---
 	for (auto it = enemies.begin(); it != enemies.end();) {
-		if ((*it)->IsDead()) {
+		auto* enemy = (*it)->GetComponent<Enemy>();
+		if (enemy && enemy->IsDead()) {
 			// 削除(erase)する直前に、プレイヤーと弾へ通知してポインタを外させる
-			player->RemoveBulletTarget(it->get());
+			player->RemoveBulletTarget(enemy);
 
 			it = enemies.erase(it); // 実際の削除処理
 		} else {
 			++it;
+		}
+	}
+	for (auto& levelObject : levelObjects) {
+		if (auto* enemy = levelObject->GetComponent<Enemy>(); enemy && enemy->IsDead()) {
+			player->RemoveBulletTarget(enemy);
+			levelObject->SetActive(false);
 		}
 	}
 
@@ -208,7 +252,9 @@ void GamePlayScene::Update() {
 	}
 
 	// 敵キャラクターの当たり判定も一括登録可能
-	for (const auto& enemy : enemies) {
+	for (const auto& enemyObject : enemies) {
+		auto* enemy = enemyObject->GetComponent<Enemy>();
+		if (!enemy) continue;
 		if (enemy->IsHit()) {
 			DrawOBB(debugLineHit.get(), enemy->GetOBB()); // 赤用のバッファに追加
 		} else {
@@ -221,7 +267,9 @@ void GamePlayScene::Update() {
 		DrawOBB(debugLineNormal.get(), bullet->GetOBB());
 	}
 
-	for (const auto& enemy : enemies) {
+	for (const auto& enemyObject : enemies) {
+		auto* enemy = enemyObject->GetComponent<Enemy>();
+		if (!enemy) continue;
 		for (const auto& bullet : enemy->GetBullets()) {
 			DrawOBB(debugLineNormal.get(), bullet->GetOBB());
 		}
@@ -329,10 +377,73 @@ void GamePlayScene::Update() {
 #pragma endregion
 
 #ifdef USE_IMGUI
-	// ImGui
+	// 最初だけ Unity 風に配置し、以後は通常の ImGui ウィンドウとして移動・リサイズできる。
+	// ImGui が imgui.ini に位置とサイズを保存するため、Visual Studio のツールウィンドウのように
+	// ユーザーが決めた配置が次回起動時にも再現される。
+	ImGuiIO& editorIO = ImGui::GetIO();
+	const float editorTopBarHeight = 30.0f;
+	const float editorLeftPaneWidth = 300.0f;
+	const float editorRightPaneWidth = 360.0f;
+	const float editorBottomPaneHeight = 260.0f;
+	const float hierarchyHeight = (std::max)(180.0f, (editorIO.DisplaySize.y - editorTopBarHeight) * 0.42f);
+	const ImVec2 initialGameViewPosition(editorLeftPaneWidth, editorTopBarHeight);
+	const ImVec2 initialGameViewSize(
+		(std::max)(100.0f, editorIO.DisplaySize.x - editorLeftPaneWidth - editorRightPaneWidth),
+		(std::max)(100.0f, editorIO.DisplaySize.y - editorTopBarHeight - editorBottomPaneHeight));
+
+	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(editorIO.DisplaySize.x, editorTopBarHeight), ImGuiCond_Always);
+	ImGui::Begin("Editor Toolbar", nullptr,
+		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
+	ImGui::TextUnformatted("Rail Shooter Editor");
+	ImGui::SameLine();
+	ImGui::TextDisabled("GamePlay Scene");
+	ImGui::End();
+
+	if (ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Game")) {
+		ImGui::SetNextWindowPos(initialGameViewPosition, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(initialGameViewSize, ImGuiCond_FirstUseEver);
+		ImGui::Begin("Game", nullptr,
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground |
+			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		ImGuiFunction::GetInstance()->TrackDockableWindow("Game");
+		ImGuiFunction::GetInstance()->DrawMergedWindowTabs("Game");
+		const ImVec2 gameContentMin = ImGui::GetCursorScreenPos();
+		const ImVec2 gameWindowPosition = ImGui::GetWindowPos();
+		const ImVec2 contentRegionMax = ImGui::GetWindowContentRegionMax();
+		const ImVec2 gameContentMax(gameWindowPosition.x + contentRegionMax.x, gameWindowPosition.y + contentRegionMax.y);
+		gameViewPosition = { gameContentMin.x, gameContentMin.y };
+		gameViewSize = {
+			(std::max)(1.0f, gameContentMax.x - gameContentMin.x),
+			(std::max)(1.0f, gameContentMax.y - gameContentMin.y)
+		};
+		// 最終合成を Game のコンテンツ領域へ限定する。これにより ImGui の下にはゲームを描画しない。
+		PostEffect::GetInstance()->SetOutputViewport(gameViewPosition.x, gameViewPosition.y, gameViewSize.x, gameViewSize.y);
+		isGameViewHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+		ImGui::GetWindowDrawList()->AddRect(
+			gameContentMin,
+			gameContentMax,
+			IM_COL32(115, 160, 210, 210));
+		ImGui::End();
+	} else {
+		// Game タブが非選択なら映像も非表示にする。
+		PostEffect::GetInstance()->SetOutputViewport(0.0f, 0.0f, 1.0f, 1.0f);
+		isGameViewHovered = false;
+	}
+	const ImVec2 gameViewWindowPosition(gameViewPosition.x, gameViewPosition.y);
+	const ImVec2 gameViewWindowSize(gameViewSize.x, gameViewSize.y);
+
+	if (ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Settings")) {
+		ImGui::SetNextWindowPos(ImVec2(editorLeftPaneWidth, editorIO.DisplaySize.y - editorBottomPaneHeight), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(gameViewWindowSize.x, editorBottomPaneHeight), ImGuiCond_FirstUseEver);
+		ImGui::Begin("Settings");
+		ImGuiFunction::GetInstance()->TrackDockableWindow("Settings");
+		ImGuiFunction::GetInstance()->DrawMergedWindowTabs("Settings");
+
 	// フレームレートの取得と表示
 	float fps = ImGui::GetIO().Framerate;
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", fps > 0.0f ? 1000.0f / fps : 0.0f, fps);
 
 	ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.1f, -500.0f, 500.0f);
 	ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -10.0f, 10.0f);
@@ -514,15 +625,93 @@ void GamePlayScene::Update() {
 #pragma endregion
 
 	// Gizmo
-	GizmoUpdate();
+	GizmoUpdate(true);
+	ImGui::End();
+	}
+
+	// --- Unity 風 Hierarchy ウィンドウ ---
+	if (ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Hierarchy")) {
+		ImGui::SetNextWindowPos(ImVec2(0.0f, editorTopBarHeight), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(editorLeftPaneWidth, hierarchyHeight), ImGuiCond_FirstUseEver);
+		ImGui::Begin("Hierarchy");
+		ImGuiFunction::GetInstance()->TrackDockableWindow("Hierarchy");
+		ImGuiFunction::GetInstance()->DrawMergedWindowTabs("Hierarchy");
+	if (ImGui::Button("Create Empty")) {
+		const std::string objectName = "Empty_" + std::to_string(levelObjects.size() + 1);
+		auto emptyObject = std::make_unique<GameObject>(objectName);
+		emptyObject->Initialize();
+
+		selectedObject = emptyObject.get();
+		levelObjects.push_back(std::move(emptyObject));
+
+		ObjectData emptyData{};
+		emptyData.type = "EMPTY";
+		emptyData.name = objectName;
+		emptyData.transform = selectedObject->GetTransform()->transform;
+		level->GetLevelData()->objects.push_back(emptyData);
+	}
+
+	ImGui::Separator();
+	bool playerIsInHierarchy = false;
+	for (const auto& object : levelObjects) {
+		if (object.get() == playerObject) {
+			playerIsInHierarchy = true;
+			break;
+		}
+	}
+	if (playerObject && !playerIsInHierarchy) {
+		const std::string playerLabel = std::string("[P] ") + playerObject->GetName() + "##RuntimePlayer";
+		if (ImGui::Selectable(playerLabel.c_str(), selectedObject == playerObject)) {
+			selectedObject = playerObject;
+		}
+		ImGui::Separator();
+	}
+	for (size_t index = 0; index < levelObjects.size(); ++index) {
+		auto* object = levelObjects[index].get();
+		const bool isEmpty = !object->GetComponent<ModelRendererComponent>() &&
+			!object->GetComponent<SpriteRendererComponent>() &&
+			!object->GetComponent<RailPointComponent>() &&
+			!object->GetComponent<EnemySpawnerComponent>() &&
+			!object->GetComponent<Player>() &&
+			!object->GetComponent<Enemy>();
+		const char* icon = object->GetComponent<Player>() ? "[P]" : (isEmpty ? "[E]" : "[O]");
+		const std::string label = std::string(icon) + " " + object->GetName() + "##Hierarchy" + std::to_string(index);
+		if (ImGui::Selectable(label.c_str(), selectedObject == object)) {
+			selectedObject = object;
+		}
+	}
+	ImGui::End();
+	}
 
 	// --- アセットブラウザ ウィンドウ ---
-	ImGui::Begin("Asset Browser");
+	if (ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Asset Browser")) {
+		ImGui::SetNextWindowPos(ImVec2(0.0f, editorTopBarHeight + hierarchyHeight), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(editorLeftPaneWidth, (std::max)(100.0f, editorIO.DisplaySize.y - editorTopBarHeight - hierarchyHeight)), ImGuiCond_FirstUseEver);
+		ImGui::Begin("Asset Browser");
+		ImGuiFunction::GetInstance()->TrackDockableWindow("Asset Browser");
+		ImGuiFunction::GetInstance()->DrawMergedWindowTabs("Asset Browser");
 
 	// アセットとして追加したいモデルのファイルリスト（本来はフォルダ内を自動全検索してもOK）
 	std::vector<std::string> modelFiles = ModelManager::GetInstance()->GetLoadedModelNames();
+	static std::vector<std::string> textureFiles;
+	static bool textureFilesLoaded = false;
+	if (!textureFilesLoaded) {
+		textureFilesLoaded = true;
+		try {
+			for (const auto& entry : std::filesystem::recursive_directory_iterator("Resource")) {
+				if (!entry.is_regular_file()) continue;
+				std::string extension = entry.path().extension().string();
+				std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+				if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".dds") {
+					textureFiles.push_back(entry.path().generic_string());
+				}
+			}
+		} catch (const std::filesystem::filesystem_error&) {
+			OutputDebugStringA("[Asset Browser] Resource directory could not be enumerated.\n");
+		}
+	}
 
-	ImGui::Text("Drag a model to the scene:");
+	ImGui::Text("Models (drag to the viewport or a Model field):");
 	ImGui::Separator();
 
 	for (const auto& fileName : modelFiles) {
@@ -542,10 +731,22 @@ void GamePlayScene::Update() {
 		}
 	}
 
+	ImGui::Separator();
+	ImGui::Text("Textures (drag to a Sprite Texture field):");
+	for (const auto& texturePath : textureFiles) {
+		ImGui::Selectable(texturePath.c_str());
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+			ImGui::SetDragDropPayload("DND_TEXTURE_FILE", texturePath.c_str(), texturePath.size() + 1);
+			ImGui::Text("Texture: %s", texturePath.c_str());
+			ImGui::EndDragDropSource();
+		}
+	}
+
 	// レールの制御点
 	if (ImGui::Button("Add Rail Point")) {
 		// 1. 新しい GameObject を生成
-		auto newObject = std::make_unique<GameObject>();
+		const std::string objectName = "RailPoint_" + std::to_string(levelObjects.size() + 1);
+		auto newObject = std::make_unique<GameObject>(objectName);
 
 		// 2. TransformComponent の追加と配置設定
 		auto transformComp = newObject->AddComponent<TransformComponent>();
@@ -557,6 +758,7 @@ void GamePlayScene::Update() {
 		// 3. ModelRendererComponent の追加（モデルは固定で "rail.obj" を指定）
 		auto modelRenderer = newObject->AddComponent<ModelRendererComponent>();
 		modelRenderer->SetModel("rail.obj");
+		newObject->AddComponent<RailPointComponent>();
 
 		// 4. 初期化
 		newObject->Initialize();
@@ -570,9 +772,10 @@ void GamePlayScene::Update() {
 		// 7. JSON保存用の LevelData にも「RAIL」タイプとして登録
 		ObjectData newObjectData;
 		newObjectData.type = "RAIL"; // ★ ここを RAIL にする
-		newObjectData.name = "RailPoint_" + std::to_string(levelObjects.size());
+		newObjectData.name = objectName;
 		newObjectData.file_name = "rail.obj";
 		newObjectData.transform = transformComp->transform;
+		newObjectData.components = { "ModelRenderer", "RailPoint" };
 
 		level->GetLevelData()->objects.push_back(newObjectData);
 
@@ -580,7 +783,8 @@ void GamePlayScene::Update() {
 	}
 	// 敵のスポーンイベント地点
 	if (ImGui::Button("Add Enemy Spawner")) {
-		auto newObject = std::make_unique<GameObject>();
+		const std::string objectName = "Spawner_" + std::to_string(levelObjects.size() + 1);
+		auto newObject = std::make_unique<GameObject>(objectName);
 		auto transformComp = newObject->AddComponent<TransformComponent>();
 
 		// カメラの少し前に配置するなど、出しやすい位置に設定
@@ -592,6 +796,8 @@ void GamePlayScene::Update() {
 		// エディタ上で視認するためのダミーモデル（例: "cube.obj"）をセット
 		auto modelRenderer = newObject->AddComponent<ModelRendererComponent>();
 		modelRenderer->SetModel("cube.gltf");
+		auto* spawner = newObject->AddComponent<EnemySpawnerComponent>();
+		spawner->Configure({}, spawnDistance, railCamera.get());
 
 		newObject->Initialize();
 		selectedObject = newObject.get(); // 生成してすぐ選択状態に
@@ -600,20 +806,22 @@ void GamePlayScene::Update() {
 		// LevelData に「SPAWNER」として登録
 		ObjectData newObjectData;
 		newObjectData.type = "SPAWNER"; // ★ タイプを SPAWNER にする
-		newObjectData.name = "Spawner_" + std::to_string(levelObjects.size());
+		newObjectData.name = objectName;
 		// file_name に「どの敵を出すか」の情報を間借りして保存するのもオススメです
 		newObjectData.file_name = "EnemyTypeA";
 		newObjectData.transform = transformComp->transform;
+		newObjectData.components = { "ModelRenderer", "EnemySpawner" };
 
 		level->GetLevelData()->objects.push_back(newObjectData);
 	}
 
 	ImGui::End();
+	}
 	// ★ ドラッグ操作中（マウスで何かを掴んでいる時）だけドロップ処理を有効化する
 	if (ImGui::GetDragDropPayload() != nullptr) {
 
-		ImGui::SetNextWindowPos(ImVec2(0, 0));
-		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+		ImGui::SetNextWindowPos(gameViewWindowPosition, ImGuiCond_Always);
+		ImGui::SetNextWindowSize(gameViewWindowSize, ImGuiCond_Always);
 		ImGui::Begin("ViewportDropTarget", nullptr,
 			ImGuiWindowFlags_NoTitleBar |
 			ImGuiWindowFlags_NoResize |
@@ -624,8 +832,8 @@ void GamePlayScene::Update() {
 			ImGuiWindowFlags_NoBringToFrontOnFocus
 		);
 
-		// 画面全体を覆う見えないボタン（ドラッグ中のみ出現）
-		ImGui::InvisibleButton("##ViewportDropArea", ImGui::GetIO().DisplaySize);
+		// 中央のゲーム画面だけをドロップ先にする。
+		ImGui::InvisibleButton("##ViewportDropArea", gameViewWindowSize);
 
 		// ドロップ判定
 		if (ImGui::BeginDragDropTarget()) {
@@ -633,7 +841,8 @@ void GamePlayScene::Update() {
 				std::string droppedFileName = (const char*)payload->Data;
 
 				// 1. 新しい GameObject を生成
-				auto newObject = std::make_unique<GameObject>();
+				const std::string objectName = "SpawnedObject_" + std::to_string(levelObjects.size() + 1);
+				auto newObject = std::make_unique<GameObject>(objectName);
 
 				// 2. TransformComponent の追加と配置設定
 				auto transformComp = newObject->AddComponent<TransformComponent>();
@@ -658,9 +867,10 @@ void GamePlayScene::Update() {
 				// 7. JSON保存用の LevelData にも新しいデータを登録
 				ObjectData newObjectData;
 				newObjectData.type = "MESH";
-				newObjectData.name = "SpawnedObject_" + std::to_string(levelObjects.size());
+				newObjectData.name = objectName;
 				newObjectData.file_name = droppedFileName;
 				newObjectData.transform = transformComp->transform;
+				newObjectData.components = { "ModelRenderer" };
 
 				level->GetLevelData()->objects.push_back(newObjectData);
 
@@ -673,7 +883,12 @@ void GamePlayScene::Update() {
 	}
 
 	// --- インスペクター ウィンドウ ---
-	ImGui::Begin("Inspector");
+	if (ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Inspector")) {
+		ImGui::SetNextWindowPos(ImVec2(editorIO.DisplaySize.x - editorRightPaneWidth, editorTopBarHeight), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(editorRightPaneWidth, (std::max)(100.0f, editorIO.DisplaySize.y - editorTopBarHeight)), ImGuiCond_FirstUseEver);
+		ImGui::Begin("Inspector");
+		ImGuiFunction::GetInstance()->TrackDockableWindow("Inspector");
+		ImGuiFunction::GetInstance()->DrawMergedWindowTabs("Inspector");
 
 	if (selectedObject != nullptr) {
 		// ★ 選択中のオブジェクトが levelObjects の何番目かを検索する
@@ -691,25 +906,189 @@ void GamePlayScene::Update() {
 			std::string objName = level->GetLevelData()->objects[selectedIndex].name;
 			std::string objFile = level->GetLevelData()->objects[selectedIndex].file_name;
 
-			ImGui::Text("Name: %s", objName.c_str());
+			char nameBuffer[256]{};
+			strncpy_s(nameBuffer, selectedObject->GetName().c_str(), _TRUNCATE);
+			if (ImGui::InputText("Name", nameBuffer, IM_ARRAYSIZE(nameBuffer))) {
+				selectedObject->SetName(nameBuffer);
+				level->GetLevelData()->objects[selectedIndex].name = nameBuffer;
+			}
+
+			bool isActive = selectedObject->IsActive();
+			if (ImGui::Checkbox("Active", &isActive)) {
+				selectedObject->SetActive(isActive);
+			}
+
 			ImGui::Text("Type: %s", objType.c_str());
 			if (!objFile.empty()) {
 				ImGui::Text("File: %s", objFile.c_str());
 			}
 		} else {
-			// 万が一 LevelData と紐づいていない場合のフォールバック
-			ImGui::Text("Type: Unknown GameObject");
+			// Runtime Player など、レベルデータと紐づかないオブジェクト用の表示。
+			ImGui::Text("Type: %s", selectedObject == playerObject ? "Player" : "Runtime GameObject");
 		}
 
 		ImGui::Separator();
 
-		// Transform情報の取得と表示・編集
-		auto transformComp = selectedObject->GetComponent<TransformComponent>();
-		if (transformComp) {
-			ImGui::Text("Transform");
+		// Transform は必須コンポーネント。Unity の Inspector と同じように常に表示する。
+		auto transformComp = selectedObject->GetTransform();
+		if (transformComp && ImGui::CollapsingHeader(selectedObject->GetComponent<RectTransformComponent>() ? "Transform (3D - unused by Sprite)" : "Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::DragFloat3("Position", &transformComp->transform.translate.x, 0.1f);
 			ImGui::DragFloat3("Rotation", &transformComp->transform.rotate.x, 0.05f);
 			ImGui::DragFloat3("Scale", &transformComp->transform.scale.x, 0.1f);
+		}
+
+		if (auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>()) {
+			if (ImGui::CollapsingHeader("Rect Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+				if (ImGui::DragFloat2("Position (px)", &rectTransform->position.x, 1.0f)) {
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].rectPosition = rectTransform->position;
+				}
+				if (ImGui::DragFloat("Rotation (rad)", &rectTransform->rotation, 0.01f)) {
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].rectRotation = rectTransform->rotation;
+				}
+				if (ImGui::DragFloat2("Scale", &rectTransform->scale.x, 0.01f, 0.01f, 100.0f)) {
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].rectScale = rectTransform->scale;
+				}
+			}
+		}
+
+		// 任意コンポーネントは有効状態と主要な設定を個別に編集する。
+		if (auto* renderer = selectedObject->GetComponent<ModelRendererComponent>()) {
+			if (ImGui::CollapsingHeader("Model Renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
+				bool enabled = renderer->IsEnabled();
+				if (ImGui::Checkbox("Enabled##ModelRenderer", &enabled)) {
+					renderer->SetEnabled(enabled);
+				}
+
+				char modelPath[260]{};
+				strncpy_s(modelPath, renderer->GetModelPath().c_str(), _TRUNCATE);
+				if (ImGui::InputText("Model", modelPath, IM_ARRAYSIZE(modelPath))) {
+					renderer->SetModel(modelPath);
+					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+						level->GetLevelData()->objects[selectedIndex].file_name = modelPath;
+					}
+				}
+				if (ImGui::BeginDragDropTarget()) {
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_MODEL_FILE")) {
+						const std::string droppedModel = static_cast<const char*>(payload->Data);
+						renderer->SetModel(droppedModel);
+						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+							level->GetLevelData()->objects[selectedIndex].file_name = droppedModel;
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+			}
+		}
+
+		if (auto* spriteRenderer = selectedObject->GetComponent<SpriteRendererComponent>()) {
+			if (ImGui::CollapsingHeader("Sprite Renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
+				bool enabled = spriteRenderer->IsEnabled();
+				if (ImGui::Checkbox("Enabled##SpriteRenderer", &enabled)) {
+					spriteRenderer->SetEnabled(enabled);
+				}
+
+				char texturePath[260]{};
+				strncpy_s(texturePath, spriteRenderer->GetTexturePath().c_str(), _TRUNCATE);
+				if (ImGui::InputText("Texture", texturePath, IM_ARRAYSIZE(texturePath))) {
+					spriteRenderer->SetTexture(texturePath);
+					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+						level->GetLevelData()->objects[selectedIndex].sprite_file_name = texturePath;
+					}
+				}
+				if (ImGui::BeginDragDropTarget()) {
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_TEXTURE_FILE")) {
+						const std::string droppedTexture = static_cast<const char*>(payload->Data);
+						spriteRenderer->SetTexture(droppedTexture);
+						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+							level->GetLevelData()->objects[selectedIndex].sprite_file_name = droppedTexture;
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				Vector2 spriteSize = spriteRenderer->GetSize();
+				if (ImGui::DragFloat2("Size", &spriteSize.x, 1.0f, 1.0f, 4096.0f)) {
+					spriteRenderer->SetSize(spriteSize);
+				}
+			}
+		}
+
+		if (auto* animatorComponent = selectedObject->GetComponent<AnimatorComponent>()) {
+			if (ImGui::CollapsingHeader("Animator")) {
+				bool enabled = animatorComponent->IsEnabled();
+				if (ImGui::Checkbox("Enabled##Animator", &enabled)) {
+					animatorComponent->SetEnabled(enabled);
+				}
+			}
+		}
+
+		if (auto* railPoint = selectedObject->GetComponent<RailPointComponent>()) {
+			if (ImGui::CollapsingHeader("Rail Camera Point")) {
+				bool enabled = railPoint->IsEnabled();
+				if (ImGui::Checkbox("Enabled##RailPoint", &enabled)) {
+					railPoint->SetEnabled(enabled);
+				}
+			}
+		}
+
+		if (auto* spawner = selectedObject->GetComponent<EnemySpawnerComponent>()) {
+			if (ImGui::CollapsingHeader("Enemy Spawner")) {
+				bool enabled = spawner->IsEnabled();
+				if (ImGui::Checkbox("Enabled##EnemySpawner", &enabled)) {
+					spawner->SetEnabled(enabled);
+				}
+			}
+		}
+
+		if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size() &&
+			ImGui::CollapsingHeader("Add Component")) {
+			auto& objectData = level->GetLevelData()->objects[selectedIndex];
+			auto addSerializedComponent = [&objectData](const char* componentName) {
+				if (std::find(objectData.components.begin(), objectData.components.end(), componentName) == objectData.components.end()) {
+					objectData.components.push_back(componentName);
+				}
+			};
+
+			if (!selectedObject->GetComponent<ModelRendererComponent>() && ImGui::Button("Model Renderer")) {
+				auto* renderer = selectedObject->AddComponent<ModelRendererComponent>();
+				renderer->SetModel("cube.gltf");
+				objectData.file_name = "cube.gltf";
+				addSerializedComponent("ModelRenderer");
+			}
+			if (!selectedObject->GetComponent<SpriteRendererComponent>() && ImGui::Button("Sprite Renderer")) {
+				auto* rectTransform = selectedObject->AddComponent<RectTransformComponent>();
+				rectTransform->position = { 960.0f, 540.0f };
+				auto* spriteRenderer = selectedObject->AddComponent<SpriteRendererComponent>();
+				spriteRenderer->SetTexture("Resource/title/title.png");
+				objectData.sprite_file_name = "Resource/title/title.png";
+				objectData.rectPosition = rectTransform->position;
+				objectData.rectRotation = rectTransform->rotation;
+				objectData.rectScale = rectTransform->scale;
+				addSerializedComponent("RectTransform");
+				addSerializedComponent("SpriteRenderer");
+			}
+			if (!selectedObject->GetComponent<RailPointComponent>() && ImGui::Button("Rail Camera Point")) {
+				selectedObject->AddComponent<RailPointComponent>();
+				addSerializedComponent("RailPoint");
+			}
+			if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
+				auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();
+				spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+				addSerializedComponent("EnemySpawner");
+			}
+			if (!selectedObject->GetComponent<Player>() && ImGui::Button("Player Controller")) {
+				auto* playerComponent = selectedObject->AddComponent<Player>();
+				// 追加した Player をゲームの操作対象として使用する。
+				defaultPlayerObject.reset();
+				playerObject = selectedObject;
+				player = playerComponent;
+				addSerializedComponent("Player");
+			}
+			if (!selectedObject->GetComponent<Enemy>() && ImGui::Button("Enemy Normal")) {
+				auto* enemy = selectedObject->AddComponent<EnemyNormal>();
+				enemy->SetTransform(selectedObject->GetTransform()->transform);
+				addSerializedComponent("EnemyNormal");
+			}
 		}
 
 		// オブジェクト削除ボタン（誤誤爆防止のために赤色スタイル適用）
@@ -718,7 +1097,7 @@ void GamePlayScene::Update() {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.1f, 0.1f, 1.0f));
 
-		if (ImGui::Button("Delete Object", ImVec2(-1, 0))) { // -1指定で横幅いっぱいに拡大
+		if (selectedObject != playerObject && ImGui::Button("Delete Object", ImVec2(-1, 0))) { // -1指定で横幅いっぱいに拡大
 			// 1. LevelData(セーブ用)配列から削除
 			level->GetLevelData()->objects.erase(level->GetLevelData()->objects.begin() + selectedIndex);
 
@@ -734,6 +1113,9 @@ void GamePlayScene::Update() {
 			return;
 		}
 		ImGui::PopStyleColor(3);
+		if (selectedObject == playerObject) {
+			ImGui::TextDisabled("The active Player cannot be deleted.");
+		}
 
 		// =========================================================================
 		// SPAWNER 専用のタイムライン編集 UI
@@ -742,9 +1124,12 @@ void GamePlayScene::Update() {
 			// 参照として取得し、直接書き換えられるようにする
 			ObjectData& currentObjData = level->GetLevelData()->objects[selectedIndex];
 
-			if (currentObjData.type == "SPAWNER" || currentObjData.type == "spawner") {
+			if (auto* spawnerComponent = selectedObject->GetComponent<EnemySpawnerComponent>()) {
 				ImGui::Separator();
 				ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "◆ Spawner Settings");
+				if (ImGui::Button("Apply Spawner Settings")) {
+					spawnerComponent->SetSpawnList(currentObjData.spawnDataList);
+				}
 
 				if (ImGui::Button("Add Enemy to Spawner")) {
 					// 初期値として追加
@@ -857,6 +1242,12 @@ void GamePlayScene::Update() {
 	}
 
 	ImGui::End();
+	}
+	if (!ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Settings")) {
+		// Settings が別タブでも、Game 上のギズモは常に操作できるようにする。
+		GizmoUpdate(false);
+	}
+	ImGuiFunction::GetInstance()->UpdateDockingGuide();
 
 #endif
 
@@ -867,7 +1258,14 @@ void GamePlayScene::Draw2D() {
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
 	// スプライト描画
-	player->Draw();
+	playerObject->Draw();
+	for (const auto& levelObject : levelObjects) {
+		if (auto* spriteRenderer = levelObject->GetComponent<SpriteRendererComponent>()) {
+			if (levelObject->IsActive() && spriteRenderer->IsEnabled()) {
+				spriteRenderer->DrawSprite();
+			}
+		}
+	}
 }
 void GamePlayScene::Draw3D() {
 	// スカイボックス
@@ -890,8 +1288,8 @@ void GamePlayScene::Draw3D() {
 	}
 
 	// 敵の描画
-	for (auto& enemy : enemies) {
-		enemy->Draw();
+	for (auto& enemyObject : enemies) {
+		enemyObject->Draw();
 	}
 
 #ifdef _DEBUG
@@ -933,7 +1331,7 @@ void GamePlayScene::CreateLevel() {
 	for (auto& objectData : level->GetLevelData()->objects) {
 		if (objectData.type == "MESH" || objectData.type == "mesh") {
 			// 1. GameObject の生成
-			auto gameObject = std::make_unique<GameObject>();
+			auto gameObject = std::make_unique<GameObject>(objectData.name);
 
 			// 2. TransformComponent を追加してトランスフォーム情報をセット
 			auto transform = gameObject->AddComponent<TransformComponent>();
@@ -958,7 +1356,7 @@ void GamePlayScene::CreateLevel() {
 			railCamera->AddPoint(objectData.transform.translate, objectData.transform.rotate);
 		
 			// ★ ここから追加: 実体のGameObjectを生成してシーンに配置する
-			auto gameObject = std::make_unique<GameObject>();
+			auto gameObject = std::make_unique<GameObject>(objectData.name);
 			auto transform = gameObject->AddComponent<TransformComponent>();
 
 			transform->transform.translate = objectData.transform.translate;
@@ -969,13 +1367,14 @@ void GamePlayScene::CreateLevel() {
 			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
 			std::string modelName = objectData.file_name.empty() ? "rail.obj" : objectData.file_name;
 			modelRenderer->SetModel(modelName);
+			gameObject->AddComponent<RailPointComponent>();
 
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
 
 		} else if (objectData.type == "SPAWNER" || objectData.type == "spawner") {
 			// SPAWNER の実体オブジェクトを生成して levelObjects に登録する
-			auto gameObject = std::make_unique<GameObject>();
+			auto gameObject = std::make_unique<GameObject>(objectData.name);
 
 			auto transform = gameObject->AddComponent<TransformComponent>();
 			transform->transform.translate = objectData.transform.translate;
@@ -986,46 +1385,97 @@ void GamePlayScene::CreateLevel() {
 			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
 			modelRenderer->SetModel("cube.gltf");
 
+			// ゲームロジック用のスポナーも同じ GameObject にアタッチする。
+			auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
+			spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
+		} else if (objectData.type == "EMPTY" || objectData.type == "empty") {
+			// Empty は Transform だけを持つ、Hierarchy 用の GameObject。
+			auto gameObject = std::make_unique<GameObject>(objectData.name);
+			gameObject->GetTransform()->transform = objectData.transform;
 
-			// ゲームロジック用の EnemySpawner を生成してリストに登録
-			auto spawner = std::make_unique<EnemySpawner>();
-
-			// 第3引数（20.0f）が「起動する距離」になります。必要に応じて調整してください。
-			spawner->Initialize(objectData.transform, objectData.spawnDataList, 20.0f);
-			// レールカメラをセット
-			spawner->SetRailCamera(railCamera.get());
-
-			enemySpawners.push_back(std::move(spawner));
+			const auto hasComponent = [&objectData](const char* componentName) {
+				return std::find(objectData.components.begin(), objectData.components.end(), componentName) != objectData.components.end();
+			};
+			if (hasComponent("ModelRenderer")) {
+				auto* renderer = gameObject->AddComponent<ModelRendererComponent>();
+				renderer->SetModel(objectData.file_name.empty() ? "cube.gltf" : objectData.file_name);
+			}
+			if (hasComponent("RectTransform")) {
+				auto* rectTransform = gameObject->AddComponent<RectTransformComponent>();
+				rectTransform->position = objectData.rectPosition;
+				rectTransform->rotation = objectData.rectRotation;
+				rectTransform->scale = objectData.rectScale;
+			}
+			if (hasComponent("SpriteRenderer")) {
+				if (!gameObject->GetComponent<RectTransformComponent>()) {
+					gameObject->AddComponent<RectTransformComponent>();
+				}
+				auto* spriteRenderer = gameObject->AddComponent<SpriteRendererComponent>();
+				spriteRenderer->SetTexture(objectData.sprite_file_name.empty() ? "Resource/title/title.png" : objectData.sprite_file_name);
+			}
+			if (hasComponent("RailPoint")) {
+				gameObject->AddComponent<RailPointComponent>();
+			}
+			if (hasComponent("EnemySpawner")) {
+				auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
+				spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+			}
+			if (hasComponent("Player")) {
+				player = gameObject->AddComponent<Player>();
+				defaultPlayerObject.reset();
+				playerObject = gameObject.get();
+			}
+			if (hasComponent("EnemyNormal")) {
+				auto* enemy = gameObject->AddComponent<EnemyNormal>();
+				enemy->SetTransform(objectData.transform);
+			}
+			gameObject->Initialize();
+			levelObjects.push_back(std::move(gameObject));
 		}
-		
+
 	}
 }
 
-void GamePlayScene::GizmoUpdate() {
+void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 	auto input = Input::GetInstance();
+	const ImGuiIO& editorIO = ImGui::GetIO();
+	const ImVec2 gameWindowPosition(gameViewPosition.x, gameViewPosition.y);
+	const ImVec2 gameWindowSize(gameViewSize.x, gameViewSize.y);
 
-	// 操作モードの切り替えラジオボタン
-	ImGui::Text("Gizmo Operation");
-	if (ImGui::RadioButton("Translate", currentGizmoOperation == ImGuizmo::TRANSLATE)) {
-		currentGizmoOperation = ImGuizmo::TRANSLATE;
-	}
-	ImGui::SameLine();
-	if (ImGui::RadioButton("Rotate", currentGizmoOperation == ImGuizmo::ROTATE)) {
-		currentGizmoOperation = ImGuizmo::ROTATE;
-	}
-	ImGui::SameLine();
-	if (ImGui::RadioButton("Scale", currentGizmoOperation == ImGuizmo::SCALE)) {
-		currentGizmoOperation = ImGuizmo::SCALE;
+	if (showEditorControls) {
+		// 操作モードの切り替えラジオボタン
+		ImGui::Text("Gizmo Operation");
+		if (ImGui::RadioButton("Translate", currentGizmoOperation == ImGuizmo::TRANSLATE)) {
+			currentGizmoOperation = ImGuizmo::TRANSLATE;
+		}
+		ImGui::SameLine();
+		if (ImGui::RadioButton("Rotate", currentGizmoOperation == ImGuizmo::ROTATE)) {
+			currentGizmoOperation = ImGuizmo::ROTATE;
+		}
+		ImGui::SameLine();
+		if (ImGui::RadioButton("Scale", currentGizmoOperation == ImGuizmo::SCALE)) {
+			currentGizmoOperation = ImGuizmo::SCALE;
+		}
 	}
 
 	// マウス左クリックの瞬間 ＆ ImGuizmoを操作中でない場合のみ判定
-	if (ImGui::IsMouseClicked(0) && !ImGuizmo::IsOver() && !ImGui::GetIO().WantCaptureMouse) {
+	const ImVec2 mousePosition = ImGui::GetMousePos();
+	const bool isMouseInGameView =
+		mousePosition.x >= gameWindowPosition.x && mousePosition.x < gameWindowPosition.x + gameWindowSize.x &&
+		mousePosition.y >= gameWindowPosition.y && mousePosition.y < gameWindowPosition.y + gameWindowSize.y;
+	// Game ウィンドウ自体も ImGui の入力を捕捉するため、領域内の操作はゲーム入力として許可する。
+	const bool isEditorPanelHovered = editorIO.WantCaptureMouse && !isMouseInGameView;
+	if (ImGui::IsMouseClicked(0) && isMouseInGameView && !ImGuizmo::IsOver() && !isEditorPanelHovered) {
 		Vector2 mousePos = input->GetMouseScreen(); // ※ご自身のInputクラスの関数に合わせる
 
 		float windowWidth = 1920.0f; // 画面幅
 		float windowHeight = 1080.0f; // 画面高さ
+		// Game ウィンドウ内のマウス座標を、元のレンダーターゲット座標へ戻す。
+		mousePos.x = (mousePos.x - gameWindowPosition.x) * windowWidth / gameWindowSize.x;
+		mousePos.y = (mousePos.y - gameWindowPosition.y) * windowHeight / gameWindowSize.y;
 
 		// Rayを生成
 		Ray ray = ScreenToRay(mousePos, windowWidth, windowHeight, camera->GetViewMatrix(), camera->GetProjectionMatrix());
@@ -1068,26 +1518,30 @@ void GamePlayScene::GizmoUpdate() {
 	if (selectedObject) {
 		auto transformComp = selectedObject->GetComponent<TransformComponent>();
 		if (transformComp) {
+			auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>();
+			const bool isSpriteObject = rectTransform != nullptr;
 			// 1. ImGuizmoの初期設定
-			ImGuizmo::SetOrthographic(false); // パースペクティブ(透視投影)カメラを使用
+			ImGuizmo::SetOrthographic(isSpriteObject);
 
-			// ★修正2: 小さなデフォルトウィンドウの制限を受けないよう、フルスクリーンの背景に描画・判定をセットする
-			ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
+			// 中央の Game ビューにだけギズモを描画・判定する。
+			// Foreground の描画リストは Game ウィンドウ自身のものではないため、
+			// ImGuizmo に入力判定対象のウィンドウを明示的に渡す。
+			ImGuizmo::SetAlternativeWindow(ImGui::FindWindowByName("Game"));
+			ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
 
-			// 画面サイズの設定
-			float windowWidth = 1920.0f;
-			float windowHeight = 1080.0f;
-			ImGuizmo::SetRect(0, 0, windowWidth, windowHeight);
+			ImGuizmo::SetRect(gameWindowPosition.x, gameWindowPosition.y, gameWindowSize.x, gameWindowSize.y);
 
 			// ★追加：UI上にマウスがある、かつギズモをドラッグ中でない場合はギズモの操作を無効化する
-			bool isUIHovered = ImGui::GetIO().WantCaptureMouse;
+			bool isUIHovered = editorIO.WantCaptureMouse && !isMouseInGameView;
 			bool isGizmoDragging = ImGuizmo::IsUsing();
 			ImGuizmo::Enable(!isUIHovered || isGizmoDragging);
 
 			// 2. カメラの行列を取得
-			Matrix4x4 viewMat = camera->GetViewMatrix();
-			Matrix4x4 projMat = camera->GetProjectionMatrix();
-			Matrix4x4 worldMat = transformComp->GetWorldMatrix();
+			Matrix4x4 viewMat = isSpriteObject ? MakeIdentity4x4() : camera->GetViewMatrix();
+			Matrix4x4 projMat = isSpriteObject ? MakeOrthographicMatrix(0.0f, 0.0f, 1920.0f, 1080.0f, 0.0f, 100.0f) : camera->GetProjectionMatrix();
+			Matrix4x4 worldMat = isSpriteObject
+				? MakeAffineMatrix(Vector3{ rectTransform->scale.x, rectTransform->scale.y, 1.0f }, Vector3{ 0.0f, 0.0f, rectTransform->rotation }, Vector3{ rectTransform->position.x, rectTransform->position.y, 0.0f })
+				: transformComp->GetWorldMatrix();
 
 			// 動かした「差分」を受け取るための行列を用意
 			Matrix4x4 deltaMat;
@@ -1108,8 +1562,19 @@ void GamePlayScene::GizmoUpdate() {
 				float rotation[3] = { 0.0f };
 				float scale[3] = { 0.0f };
 
-				// ★修正：操作モードによって、全体の行列(worldMat)を使うか、差分行列(deltaMat)を使うか分ける
-				if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
+				if (isSpriteObject) {
+					if (currentGizmoOperation == ImGuizmo::ROTATE) {
+						ImGuizmo::DecomposeMatrixToComponents(&deltaMat.m[0][0], translation, rotation, scale);
+						rectTransform->rotation += rotation[2] * (3.14159265f / 180.0f);
+					} else {
+						ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
+						if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
+							rectTransform->position = { translation[0], translation[1] };
+						} else if (currentGizmoOperation == ImGuizmo::SCALE) {
+							rectTransform->scale = { scale[0], scale[1] };
+						}
+					}
+				} else if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
 					// 移動は今まで通り全体の行列から取り出す
 					ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
 					transformComp->transform.translate = { translation[0], translation[1], translation[2] };
@@ -1130,41 +1595,29 @@ void GamePlayScene::GizmoUpdate() {
 		}
 	}
 
+	if (!showEditorControls) {
+		return;
+	}
+
 	// セーブ機能のUI
 	ImGui::Separator(); // 区切り線
 	if (ImGui::Button("Save JSON Level")) {
-		// 1. (既存の処理) 画面上の各 GameObject (MESH) の最新 Transform を LevelData に同期させる
+		// すべての GameObject（Empty / Rail / Mesh / Spawner）の最新状態を同期する。
 		for (size_t i = 0; i < levelObjects.size(); ++i) {
 			if (i < level->GetLevelData()->objects.size()) {
 				auto transformComp = levelObjects[i]->GetComponent<TransformComponent>();
 				if (transformComp) {
 					level->GetLevelData()->objects[i].transform = transformComp->transform;
 				}
+				if (auto* rectTransform = levelObjects[i]->GetComponent<RectTransformComponent>()) {
+					level->GetLevelData()->objects[i].rectPosition = rectTransform->position;
+					level->GetLevelData()->objects[i].rectRotation = rectTransform->rotation;
+					level->GetLevelData()->objects[i].rectScale = rectTransform->scale;
+				}
 			}
 		}
 
-		// 2. ★ LevelData から古い RAIL データをすべて削除する（std::remove_if を使用）
-		auto& objects = level->GetLevelData()->objects;
-		objects.erase(
-			std::remove_if(objects.begin(), objects.end(), [](const ObjectData& obj) {
-				return obj.type == "RAIL" || obj.type == "rail";
-				}),
-			objects.end()
-		);
-
-		// 3. ★ RailCamera の現在の制御点を新しい RAIL データとして LevelData に追加
-		for (size_t i = 0; i < railCamera->points.size(); ++i) {
-			ObjectData railObj;
-			railObj.type = "RAIL";
-			railObj.name = "RailPoint_" + std::to_string(i);
-			railObj.file_name = "rail.obj";
-			railObj.transform.translate = railCamera->points[i].position;
-			railObj.transform.rotate = railCamera->points[i].rotate;
-			railObj.transform.scale = { 1.0f, 1.0f, 1.0f }; // 制御点のスケールはダミー値
-			objects.push_back(railObj);
-		}
-
-		// 4. JSON へ書き出し
+		// JSON へ書き出し
 		level->SaveJson("scene");
 	}
 
@@ -1183,7 +1636,7 @@ void GamePlayScene::GizmoUpdate() {
 			auto& currentObjData = level->GetLevelData()->objects[selectedIndex];
 
 			// 選択中が SPAWNER の場合のみプレビューを生成・更新する
-			if (currentObjData.type == "SPAWNER" || currentObjData.type == "spawner") {
+			if (selectedObject->GetComponent<EnemySpawnerComponent>()) {
 
 				// プレビューオブジェクトの数が足りない場合は生成して追加
 				while (spawnerPreviewObjects.size() < currentObjData.spawnDataList.size()) {
@@ -1287,7 +1740,19 @@ void GamePlayScene::GizmoUpdate() {
 void GamePlayScene::CollisionUpdate() {
 	// 敵とプレイヤーの弾
 	const auto& bullets = player->GetBullets();
-	for (auto& enemy : enemies) {
+	for (auto& enemyObject : enemies) {
+		auto* enemy = enemyObject->GetComponent<Enemy>();
+		if (!enemy) continue;
+		for (auto& bullet : bullets) {
+			if (CheckOBBToOBB(enemy->GetOBB(), bullet->GetOBB())) {
+				enemy->OnCollisionBullet(bullet->GetDamage());
+				bullet->OnCollision();
+			}
+		}
+	}
+	for (auto& enemyObject : levelObjects) {
+		auto* enemy = enemyObject->GetComponent<Enemy>();
+		if (!enemy || !enemyObject->IsActive()) continue;
 		for (auto& bullet : bullets) {
 			if (CheckOBBToOBB(enemy->GetOBB(), bullet->GetOBB())) {
 				enemy->OnCollisionBullet(bullet->GetDamage());
@@ -1297,9 +1762,22 @@ void GamePlayScene::CollisionUpdate() {
 	}
 
 	// プレイヤーと敵の弾
-	for (auto& enemy : enemies) {
+	for (auto& enemyObject : enemies) {
+		auto* enemy = enemyObject->GetComponent<Enemy>();
+		if (!enemy) continue;
 		const auto& bullets = enemy->GetBullets();
 		for (auto& bullet : bullets) {
+			if (CheckOBBToOBB(player->GetOBB(), bullet->GetOBB())) {
+				player->OnCollision();
+				bullet->OnCollision();
+			}
+		}
+	}
+	for (auto& enemyObject : levelObjects) {
+		auto* enemy = enemyObject->GetComponent<Enemy>();
+		if (!enemy || !enemyObject->IsActive()) continue;
+		const auto& enemyBullets = enemy->GetBullets();
+		for (auto& bullet : enemyBullets) {
 			if (CheckOBBToOBB(player->GetOBB(), bullet->GetOBB())) {
 				player->OnCollision();
 				bullet->OnCollision();

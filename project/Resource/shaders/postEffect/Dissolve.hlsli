@@ -1,4 +1,4 @@
-float Random(float2 st)
+﻿float Random(float2 st)
 {
     return frac(sin(dot(st.xy, float2(12.9898f, 78.233f))) * 43758.5453123f);
 }

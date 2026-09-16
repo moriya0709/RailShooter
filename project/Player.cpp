@@ -22,6 +22,10 @@ void Player::Initialize() {
 	}
 }
 
+void Player::Update() {
+	Update(deltaTime_);
+}
+
 void Player::Update(float deltaTime) {
 	switch (currentState) {
 	case Player::Normal:
@@ -43,7 +47,53 @@ void Player::Draw() {
 	}
 }
 
-void Player::UpdateLockOn(const std::vector<std::unique_ptr<Enemy>>& enemies) {
+void Player::UpdateReticle() {
+	// レティクルの回転をプレイヤーの回転に応じて変化させる
+	reticleRotation[0] = rotate_.z * reticleRotationMultiplier[0];
+	reticleRotation[1] = rotate_.z * reticleRotationMultiplier[1];
+	reticleRotation[2] = rotate_.z * reticleRotationMultiplier[2];
+
+	Vector2 targetReticlePos = { 960.0f, 540.0f };
+	Vector2 targetReticleSize = { 700.0f, 700.0f };
+
+	if (lockedTarget && !lockedTarget->IsDead()) {
+		Camera* camera = CameraManager::GetInstance()->GetActiveCamera();
+		const Matrix4x4 viewProjMat = Multiply(camera->GetViewMatrix(), camera->GetProjectionMatrix());
+		const Vector3 targetPos = lockedTarget->GetTranslate();
+		const float w = targetPos.x * viewProjMat.m[0][3] + targetPos.y * viewProjMat.m[1][3] + targetPos.z * viewProjMat.m[2][3] + viewProjMat.m[3][3];
+
+		if (w > 0.0f) {
+			const float ndcX = (targetPos.x * viewProjMat.m[0][0] + targetPos.y * viewProjMat.m[1][0] + targetPos.z * viewProjMat.m[2][0] + viewProjMat.m[3][0]) / w;
+			const float ndcY = (targetPos.x * viewProjMat.m[0][1] + targetPos.y * viewProjMat.m[1][1] + targetPos.z * viewProjMat.m[2][1] + viewProjMat.m[3][1]) / w;
+
+			// Sprite は 1920x1080 の仮想スクリーン座標で描画し、Game ビューにも同じ比率で出力される。
+			targetReticlePos = {
+				(ndcX + 1.0f) * 0.5f * 1920.0f,
+				(1.0f - ndcY) * 0.5f * 1080.0f
+			};
+			targetReticleSize = { 150.0f, 150.0f };
+		}
+	}
+
+	const float reticleSpeed = 15.0f;
+	const float reticleT = 1.0f - std::exp(-reticleSpeed * deltaTime_);
+	reticlePosition[2].x = Lerp(reticlePosition[2].x, targetReticlePos.x, reticleT);
+	reticlePosition[2].y = Lerp(reticlePosition[2].y, targetReticlePos.y, reticleT);
+	reticleSize[2].x = Lerp(reticleSize[2].x, targetReticleSize.x, reticleT);
+	reticleSize[2].y = Lerp(reticleSize[2].y, targetReticleSize.y, reticleT);
+
+	for (int i = 0; i < 3; ++i) {
+		reticle[i]->SetColor(lockOnTimer >= requiredLockOnTime && lockedTarget != nullptr
+			? Vector4{ 1.0f, 0.0f, 0.0f, 1.0f }
+			: Vector4{ 1.0f, 1.0f, 1.0f, 1.0f });
+		reticle[i]->SetPosition(reticlePosition[i]);
+		reticle[i]->SetRotation(reticleRotation[i]);
+		reticle[i]->SetSize(reticleSize[i]);
+		reticle[i]->Update();
+	}
+}
+
+void Player::UpdateLockOn(const std::vector<Enemy*>& enemies) {
 	// カメラ情報の取得
 	Camera* camera = CameraManager::GetInstance()->GetActiveCamera();
 	Matrix4x4 viewMat = camera->GetViewMatrix();
@@ -84,8 +134,8 @@ void Player::UpdateLockOn(const std::vector<std::unique_ptr<Enemy>>& enemies) {
 	float centerX = 1920.0f * 0.5f;
 	float centerY = 1080.0f * 0.5f;
 
-	for (const auto& enemy : enemies) {
-		if (enemy->IsDead()) continue;
+	for (Enemy* enemy : enemies) {
+		if (!enemy || enemy->IsDead()) continue;
 
 		Vector3 targetPos = enemy->GetTranslate();
 
@@ -110,7 +160,7 @@ void Player::UpdateLockOn(const std::vector<std::unique_ptr<Enemy>>& enemies) {
 
 				if (dist < closestDist) {
 					closestDist = dist;
-					lockedTarget = enemy.get();
+					lockedTarget = enemy;
 				}
 			}
 		}
@@ -128,7 +178,7 @@ void Player::RemoveBulletTarget(const Enemy* enemy) {
 	}
 
 	// 発射済みのすべての弾にも通知する
-	for (auto& bullet : bullets_) {
+	for (auto* bullet : bullets_) {
 		bullet->RemoveTarget(enemy);
 	}
 }
@@ -216,14 +266,20 @@ void Player::Move() {
 
 
 		// 1発目：右の弾を生成
-		auto bulletRight = std::make_unique<PlayerBulletNormal>();
+		auto bulletRightObject = std::make_unique<GameObject>("PlayerBullet");
+		auto* bulletRight = bulletRightObject->AddComponent<PlayerBulletNormal>();
 		bulletRight->Initialize(rightPos, lockedTarget);
-		bullets_.push_back(std::move(bulletRight));
+		bulletRightObject->Initialize();
+		bullets_.push_back(bulletRight);
+		bulletObjects_.push_back(std::move(bulletRightObject));
 
 		// 2発目：左の弾を生成
-		auto bulletLeft = std::make_unique<PlayerBulletNormal>();
+		auto bulletLeftObject = std::make_unique<GameObject>("PlayerBullet");
+		auto* bulletLeft = bulletLeftObject->AddComponent<PlayerBulletNormal>();
 		bulletLeft->Initialize(leftPos, lockedTarget);
-		bullets_.push_back(std::move(bulletLeft));
+		bulletLeftObject->Initialize();
+		bullets_.push_back(bulletLeft);
+		bulletObjects_.push_back(std::move(bulletLeftObject));
 
 
 		bulletCoolTime = 0.2f; // クールタイムをリセット
@@ -272,14 +328,17 @@ void Player::UpdateNormal(float deltaTime) {
 		if (missileBurstTimer <= 0.0f) {
 
 			// 自機中央座標(translate_)で初期化
-			auto missile = std::make_unique<PlayerBulletMissile>();
+			auto missileObject = std::make_unique<GameObject>("PlayerMissile");
+			auto* missile = missileObject->AddComponent<PlayerBulletMissile>();
 			missile->Initialize(translate_, burstTarget);
 
 			// 左右フラグを渡して初期角度をセット
 			missile->SetInitAngle(isNextRight);
 			missile->SetSpiralDirection(isNextRight);
 
-			bullets_.push_back(std::move(missile));
+			missileObject->Initialize();
+			bullets_.push_back(missile);
+			bulletObjects_.push_back(std::move(missileObject));
 
 			// 次の弾の設定
 			isNextRight = !isNextRight;
@@ -289,14 +348,15 @@ void Player::UpdateNormal(float deltaTime) {
 	}
 
 	// ▼▼▼ 追加: 全ての弾を更新 ▼▼▼
-	for (auto& bullet : bullets_) {
-		bullet->Update();
+	for (auto& bulletObject : bulletObjects_) {
+		bulletObject->Update();
 	}
 
-	// ▼▼▼ 追加: デスフラグが立っている弾をリストから一括削除 ▼▼▼
-	bullets_.remove_if([](const std::unique_ptr<PlayerBullet>& bullet) {
-		return bullet->IsDead();
-		});
+	bullets_.remove_if([](const PlayerBullet* bullet) { return bullet->IsDead(); });
+	bulletObjects_.remove_if([](const std::unique_ptr<GameObject>& bulletObject) {
+		auto* bullet = bulletObject->GetComponent<PlayerBullet>();
+		return bullet && bullet->IsDead();
+	});
 
 	// 1. 傾きなどの目標値算出
 	float targetRoll = -playerInput.axisX * maxRollAngle;
@@ -343,69 +403,10 @@ void Player::UpdateNormal(float deltaTime) {
 	translate_.x = basePos.x + worldOffset.x;
 	translate_.y = basePos.y + worldOffset.y;
 	translate_.z = basePos.z + worldOffset.z;
-
-	// レティクルの回転を機体のロールに合わせる
-	reticleRotation[0] = rotate_.z * 3.0f;
-	reticleRotation[1] = rotate_.z;
-	reticleRotation[2] = rotate_.z * 2.0f;
-
-	// --- レティクル3(ロックオンカーソル)の目標値設定 ---
-	Vector2 targetReticlePos = { 960.0f, 540.0f };  // デフォルトは画面中央
-	Vector2 targetReticleSize = { 700.0f, 700.0f }; // デフォルトのサイズ
-
-	if (lockedTarget && !lockedTarget->IsDead()) {
-		// アクティブなカメラを取得
-		Camera* camera = CameraManager::GetInstance()->GetActiveCamera();
-		Matrix4x4 viewMat = camera->GetViewMatrix();
-		Matrix4x4 projMat = camera->GetProjectionMatrix();
-
-		// View行列とProjection行列の乗算 (※自身のライブラリの行列乗算関数を使用)
-		Matrix4x4 viewProjMat = Multiply(viewMat, projMat);
-
-		Vector3 targetPos = lockedTarget->GetTranslate();
-
-		// W成分の計算（カメラの前方にいるかどうかの判定に使用）
-		float w = targetPos.x * viewProjMat.m[0][3] + targetPos.y * viewProjMat.m[1][3] + targetPos.z * viewProjMat.m[2][3] + viewProjMat.m[3][3];
-
-		// w が 0より大きい場合のみ（カメラの背後にいる場合は除外）
-		if (w > 0.0f) {
-			// NDC (正規化デバイス座標系: -1.0 ～ 1.0) への変換
-			float ndcX = (targetPos.x * viewProjMat.m[0][0] + targetPos.y * viewProjMat.m[1][0] + targetPos.z * viewProjMat.m[2][0] + viewProjMat.m[3][0]) / w;
-			float ndcY = (targetPos.x * viewProjMat.m[0][1] + targetPos.y * viewProjMat.m[1][1] + targetPos.z * viewProjMat.m[2][1] + viewProjMat.m[3][1]) / w;
-
-			// ロックオン時の目標位置と縮小サイズを設定
-			targetReticlePos.x = (ndcX + 1.0f) * 0.5f * 1920.0f;
-			targetReticlePos.y = (1.0f - ndcY) * 0.5f * 1080.0f; // Y軸は反転させる
-
-			// ★ロックオン時にどれくらい縮めるか（お好みで調整してください）
-			targetReticleSize = { 150.0f, 150.0f };
-		}
+	if (GetGameObject()) {
+		GetGameObject()->GetTransform()->transform.translate = translate_;
+		GetGameObject()->GetTransform()->transform.rotate = rotate_;
+		GetGameObject()->GetTransform()->transform.scale = scale_;
 	}
 
-	// --- イージング（滑らかな補間）の計算 ---
-	// 追従スピード（値が大きいほど素早く移動・縮小します。10.0f〜20.0fあたりがお勧めです）
-	float reticleSpeed = 15.0f;
-	float reticleT = 1.0f - std::exp(-reticleSpeed * deltaTime);
-
-	// 現在の位置とサイズを目標値に向かって滑らかに変化させる
-	reticlePosition[2].x = Lerp(reticlePosition[2].x, targetReticlePos.x, reticleT);
-	reticlePosition[2].y = Lerp(reticlePosition[2].y, targetReticlePos.y, reticleT);
-
-	reticleSize[2].x = Lerp(reticleSize[2].x, targetReticleSize.x, reticleT);
-	reticleSize[2].y = Lerp(reticleSize[2].y, targetReticleSize.y, reticleT);
-
-	// レティクルの更新
-	for (int i = 0; i < 3; ++i) {
-		// ミサイルを撃てる状態なら赤色に変更
-		if (lockOnTimer >= requiredLockOnTime && lockedTarget != nullptr) {
-			reticle[i]->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f });
-		} else {
-			reticle[i]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
-		}
-
-		reticle[i]->SetPosition(reticlePosition[i]);
-		reticle[i]->SetRotation(reticleRotation[i]);
-		reticle[i]->SetSize(reticleSize[i]);
-		reticle[i]->Update();
-	}
 }

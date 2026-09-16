@@ -1,4 +1,4 @@
-// Gaussian blur
+﻿// 3x3 の分離可能な重みを掛け合わせ、周辺画素へガウス風のぼかしをかける。
 float3 SampleGaussian(Texture2D<float4> tex, SamplerState samp, float2 uv, float2 texelSize, float blurSigma)
 {
     float3 result = 0;
@@ -17,7 +17,7 @@ float3 SampleGaussian(Texture2D<float4> tex, SamplerState samp, float2 uv, float
     return result / totalWeight;
 }
 
-// Chromatic Aberration
+// 中心から離れるほど RGB のサンプル位置をずらす色収差。
 float3 SampleWithCA(Texture2D<float4> tex, SamplerState samp,
                     float2 uv, float2 toCenter, float caIntensity)
 {
@@ -31,7 +31,7 @@ float3 SampleWithCA(Texture2D<float4> tex, SamplerState samp,
     return float3(r, g, b);
 }
 
-// Spectral Gradient
+// 0〜1 の値を連続したスペクトル色へ変換する。
 float3 Spectrum(float t)
 {
     float3 r = float3(1.0, 0.0, 0.0); // Red
@@ -42,7 +42,7 @@ float3 Spectrum(float t)
     return color;
 }
 
-// ACES
+// HDR 色を表示可能な範囲へ収める ACES 近似トーンマッピング。
 float3 ACESFitted(float3 x)
 {
     float a = 2.51f;

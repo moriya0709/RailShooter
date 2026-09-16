@@ -41,7 +41,7 @@ void Level::LoadJson(const std::string fileName) {
 		std::string objType = object["type"].get<std::string>();
 
 		// ★ MESH と RAIL の両方に対応させる
-		if (objType == "MESH" || objType == "mesh" || objType == "RAIL" || objType == "rail" || objType == "SPAWNER" || objType == "spawner") {
+		if (objType == "MESH" || objType == "mesh" || objType == "RAIL" || objType == "rail" || objType == "SPAWNER" || objType == "spawner" || objType == "EMPTY" || objType == "empty") {
 			ObjectData newData{};
 			newData.type = objType;
 			newData.name = object["name"].get<std::string>();
@@ -61,6 +61,30 @@ void Level::LoadJson(const std::string fileName) {
 
 			if (object.contains("file_name")) {
 				newData.file_name = object["file_name"].get<std::string>();
+			}
+			if (object.contains("sprite_file_name")) {
+				newData.sprite_file_name = object["sprite_file_name"].get<std::string>();
+			}
+			if (object.contains("rect_transform")) {
+				const auto& rect = object["rect_transform"];
+				newData.rectPosition = { rect["position"][0].get<float>(), rect["position"][1].get<float>() };
+				newData.rectRotation = rect["rotation"].get<float>();
+				newData.rectScale = { rect["scale"][0].get<float>(), rect["scale"][1].get<float>() };
+			}
+
+			// 新形式では複数コンポーネントを保存する。既存レベルは type から補完する。
+			if (object.contains("components")) {
+				newData.components = object["components"].get<std::vector<std::string>>();
+			} else if (objType == "MESH" || objType == "mesh") {
+				newData.components.push_back("ModelRenderer");
+			} else if (objType == "RAIL" || objType == "rail") {
+				newData.components.push_back("RailPoint");
+				if (!newData.file_name.empty()) {
+					newData.components.push_back("ModelRenderer");
+				}
+			} else if (objType == "SPAWNER" || objType == "spawner") {
+				newData.components.push_back("EnemySpawner");
+				newData.components.push_back("ModelRenderer");
 			}
 
 			// SPAWNER だった場合、spawnDataList をJSONから復元する
@@ -121,6 +145,17 @@ void Level::SaveJson(const std::string fileName) {
 		newObjJson["name"] = obj.name;
 		if (!obj.file_name.empty()) {
 			newObjJson["file_name"] = obj.file_name;
+		}
+		if (!obj.sprite_file_name.empty()) {
+			newObjJson["sprite_file_name"] = obj.sprite_file_name;
+		}
+		if (std::find(obj.components.begin(), obj.components.end(), "RectTransform") != obj.components.end()) {
+			newObjJson["rect_transform"]["position"] = { obj.rectPosition.x, obj.rectPosition.y };
+			newObjJson["rect_transform"]["rotation"] = obj.rectRotation;
+			newObjJson["rect_transform"]["scale"] = { obj.rectScale.x, obj.rectScale.y };
+		}
+		if (!obj.components.empty()) {
+			newObjJson["components"] = obj.components;
 		}
 
 		// Transform 構造を作成 (x, z, y の順)

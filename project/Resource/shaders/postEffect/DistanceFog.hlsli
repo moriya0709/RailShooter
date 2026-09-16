@@ -1,4 +1,4 @@
-float3 DistanceFog(
+﻿float3 DistanceFog(
 float4 color,
 float3 distanceFogColor,
 float distanceFogStart,

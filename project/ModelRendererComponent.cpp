@@ -110,5 +110,6 @@ void ModelRendererComponent::Draw() {
 
 void ModelRendererComponent::SetModel(const std::string& filePath) {
 	// モデルを検索してセットする
+	modelPath_ = filePath;
 	model_ = ModelManager::GetInstance()->FindModel(filePath);
 }

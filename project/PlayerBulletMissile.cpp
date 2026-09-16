@@ -2,11 +2,15 @@
 #include "Camera.h"
 #include "TrailEffectManager.h"
 #include "Enemy.h"
+#include "GameObject.h"
 
 
 void PlayerBulletMissile::Initialize(const Vector3 position, Enemy* target) {
 	// 代入
 	transform.translate = position;
+	if (GetGameObject()) {
+		GetGameObject()->GetTransform()->transform = transform;
+	}
 	centerPos = position; // 中心軸の初期位置
 	target_ = target;
 
@@ -126,6 +130,9 @@ void PlayerBulletMissile::Update() {
 	transform.translate.x = centerPos.x + offset.x;
 	transform.translate.y = centerPos.y + offset.y;
 	transform.translate.z = centerPos.z + offset.z;
+	if (GetGameObject()) {
+		GetGameObject()->GetTransform()->transform = transform;
+	}
 
 	// パーティクルの更新
 	particle->SetTranslate(transform.translate);

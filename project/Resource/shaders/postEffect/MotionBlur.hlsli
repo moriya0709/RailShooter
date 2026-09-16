@@ -1,4 +1,4 @@
-float4 MotionBlur(
+﻿float4 MotionBlur(
 float4 color,
 int motionBlurSamples,
 float motionBlurScale,

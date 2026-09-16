@@ -15,6 +15,7 @@ public:
 
 	void SetModel(const std::string& filePath);
 	Model* GetModel() const { return model_; }
+	const std::string& GetModelPath() const { return modelPath_; }
 
 private:
 	// バッファリソース
@@ -36,9 +37,9 @@ private:
 
 	// モデル
 	Model* model_ = nullptr;
+	std::string modelPath_;
 	// カメラ
 	Camera* camera_ = nullptr;
 	// DirectXCommonのポインタ
 	DirectXCommon* dxCommon_ = nullptr;
 };
-

@@ -1,4 +1,4 @@
-float4 SpeedDistortion(float4 color, float speedDistortionStrength, float2 uv, Texture2D<float4> gCurrentTexture, SamplerState gSampler)
+﻿float4 SpeedDistortion(float4 color, float speedDistortionStrength, float2 uv, Texture2D<float4> gCurrentTexture, SamplerState gSampler)
 {
     // Vector
     float2 toCenter = uv - float2(0.5f, 0.5f);

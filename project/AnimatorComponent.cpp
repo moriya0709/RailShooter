@@ -18,6 +18,7 @@ void AnimatorComponent::Update() {
 void AnimatorComponent::PlayAnimation(const std::string& animationName, float blendTime) {
 	Model* model = GetModel();
 	if (model) {
+		// Model 側で現在アニメーションから指定クリップへクロスフェードする。
 		model->PlayAnimation(animationName, blendTime);
 	}
 }
@@ -25,6 +26,7 @@ void AnimatorComponent::PlayAnimation(const std::string& animationName, float bl
 void AnimatorComponent::StopAnimation() {
 	Model* model = GetModel();
 	if (model) {
+		// クリップを外してポーズ更新を止める。Model 自体の描画は継続する。
 		model->SetCurrentAnimation(nullptr);
 	}
 }
@@ -53,6 +55,7 @@ void AnimatorComponent::BoneLineUpdate(Line* line, const Vector3& scale, const V
 Model* AnimatorComponent::GetModel() const {
 	if (!GetGameObject()) return nullptr;
 
+	// Animator は ModelRendererComponent にのみ依存し、モデルを所有しない。
 	auto renderer = GetGameObject()->GetComponent<ModelRendererComponent>();
 	if (renderer) {
 		return renderer->GetModel();

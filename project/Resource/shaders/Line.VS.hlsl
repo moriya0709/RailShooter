@@ -1,4 +1,4 @@
-// Line.VS.hlsl
+﻿// Line.VS.hlsl
 
 // 頂点シェーダーへの入力（C++側の VertexData に対応）
 // ※C++側で position しかセットしていなくても、HLSL側はこれだけで受け取れます

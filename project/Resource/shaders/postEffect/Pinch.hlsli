@@ -1,4 +1,4 @@
-float4 Pinch(
+﻿float4 Pinch(
 float4 color,
 float pinchStrength,
 float2 pinchCenter, 

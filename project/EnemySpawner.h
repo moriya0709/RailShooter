@@ -6,6 +6,7 @@
 #include "Calc.h"
 #include "Enemy.h"
 #include "CommonStructs.h"
+#include "GameObject.h"
 
 class RailCamera;
 
@@ -14,7 +15,8 @@ public:
 	// 初期化（リストを受け取るように変更）
 	void Initialize(const Transform& transform, const std::vector<SpawnData>& spawnList, float distance = 20.0f);
 
-	std::vector<std::unique_ptr<Enemy>> Update(float deltaTime, const Vector3& cameraPos);
+	std::vector<std::unique_ptr<GameObject>> Update(float deltaTime, const Vector3& cameraPos);
+	void SetTransform(const Transform& transform) { transform_ = transform; }
 
 	// 全ての敵を出し切ったか
 	bool IsFinished() const { return currentSpawnIndex_ >= spawnList_.size(); }

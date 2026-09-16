@@ -5,6 +5,7 @@
 #include <wrl.h>
 #include <dxcapi.h>
 #include <thread>
+#include <memory>
 
 class DirectXCommon;
 

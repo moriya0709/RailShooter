@@ -1,9 +1,10 @@
-#include "RayMarching.hlsli"
+﻿#include "RayMarching.hlsli"
 
 VSOutput main(uint vertexID : SV_VertexID)
 {
     VSOutput o;
 
+    // 画面外まで覆う大きな三角形にして、矩形の対角線上に出る継ぎ目を回避する。
     float2 pos[3] =
     {
         float2(-1, -1),

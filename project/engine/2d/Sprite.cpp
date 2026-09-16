@@ -157,11 +157,13 @@ void Sprite::Draw() {
 
 // テクスチャ変更
 void Sprite::ChangeTexture(const std::string& textureFilePath) {
+	textureFilePath_ = textureFilePath;
 	TextureManager::GetInstance()->LoadTexture(textureFilePath);
 
 	// indexを差し替える
 	textureIndex =
 		TextureManager::GetInstance()->GetSrvIndex(textureFilePath);
+	AdjustTextureSize();
 }
 
 // テクスチャサイズ調整

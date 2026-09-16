@@ -2,15 +2,16 @@
 #include "TrailEffect.h"
 #include "Calc.h"
 #include "CollisionManager.h"
+#include "Component.h"
 
 class Enemy;
 
-class PlayerBullet {
+class PlayerBullet : public Component {
 public:
 	virtual ~PlayerBullet() = default;
 
 	virtual void Initialize(Vector3 position, Enemy* target) = 0;
-	virtual void Update() = 0;
+	virtual void Update() override = 0;
 
 	// 消滅しているか
 	bool IsDead() const { return isDead_; }

@@ -60,6 +60,7 @@ void LightManager::Bind(ID3D12GraphicsCommandList* commandList,
 	UINT rootParamIndexAmbient,
 	UINT rootParamIndexPoint,
 	UINT rootParamIndexSpot) {
+	// 4 種のライトを別々の CBV として渡し、各シェーダーが必要なものだけを参照する。
 	commandList->SetGraphicsRootConstantBufferView(rootParamIndexDirectional, directionalLightResource_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(rootParamIndexAmbient, ambientLightResource_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(rootParamIndexPoint, pointLightResource_->GetGPUVirtualAddress());
@@ -67,11 +68,13 @@ void LightManager::Bind(ID3D12GraphicsCommandList* commandList,
 }
 
 void LightManager::UpdateSunLight() {
+	// レイマーチング用の太陽と通常の 3D 描画の照明方向を一致させる。
 	SetDirectionalLightDirection(RayMarching::GetInstance()->GetSunDir());
 
 	Vector3 normalizedSunDir = Normalize(directionalLightData_->direction);
 	float sunHeight = -normalizedSunDir.y;
 
+	// 高度を昼夜の補間係数へ、地平線付近だけを夕焼け係数へ変換する。
 	float dayFactor = std::clamp(sunHeight * 4.0f, 0.0f, 1.0f);
 	float sunsetTime = Smoothstep(0.3f, 0.0f, sunHeight) * Smoothstep(-0.2f, 0.0f, sunHeight);
 
@@ -79,6 +82,7 @@ void LightManager::UpdateSunLight() {
 	Vector4 sunsetSunColor = { 1.0f, 0.45f, 0.05f, 1.0f };
 	Vector4 nightSunColor = { 0.08f, 0.10f, 0.18f, 1.0f };
 
+	// 昼→夕焼け→夜の順で二段階補間し、急激な色の変化を避ける。
 	Vector4 currentSunColor = Lerp(daySunColor, sunsetSunColor, sunsetTime);
 	currentSunColor = Lerp(nightSunColor, currentSunColor, dayFactor);
 	directionalLightData_->color = currentSunColor;

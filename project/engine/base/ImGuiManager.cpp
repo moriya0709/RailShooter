@@ -11,6 +11,9 @@ void ImGuiManager::Initialize([[maybe_unused]]WindowAPI* windowAPI, [[maybe_unus
 	
 	// ImGuiのコンテキストを生成
 	ImGui::CreateContext();
+	// エディタの各パネルはタイトルバーを掴んだ時だけ移動する。
+	// コンテンツ領域のドラッグは、ゲームビューやスライダーなどの操作へ渡す。
+	ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
 	// ImGuiのスタイルを設定
 	ImGui::StyleColorsDark();
 	// win32用初期化

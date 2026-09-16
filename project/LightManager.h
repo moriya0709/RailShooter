@@ -22,11 +22,11 @@ struct AmbientLight {
 
 // ポイントライトデータ
 struct PointLight {
-	Vector4 color;
-	Vector3 position;
+	Vector4 color;    // 光源色
+	Vector3 position; // ワールド座標
 	float intensity;   // 輝度
 	float radius;      // 有効範囲
-	int isDisplay;
+	int isDisplay;    // シェーダーでこの光源を有効化するフラグ
 };
 
 // スポットライトデータ
@@ -38,7 +38,7 @@ struct SpotLight {
 	float range;       // 距離減衰用
 	float innerCone;   // 内側角度
 	float outerCone;   // 外側角度
-	int isDisplay;
+	int isDisplay;     // シェーダーでこの光源を有効化するフラグ
 };
 
 class DirectXCommon;
@@ -87,7 +87,7 @@ public:
 	void SetSpotLightIntensity(float intensity) { spotLightData_->intensity = intensity; }
 	SpotLight* GetSpotLightData() { return spotLightData_; }
 
-	// 太陽光の自動計算
+	// RayMarching の太陽方向から、時間帯に応じた平行光・環境光の色を自動計算する。
 	void SetUseSunLight(bool use) { isSunLight_ = use; }
 	void UpdateSunLight();
 

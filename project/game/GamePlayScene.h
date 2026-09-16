@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include <DirectXMath.h>
+#include <string>
+#include <vector>
 #include "Camera.h"
 #include "Sprite.h"
 #include "Object.h"
@@ -10,6 +12,7 @@
 #include "SoundManager.h"
 #include "Input.h"
 #include "ImGuiManager.h"
+#include "ImGuiFunction.h"
 #include "BaseScene.h"
 #include "PostEffect.h"
 #include "RailCamera.h"
@@ -41,6 +44,8 @@ public:
 	void Finalize() override;
 
 private:
+	
+
 	Transform cameraTransform{
 	   { 1.0f, 1.0f, 1.0f }, // scale
 	   { 0.0f, 0.0f, 0.0f }, // rotate
@@ -159,6 +164,17 @@ private:
 	ImGuizmo::OPERATION currentGizmoOperation = ImGuizmo::TRANSLATE;
 	// 現在選択されているオブジェクト（とりあえず0番目のオブジェクト用）
 	GameObject* selectedObject = nullptr;
+	// Game ウィンドウの現在位置。ImGui の移動・リサイズに合わせて毎フレーム更新する。
+	Vector2 gameViewPosition = { 300.0f, 30.0f };
+	Vector2 gameViewSize = { 1260.0f, 790.0f };
+	bool isGameViewHovered = false;
+	std::string dockDragWindow;
+	DockGuideTarget dockGuideTarget = DockGuideTarget::None;
+	bool isDockGuideVisible = false;
+	std::string dockMergeTarget;
+	std::vector<DockWindowInfo> dockWindowInfos;
+	std::vector<std::string> mergedWindowTabs;
+	std::string activeMergedWindow;
 
 	// カメラ
 	std::unique_ptr<Camera> camera = nullptr;
@@ -170,13 +186,16 @@ private:
 	std::vector<std::unique_ptr <GameObject>> levelObjects;
 	// スポナーのプレビュー用オブジェクト
 	std::vector<std::unique_ptr<GameObject>> spawnerPreviewObjects;
-	// 敵スポナー
-	std::vector<std::unique_ptr<EnemySpawner>> enemySpawners;
+	// スポーンする距離
+	float spawnDistance = 20.0f;
+
 	// 敵
-	std::vector<std::unique_ptr<Enemy>> enemies;
+	std::vector<std::unique_ptr<GameObject>> enemies;
 	std::vector<std::unique_ptr<GameObject>> pathPreviewObjects; // パス移動の制御点のオブジェクト
 	// プレイヤー
-	std::unique_ptr<Player> player = nullptr;
+	std::unique_ptr<GameObject> defaultPlayerObject = nullptr;
+	GameObject* playerObject = nullptr;
+	Player* player = nullptr;
 	// タイマー
 	std::unique_ptr<GameTimer> gameTimer = nullptr;
 	float deltaTime;
@@ -197,7 +216,7 @@ private:
 	// レベルデータからオブジェクト生成、配置
 	void CreateLevel();
 	// Gizmo
-	void GizmoUpdate();
+	void GizmoUpdate(bool showEditorControls);
 
 	// 当たり判定
 	void CollisionUpdate();

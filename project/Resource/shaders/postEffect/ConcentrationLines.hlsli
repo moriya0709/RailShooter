@@ -1,4 +1,4 @@
-float3 ConcentrationLines(
+﻿float3 ConcentrationLines(
     float4 color,
     float concentrationLineIntensity,
     float2 concentrationLineCenter,

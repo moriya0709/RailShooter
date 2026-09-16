@@ -13,12 +13,12 @@ public:
 	void Draw2D();
 	void Draw3D();
 
-	// 次シーン予約
+	// フレーム途中で破棄しないよう、切り替え要求は次回 Update 冒頭まで保留する。
 	void SetNextScene(std::unique_ptr <BaseScene> nextScene) { nextScene_ = move(nextScene); }
 	// シングルトンインスタンスの取得
 	static SceneManager* GetInstance();
 
-	// シーンファクトリーのsetter
+	// シーン名から具象シーンを生成するファクトリーを設定する。
 	void SetSceneFactory(std::unique_ptr <AbstractSceneFactory> sceneFactory) { sceneFactory_ = move(sceneFactory); }
 	// シーンの変更
 	void ChangeScene(const std::string& sceneName);

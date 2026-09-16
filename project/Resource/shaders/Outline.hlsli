@@ -1,3 +1,4 @@
+﻿// 拡張した輪郭メッシュからピクセルシェーダーへ渡す基本補間値。
 struct VertexShaderOutput
 {
     float32_t4 position : SV_POSITION;

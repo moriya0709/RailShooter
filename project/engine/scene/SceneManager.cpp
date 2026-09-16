@@ -5,7 +5,7 @@ std::unique_ptr <SceneManager> SceneManager::instance = nullptr;
 void SceneManager::Update() {
 	// シーン切り替え処理
 	if (nextScene_) {
-		// 旧シーン終了
+		// 旧シーンを終了してから所有権を移すため、リソースの解放順序が安定する。
 		if (scene_) {
 			scene_->Finalize();
 		}
@@ -13,7 +13,7 @@ void SceneManager::Update() {
 		// シーン切り換え
 		scene_ = std::move(nextScene_);
 
-		// シーンマネージャーをセット
+		// 初期化より先に管理者を渡し、Initialize 内からのシーン操作を可能にする。
 		scene_->SetSceneManager(this);
 
 		// 次シーンを初期化
@@ -21,7 +21,7 @@ void SceneManager::Update() {
 
 	}
 
-	// 実行中シーンを更新
+	// 切り替え直後の新シーンも同じフレームから更新する。
 	scene_->Update();
 
 }

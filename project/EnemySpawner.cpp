@@ -12,8 +12,8 @@ void EnemySpawner::Initialize(const Transform& transform, const std::vector<Spaw
 	isTriggered_ = false;
 }
 
-std::vector<std::unique_ptr<Enemy>> EnemySpawner::Update(float deltaTime, const Vector3& cameraPos) {
-	std::vector<std::unique_ptr<Enemy>> spawnedEnemies;
+std::vector<std::unique_ptr<GameObject>> EnemySpawner::Update(float deltaTime, const Vector3& cameraPos) {
+	std::vector<std::unique_ptr<GameObject>> spawnedEnemies;
 
 	if (IsFinished()) {
 		return spawnedEnemies;
@@ -35,11 +35,13 @@ std::vector<std::unique_ptr<Enemy>> EnemySpawner::Update(float deltaTime, const 
 		while (currentSpawnIndex_ < spawnList_.size() && timer_ >= spawnList_[currentSpawnIndex_].spawnTime) {
 
 			const auto& data = spawnList_[currentSpawnIndex_];
-			std::unique_ptr<Enemy> enemy = nullptr;
+			std::unique_ptr<GameObject> enemyObject;
+			Enemy* enemy = nullptr;
 
 			// ★ファクトリー処理：文字列(type)を見てクラスを切り替える
 			if (data.type == "NORMAL") {
-				enemy = std::make_unique<EnemyNormal>();
+				enemyObject = std::make_unique<GameObject>("EnemyNormal");
+				enemy = enemyObject->AddComponent<EnemyNormal>();
 			} else if (data.type == "FAST") {
 				// enemy = std::make_unique<EnemyFast>();
 			}
@@ -68,9 +70,9 @@ std::vector<std::unique_ptr<Enemy>> EnemySpawner::Update(float deltaTime, const 
 					enemy->SetRailPoints(rPoints);
 				}
 
-				enemy->Initialize();
+				enemyObject->Initialize();
 
-				spawnedEnemies.push_back(std::move(enemy));
+				spawnedEnemies.push_back(std::move(enemyObject));
 			}
 
 			// 次の敵へ

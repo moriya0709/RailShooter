@@ -1,4 +1,4 @@
-struct VSInput
+﻿struct VSInput
 {
     float4 pos : POSITION;
     float4 color : COLOR;

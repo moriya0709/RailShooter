@@ -8,6 +8,8 @@
 #include "Sprite.h"
 #include "PlayerBullet.h"
 #include "CollisionManager.h"
+#include "Component.h"
+#include "GameObject.h"
 
 // プレイヤーの操作入力値 (-1.0 ～ 1.0)
 struct PlayerInput {
@@ -17,13 +19,17 @@ struct PlayerInput {
 
 class Enemy;
 
-class Player {
+class Player : public Component {
 public:
-	void Initialize();
+	void Initialize() override;
+	void Update() override;
     void Update(float deltaTime);
-    void Draw();
+	void Draw() override;
+	void SetDeltaTime(float deltaTime) { deltaTime_ = deltaTime; }
 
-    void UpdateLockOn(const std::vector<std::unique_ptr<Enemy>>& enemies);
+    void UpdateLockOn(const std::vector<Enemy*>& enemies);
+	// カメラと敵の更新後に呼び、ロックオン照準を最新の画面位置へ合わせる。
+	void UpdateReticle();
     // 削除される敵のポインタを受け取り、もし自分のターゲットなら破棄する
     void RemoveBulletTarget(const Enemy* enemy);
 
@@ -33,7 +39,7 @@ public:
     Vector3 GetTranslate() const { return translate_; }
     bool IsHit() const { return isHit; }
 
-    const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }
+	const std::list<PlayerBullet*>& GetBullets() const { return bullets_; }
 
     void OnCollision();
 
@@ -66,10 +72,10 @@ private:
     float cameraTiltRatio = 0.35f;
 
     // G力表現によるカメラのローカル位置ズレ（X: 左右, Y: 上下）
-    Vector3 maxGForceOffset = { 0.4f, 0.3f, 0.0f };
+    Vector3 maxGForceOffset = { 1.4f, 0.3f, 0.0f };
 
     // 補間スピード (値が大きいほどクイックに追従)
-    float rotationSpeed = 1.0f;
+    float rotationSpeed = 2.0f;
     float positionSpeed = 5.0f;
 
     // --- 現在の内部状態 ---
@@ -87,7 +93,8 @@ private:
     float cameraFollowRatio = 0.3f;                      // カメラが機体の移動にどれだけ追従するか (0.0=追従なし, 1.0=完全追従)
 
     // 弾
-    std::list<std::unique_ptr<PlayerBullet>> bullets_;
+	std::list<std::unique_ptr<GameObject>> bulletObjects_;
+	std::list<PlayerBullet*> bullets_;
 	float bulletCoolTime = 0.1f; // 弾の発射間隔
 
     // レティクル
@@ -95,6 +102,7 @@ private:
 	Vector2 reticlePosition[3] = { {960.0f, 540.0f}, {960.0f, 540.0f}, {960.0f, 540.0f} };
     Vector2 reticleSize[3] = { {800.0f, 800.0f}, {800.0f, 800.0f}, {700.0f, 700.0f} };
 	float reticleRotation[3] = { 0.0f, 0.0f, 0.0f };
+	float reticleRotationMultiplier[3] = { 5.0f, 1.0f, 3.0f }; // レティクルの回転角度に対する倍率
 
     // 当たったか
     bool isHit = false;
@@ -113,9 +121,10 @@ private:
     float requiredLockOnTime = 2.0f;       // ミサイル発射に必要なロックオン時間（秒）
     int remainingMissiles = 0;       // 残りの発射可能数
     float missileBurstTimer = 0.0f;  // 次のミサイル発射までのタイマー
-    float missileInterval = 0.5f;   // ミサイル同士の発射間隔（秒）
-    bool isNextRight = true;         // 次に撃つ位置（true: 右肩, false: 左肩）
-    Enemy* burstTarget = nullptr;    // 連射対象の敵ポインタ
+    float missileInterval = 0.3f;   // ミサイル同士の発射間隔（秒）
+	bool isNextRight = true;         // 次に撃つ位置（true: 右肩, false: 左肩）
+	Enemy* burstTarget = nullptr;    // 連射対象の敵ポインタ
+	float deltaTime_ = 1.0f / 60.0f;
 
     // 移動
     void Move();

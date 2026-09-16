@@ -21,6 +21,9 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	InitializeViewport();
 	// シザリング矩形の初期化
 	InitializeScissorRect();
+	// 通常時は従来どおり画面全体へ最終合成する。
+	outputViewport_ = viewport_;
+	outputScissorRect_ = scissorRect_;
 
 	// ==========================================
 	// ★修正1： Allocate(3) を Allocate(1) に変更！
@@ -399,8 +402,8 @@ void PostEffect::Draw() {
 	cmdList->SetGraphicsRoot32BitConstants(6, 1, &passId, 0);
 	cmdList->SetPipelineState(graphicsPipelineStateFinal.Get());
 
-	cmdList->RSSetViewports(1, &viewport_);
-	cmdList->RSSetScissorRects(1, &scissorRect_);
+	cmdList->RSSetViewports(1, &outputViewport_);
+	cmdList->RSSetScissorRects(1, &outputScissorRect_);
 
 	TransitionBackBuffer(D3D12_RESOURCE_STATE_RENDER_TARGET);
 	D3D12_CPU_DESCRIPTOR_HANDLE backBufferRtv = dxCommon_->GetBackBufferRTVHandle();
@@ -449,6 +452,22 @@ void PostEffect::PreDraw() {
 void PostEffect::PostDraw() {
 	TransitionResource(renderTarget_.resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	TransitionResource(velocityRenderTarget_.resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+}
+
+void PostEffect::SetOutputViewport(float left, float top, float width, float height) {
+	// 幅・高さが 0 になる（ウィンドウを折りたたんだ場合など）と D3D12 が不正になるため、1px は確保する。
+	const float safeWidth = width > 1.0f ? width : 1.0f;
+	const float safeHeight = height > 1.0f ? height : 1.0f;
+	outputViewport_.TopLeftX = left;
+	outputViewport_.TopLeftY = top;
+	outputViewport_.Width = safeWidth;
+	outputViewport_.Height = safeHeight;
+	outputViewport_.MinDepth = 0.0f;
+	outputViewport_.MaxDepth = 1.0f;
+	outputScissorRect_.left = static_cast<LONG>(left);
+	outputScissorRect_.top = static_cast<LONG>(top);
+	outputScissorRect_.right = static_cast<LONG>(left + safeWidth);
+	outputScissorRect_.bottom = static_cast<LONG>(top + safeHeight);
 }
 
 void PostEffect::HightFogUpdate(Camera* camera) {

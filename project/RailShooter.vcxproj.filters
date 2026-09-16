@@ -111,9 +111,6 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="engine\base\ImGuiManager.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
     <ClCompile Include="game\TitleScene.cpp">
       <Filter>ソース ファイル\game</Filter>
     </ClCompile>
@@ -189,6 +186,7 @@
     <ClCompile Include="engine\2d\Sprite.cpp">
       <Filter>ソース ファイル\engine\2d</Filter>
     </ClCompile>
+    <ClCompile Include="SpriteRendererComponent.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp">
       <Filter>ソース ファイル\engine\2d</Filter>
     </ClCompile>
@@ -257,6 +255,10 @@
     <ClCompile Include="EnemyNormalBullet.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="PlayerBulletMissile.cpp" />
+    <ClCompile Include="engine\base\ImGuiManager.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGuiFunction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -272,9 +274,6 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui_internal.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\base\ImGuiManager.h">
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_rectpack.h">
@@ -376,6 +375,7 @@
     <ClInclude Include="engine\2d\Sprite.h">
       <Filter>ヘッダー ファイル\engine\2d</Filter>
     </ClInclude>
+    <ClInclude Include="SpriteRendererComponent.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h">
       <Filter>ヘッダー ファイル\engine\2d</Filter>
     </ClInclude>
@@ -428,6 +428,8 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="ModelRendererComponent.h" />
+    <ClInclude Include="RailPointComponent.h" />
+    <ClInclude Include="RectTransformComponent.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="engine\3d\Object.h" />
     <ClInclude Include="AnimatorComponent.h" />
@@ -441,10 +443,15 @@
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="EnemyNormal.h" />
     <ClInclude Include="EnemySpawner.h" />
+    <ClInclude Include="EnemySpawnerComponent.h" />
     <ClInclude Include="EnemyBullet.h" />
     <ClInclude Include="EnemyNormalBullet.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="PlayerBulletMissile.h" />
+    <ClInclude Include="engine\base\ImGuiManager.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiFunction.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

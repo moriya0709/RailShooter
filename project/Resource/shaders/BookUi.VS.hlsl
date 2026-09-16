@@ -1,4 +1,4 @@
-struct VS_INPUT
+﻿struct VS_INPUT
 {
     float4 pos : POSITION; // SV_POSITION ではなく POSITION
     float2 uv : TEXCOORD0;

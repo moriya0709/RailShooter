@@ -6,11 +6,11 @@
 
 #include "Enemy.h"
 #include "Calc.h"
-#include "Object.h"
 #include "EnemyBullet.h"
 #include "CommonStructs.h"
 #include <vector>
 #include "CollisionManager.h"
+#include "GameObject.h"
 
 class EnemyNormal : public Enemy {
 public:
@@ -37,7 +37,7 @@ public:
 	// レール追従用のオフセットをセットd
 	void SetRailOffsetProgress(float offset) override { railOffsetProgress = offset; }
 
-	const std::list<std::unique_ptr<EnemyBullet>>& GetBullets() override { return bullets_; }
+	const std::list<EnemyBullet*>& GetBullets() override { return bullets_; }
 
 	// OBBを取得
 	OBB GetOBB() override;
@@ -72,7 +72,8 @@ public:
 	float railOffsetProgress = 2.0f;    // プレイヤーよりどれくらい先を走るか（例：2.0なら2区間先）
 
 	// 弾
-	std::list<std::unique_ptr<EnemyBullet>> bullets_;
+	std::list<std::unique_ptr<GameObject>> bulletObjects_;
+	std::list<EnemyBullet*> bullets_;
 	float shotCoolTime = 0.5f; // 射撃のクールタイム
 
 	// 当たったか
@@ -81,9 +82,6 @@ public:
 
 	// HP
 	int hp = 20;
-
-	// 3Dオブジェクト
-	std::unique_ptr <Object> object = nullptr;
 
 };
 

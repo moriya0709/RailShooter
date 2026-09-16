@@ -1,3 +1,4 @@
+﻿// Skybox 用の入出力。キューブのローカル座標はキューブマップの参照方向にも使う。
 struct VertexShaderOutput
 {
     float32_t4 position : SV_POSITION;

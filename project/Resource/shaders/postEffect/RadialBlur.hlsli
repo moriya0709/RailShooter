@@ -1,4 +1,4 @@
-float4 RadialBlur(
+﻿float4 RadialBlur(
 float4 color,
 float2 blurCenter,
 float blurWidth,

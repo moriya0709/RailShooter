@@ -1,21 +1,22 @@
 ﻿#include "EnemyNormal.h"
 #include "CameraManager.h"
 #include "EnemyNormalBullet.h"
+#include "GameObject.h"
+#include "ModelRendererComponent.h"
 
 void EnemyNormal::Initialize() {
-	// 3Dオブジェクトの生成
-	auto camera = CameraManager::GetInstance()->GetActiveCamera();
-	object = std::make_unique<Object>();
-	object->Initialize(camera);
-	object->SetModel("ball.gltf");
+	// 描画・Transform は同じ GameObject のコンポーネントに委譲する。
+	if (GetGameObject()) {
+		GetGameObject()->GetTransform()->transform = transform;
+		auto* renderer = GetGameObject()->GetComponent<ModelRendererComponent>();
+		if (!renderer) {
+			renderer = GetGameObject()->AddComponent<ModelRendererComponent>();
+		}
+		renderer->SetModel("ball.gltf");
+	}
 
 	// 初期位置を保持
 	initialPosition = transform.translate;
-
-	object->SetTranslate(transform.translate);
-	object->SetRotate(transform.rotate);
-	object->SetScale(transform.scale);
-
 }
 
 void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
@@ -110,10 +111,9 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 	}
 
 	// 座標変更後に 3D オブジェクトへセットして更新dw
-	object->SetTranslate(transform.translate);
-	object->SetRotate(transform.rotate);
-	object->SetScale(transform.scale);
-	object->Update();
+	if (GetGameObject()) {
+		GetGameObject()->GetTransform()->transform = transform;
+	}
 
 	// 毎フレームクールダウンを減らす
 	if (shotCoolTime > 0.0f) {
@@ -122,27 +122,31 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 
 	// 弾の生成
 	if (shotCoolTime <= 0) {
-		auto bullet = std::make_unique<EnemyNormalBullet>();
+		auto bulletObject = std::make_unique<GameObject>("EnemyBullet");
+		auto* bullet = bulletObject->AddComponent<EnemyNormalBullet>();
 		bullet->Initialize(transform.translate, playerPosition);
-		bullets_.push_back(std::move(bullet));
+		bulletObject->Initialize();
+		bullets_.push_back(bullet);
+		bulletObjects_.push_back(std::move(bulletObject));
 
 		shotCoolTime = 0.5f; // クールタイムをリセット
 	}
 
 
 	// 全ての弾を更新
-	for (auto& bullet : bullets_) {
-		bullet->Update();
+	for (auto& bulletObject : bulletObjects_) {
+		bulletObject->Update();
 	}
 
-	// デスフラグが立っている弾をリストから一括削除
-	bullets_.remove_if([](const std::unique_ptr<EnemyBullet>& bullet) {
-		return bullet->IsDead();
-		});
+	bullets_.remove_if([](const EnemyBullet* bullet) { return bullet->IsDead(); });
+	bulletObjects_.remove_if([](const std::unique_ptr<GameObject>& bulletObject) {
+		auto* bullet = bulletObject->GetComponent<EnemyBullet>();
+		return bullet && bullet->IsDead();
+	});
 }
 
 void EnemyNormal::Draw() {
-	object->Draw();
+	// ModelRendererComponent が GameObject::Draw() で描画する。
 }
 
 Vector3 EnemyNormal::GetSplinePosition(const std::vector<Vector3>& points, float progress) {

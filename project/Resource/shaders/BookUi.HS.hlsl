@@ -1,4 +1,4 @@
-struct VS_OUTPUT
+﻿struct VS_OUTPUT
 {
     float3 pos : WORLDPOS;
     float2 uv : TEXCOORD;

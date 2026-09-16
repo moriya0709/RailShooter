@@ -1,13 +1,13 @@
-#include "Sprite.hlsli"
+﻿#include "Sprite.hlsli"
 
 struct Material
 {
     float4 color;
     int enableLighting;
-    float3 pad1; // バイト合わせ
+    float3 pad1;
     float4x4 uvTransform;
     float3 emissive;
-    float pad2; // バイト合わせ
+    float pad2;
 };
 
 ConstantBuffer<Material> gMaterial : register(b0);

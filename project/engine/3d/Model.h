@@ -79,7 +79,7 @@ private:
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
+	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> materialResources;
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource;
 	Microsoft::WRL::ComPtr<ID3D12Resource> inputVertexResource;		// 入力用（変形前：SRV）
 	Microsoft::WRL::ComPtr<ID3D12Resource> outputVertexResource;	// 出力用（変形後：UAV 兼 描画用VBV）
@@ -87,7 +87,7 @@ private:
 
 	// バッファリソース内のデータを指すポインタ
 	VertexData* vertexData = nullptr;
-	Material* materialData = nullptr;
+	std::vector<Material*> materialDatas;
 
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
@@ -126,9 +126,6 @@ private:
 	// スキンクラスタ
 	SkinCluster skinCluster;
 
-	// エミッシブが有効か
-	bool isEmissive = false;
-
 	// ModelCommonのポインタ
 	ModelCommon* modelCommon_ = nullptr;
 	// DirectXCommonのポインタ
@@ -148,4 +145,3 @@ private:
 	void DispatchSkinning();
 
 };
-

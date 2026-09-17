@@ -75,33 +75,28 @@ void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, SrvMan
 
 	// *マテリアル* //
 
-	// リソース
-	materialResource = dxCommon_->CreateBufferResource(sizeof(Material));
-	// 書き込む為のアドレスを取得
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-	// 初期値を書き込む
-	materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData->enableLighting = true;
-	materialData->enableToonShading = true;
-	materialData->uvTransform = MakeIdentity4x4();
-
-	if (isEmissive) {
-		materialData->emissive = modelData.material.emissive;
-	} else {
-		materialData->emissive = {0.0f,0.0f,0.0f};
+	// メッシュごとに異なるマテリアルを使えるよう、マテリアル数分の定数バッファを用意する
+	materialResources.resize(modelData.materials.size());
+	materialDatas.resize(modelData.materials.size());
+	for (size_t materialIndex = 0; materialIndex < modelData.materials.size(); ++materialIndex) {
+		materialResources[materialIndex] = dxCommon_->CreateBufferResource(sizeof(Material));
+		materialResources[materialIndex]->Map(0, nullptr, reinterpret_cast<void**>(&materialDatas[materialIndex]));
+		Material* currentMaterial = materialDatas[materialIndex];
+		currentMaterial->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+		currentMaterial->enableLighting = true;
+		currentMaterial->enableToonShading = true;
+		currentMaterial->uvTransform = MakeIdentity4x4();
+		currentMaterial->emissive = modelData.materials[materialIndex].emissive;
+		currentMaterial->shininess = 70.0f;
+		currentMaterial->fresnelColor = { 1.0f, 1.0f, 1.0f, 0.5f };
+		currentMaterial->fresnelPower = 4.0f;
+		currentMaterial->rimColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		currentMaterial->rimThreshold = 0.5f;
+		currentMaterial->environmentCoefficient = 0.0f;
 	}
-
-	// ハイライト
-	materialData->shininess = 70.0f;
-
-	materialData->fresnelColor = { 1.0f, 1.0f, 1.0f, 0.5f };
-	materialData->fresnelPower = 4.0f;
-	materialData->rimColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialData->rimThreshold = 0.5f;
 	// 環境マップ用テクスチャ
 	enviromentTexture = "Resource/rostock_laage_airport_4k.dds";
 	TextureManager::GetInstance()->LoadTexture(enviromentTexture);
-	materialData->environmentCoefficient = 0.0f;
 	
 	// *インデックス* //
 	indexResource = dxCommon_->CreateBufferResource(sizeof(uint32_t) * modelData.indices.size());
@@ -121,10 +116,13 @@ void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, SrvMan
 
 	// *テクスチャ* //
 
-	// 読み込み
-	TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
-	// 番号取得
-	modelData.material.textureIndex = TextureManager::GetInstance()->GetSrvIndex(modelData.material.textureFilePath);
+	for (MaterialData& material : modelData.materials) {
+		TextureManager::GetInstance()->LoadTexture(material.textureFilePath);
+		material.textureIndex = TextureManager::GetInstance()->GetSrvIndex(material.textureFilePath);
+	}
+	if (!modelData.materials.empty()) {
+		modelData.material = modelData.materials.front();
+	}
 
 }
 
@@ -212,15 +210,19 @@ void Model::Draw() {
 	// インデックスバッファビューを設定
 	dxCommon_->GetCommandList()->IASetIndexBuffer(&indexBufferView);
 
-	// マテリアルCBufferの場所を設定
-	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-	// SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
-	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(modelData.material.textureFilePath));
 	// 環境マップ用テクスチャのセット
 	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(10, TextureManager::GetInstance()->GetSrvHandleGPU(enviromentTexture));
 
-	// 描画
-	dxCommon_->GetCommandList()->DrawIndexedInstanced(static_cast<UINT>(modelData.indices.size()), 1, 0, 0, 0);
+	// メッシュ範囲ごとに対応するテクスチャをセットして描画する
+	for (const MaterialRange& range : modelData.materialRanges) {
+		assert(range.materialIndex < materialResources.size());
+		const MaterialData& material = modelData.materials[range.materialIndex];
+		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(
+			0, materialResources[range.materialIndex]->GetGPUVirtualAddress());
+		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(
+			2, TextureManager::GetInstance()->GetSrvHandleGPU(material.textureFilePath));
+		dxCommon_->GetCommandList()->DrawIndexedInstanced(range.indexCount, 1, range.indexOffset, 0, 0);
+	}
 }
 
 void Model::BoneLineUpdate(Line* line, const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
@@ -330,6 +332,27 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 	assert(scene != nullptr && "ファイルの読み込みに失敗しました。");
 	assert(scene->HasMeshes());
 
+	// シーンの全マテリアルを先に読み込む。テクスチャがない場合はチェッカーテクスチャを使う。
+	constexpr const char* kFallbackTexture = "Resource/axis/uvChecker.png";
+	modelData.materials.resize(scene->mNumMaterials);
+	for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; ++materialIndex) {
+		aiMaterial* material = scene->mMaterials[materialIndex];
+		MaterialData& materialData = modelData.materials[materialIndex];
+		materialData.textureFilePath = kFallbackTexture;
+
+		if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
+			aiString textureFilePath;
+			if (material->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilePath) == AI_SUCCESS) {
+				materialData.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
+			}
+		}
+
+		aiColor3D emissiveColor(0.0f, 0.0f, 0.0f);
+		if (material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor) == AI_SUCCESS) {
+			materialData.emissive = { emissiveColor.r, emissiveColor.g, emissiveColor.b };
+		}
+	}
+
 	// メッシュを解析する
 	for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex) {
 		aiMesh* mesh = scene->mMeshes[meshIndex];
@@ -350,6 +373,7 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 		}
 
 		// インデックスを解析
+		const uint32_t indexOffset = static_cast<uint32_t>(modelData.indices.size());
 		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
 			aiFace& face = mesh->mFaces[faceIndex];
 			assert(face.mNumIndices == 3);
@@ -357,6 +381,11 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 				modelData.indices.push_back(baseVertex + face.mIndices[element]); // オフセットを足す
 			}
 		}
+		modelData.materialRanges.push_back({
+			indexOffset,
+			static_cast<uint32_t>(modelData.indices.size()) - indexOffset,
+			mesh->mMaterialIndex
+			});
 
 		// スキンクラスタを解析
 		for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex) {
@@ -384,28 +413,8 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 		}
 	}
 
-	// マテリアルを解析する
-	for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; ++materialIndex) {
-		aiMaterial* material = scene->mMaterials[materialIndex];
-		// ディフューズテクスチャの取得
-		if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
-			aiString textureFilePath;
-			material->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilePath);
-			modelData.material.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
-		}
-
-		// エミッシブの取得
-		aiColor3D emissiveColor(0.0f, 0.0f, 0.0f);
-		if (material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor) == AI_SUCCESS) {
-			if (emissiveColor.r > 0.0f || emissiveColor.g > 0.0f || emissiveColor.b > 0.0f) {
-				modelData.material.emissive.x = emissiveColor.r;
-				modelData.material.emissive.y = emissiveColor.g;
-				modelData.material.emissive.z = emissiveColor.b;
-
-				// エミッシブを有効
-				isEmissive = true;
-			}
-		}
+	if (!modelData.materials.empty()) {
+		modelData.material = modelData.materials.front();
 	}
 
 	// ノードを解析する

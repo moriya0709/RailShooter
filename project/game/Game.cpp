@@ -67,6 +67,7 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.gltf");
 	ModelManager::GetInstance()->LoadModel("Resource/human", "walk.gltf");
 	ModelManager::GetInstance()->LoadModel("Resource/mado", "mado.gltf");
+	ModelManager::GetInstance()->LoadModel("Resource/city", "GT ArcLink City Data Megapolis.obj");
 
 	// 追加のアニメーションを読み込む
 	ModelManager::GetInstance()->LoadAnimation("walk.gltf","walk", "Resource/human", "walk.gltf");

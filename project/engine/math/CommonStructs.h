@@ -25,6 +25,12 @@ struct MaterialData {
 	uint32_t textureIndex = 0;
 	Vector3 emissive;
 };
+// 1つのメッシュを描画するための、インデックス範囲と使用マテリアルの対応
+struct MaterialRange {
+	uint32_t indexOffset = 0;
+	uint32_t indexCount = 0;
+	uint32_t materialIndex = 0;
+};
 // 頂点データ
 struct VertexData {
 	Vector4 position; // 頂点座標
@@ -62,6 +68,9 @@ struct ModelData {
     std::map<std::string, JointWeightData> skinClusterData;
 	std::vector<VertexData> vertices;
 	std::vector<uint32_t> indices;
+	std::vector<MaterialData> materials;
+	std::vector<MaterialRange> materialRanges;
+	// 既存の呼び出し元との互換用。materials[0] と同じ内容を保持する。
 	MaterialData material;
 	Node rootNode;
 };

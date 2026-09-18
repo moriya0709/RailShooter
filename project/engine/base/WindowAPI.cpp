@@ -1,9 +1,11 @@
 ﻿#include "WindowAPI.h"
+#include "Input.h"
 
 #ifdef USE_IMGUI
 #include <externals/imgui/imgui.h>
 #include <externals/imgui/imgui_impl_win32.h>
 #endif
+#include <dinput.h>
 #pragma comment(lib,"winmm.lib")
 
 #ifdef USE_IMGUI
@@ -67,8 +69,9 @@ void WindowAPI::Initialize() {
 		nullptr					// オプション
 	);
 
-	// フルスクリーン
+	// フルスクリーンにする
 	//SetFullscreen(true);
+
 	// マウスカーソル表示
 	ShowCursor(true);
 
@@ -80,6 +83,12 @@ void WindowAPI::Initialize() {
 }
 
 void WindowAPI::Update() {
+	auto input = Input::GetInstance();
+
+	// F11キーでフルスクリーン切り替え
+	if (input->TriggerKey(DIK_F11)) {
+		ToggleFullscreen();
+	}
 }
 
 void WindowAPI::Finalize() {
@@ -103,7 +112,10 @@ bool WindowAPI::ProcessMessage() {
 }
 
 void WindowAPI::ToggleFullscreen() {
-	SetFullscreen(isFullscreen_);
+	if(isFullscreen_)
+		SetFullscreen(false);
+	else
+		SetFullscreen(true);
 }
 
 void WindowAPI::SetFullscreen(bool fullscreen) {
@@ -112,12 +124,11 @@ void WindowAPI::SetFullscreen(bool fullscreen) {
 	}
 
 	if (fullscreen) {
-
 		// 現在のウィンドウサイズ保存
 		GetWindowRect(hwnd, &windowRect_);
 
-		// スタイル変更
-		SetWindowLong(hwnd, GWL_STYLE, WS_POPUP);
+		// スタイル変更 (WS_VISIBLE を追加)
+		SetWindowLong(hwnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
 
 		// モニタサイズ取得
 		MONITORINFO mi{};
@@ -127,7 +138,7 @@ void WindowAPI::SetFullscreen(bool fullscreen) {
 			&mi
 		);
 
-		// フルスクリーン化
+		// フルスクリーン化 (SWP_SHOWWINDOWを追加)
 		SetWindowPos(
 			hwnd,
 			HWND_TOP,
@@ -135,14 +146,13 @@ void WindowAPI::SetFullscreen(bool fullscreen) {
 			mi.rcMonitor.top,
 			mi.rcMonitor.right - mi.rcMonitor.left,
 			mi.rcMonitor.bottom - mi.rcMonitor.top,
-			SWP_FRAMECHANGED
+			SWP_FRAMECHANGED | SWP_SHOWWINDOW
 		);
 	} else {
+		// ウィンドウスタイル戻す (WS_VISIBLE を追加)
+		SetWindowLong(hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
 
-		// ウィンドウスタイル戻す
-		SetWindowLong(hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
-
-		// 元のサイズに戻す
+		// 元のサイズに戻す (SWP_SHOWWINDOWを追加)
 		SetWindowPos(
 			hwnd,
 			HWND_NOTOPMOST,
@@ -150,7 +160,7 @@ void WindowAPI::SetFullscreen(bool fullscreen) {
 			windowRect_.top,
 			windowRect_.right - windowRect_.left,
 			windowRect_.bottom - windowRect_.top,
-			SWP_FRAMECHANGED
+			SWP_FRAMECHANGED | SWP_SHOWWINDOW
 		);
 	}
 

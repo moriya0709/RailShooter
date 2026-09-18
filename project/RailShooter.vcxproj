@@ -22,6 +22,7 @@
     <ClCompile Include="application\easing\Easing.cpp" />
     <ClCompile Include="application\radarChart\RadarChart.cpp" />
     <ClCompile Include="application\radarChart\RadarChartCommon.cpp" />
+	<ClCompile Include="ColliderComponent.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="EnemyNormal.cpp" />
     <ClCompile Include="EnemyNormalBullet.cpp" />
@@ -66,6 +67,7 @@
     <ClCompile Include="engine\3d\LineCommon.cpp" />
     <ClCompile Include="engine\base\Level.cpp" />
     <ClCompile Include="ImGuiFunction.cpp" />
+    <ClCompile Include="LevelEditorCommon.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
@@ -83,6 +85,7 @@
     <ClCompile Include="engine\audio\SoundManager.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp" />
     <ClCompile Include="SpriteRendererComponent.cpp" />
+    <ClCompile Include="TextRendererComponent.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
     <ClCompile Include="engine\base\SrvManager.cpp" />
     <ClCompile Include="engine\math\StringUtility.cpp" />
@@ -286,6 +289,7 @@
     <ClInclude Include="application\easing\Easing.h" />
     <ClInclude Include="application\radarChart\RadarChart.h" />
     <ClInclude Include="application\radarChart\RadarChartCommon.h" />
+	<ClInclude Include="ColliderComponent.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Enemy.h" />
@@ -334,7 +338,9 @@
     <ClInclude Include="engine\audio\SoundManager.h" />
     <ClInclude Include="engine\2d\Sprite.h" />
     <ClInclude Include="ImGuiFunction.h" />
+    <ClInclude Include="LevelEditorCommon.h" />
     <ClInclude Include="SpriteRendererComponent.h" />
+    <ClInclude Include="TextRendererComponent.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\base\SrvManager.h" />
     <ClInclude Include="engine\math\StringUtility.h" />

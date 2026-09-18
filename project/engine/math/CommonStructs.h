@@ -217,12 +217,29 @@ struct SpawnData {
 struct ObjectData {
     std::string type;
     std::string name;
-    std::string file_name;
+	std::string file_name;
 	std::string sprite_file_name;
+	Vector3 spriteEmissiveColor = { 1.0f, 1.0f, 1.0f };
+	float spriteEmissiveIntensity = 0.0f;
+	std::string text = "New Text";
+	std::string textFontFamily = "Meiryo UI";
+	int textFontSize = 32;
+	Vector4 textColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	float textMaxWidth = 0.0f;
+	bool textBold = false;
+	bool textOutlineEnabled = false;
+	float textOutlineThickness = 1.0f;
+	Vector4 textOutlineColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+	Vector3 textEmissiveColor = { 1.0f, 1.0f, 1.0f };
+	float textEmissiveIntensity = 0.0f;
+	float textCharacterSpacing = 0.0f;
     Transform transform;
 	Vector2 rectPosition = { 960.0f, 540.0f };
 	float rectRotation = 0.0f;
 	Vector2 rectScale = { 1.0f, 1.0f };
+	// Editable local-space OBB data for the Collider component.
+	Vector3 colliderSize = { 1.0f, 1.0f, 1.0f };
+	Vector3 colliderCenterOffset = { 0.0f, 0.0f, 0.0f };
 	// Unity のように複数の機能を 1 つの GameObject に追加するための型一覧。
 	std::vector<std::string> components;
 

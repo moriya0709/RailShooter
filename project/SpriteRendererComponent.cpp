@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "RectTransformComponent.h"
 #include "Sprite.h"
+#include <algorithm>
 
 void SpriteRendererComponent::Initialize() {
 	// テクスチャパスを保持してから生成するため、初期化前の SetTexture にも対応する。
@@ -26,6 +27,8 @@ void SpriteRendererComponent::Update() {
 		sprite_->SetRotation(transform.rotate.z);
 		sprite_->SetSize({ size_.x * transform.scale.x, size_.y * transform.scale.y });
 	}
+	sprite_->SetEmissive({ emissiveColor_.x * emissiveIntensity_, emissiveColor_.y * emissiveIntensity_,
+		emissiveColor_.z * emissiveIntensity_ });
 	sprite_->Update();
 }
 
@@ -41,4 +44,9 @@ void SpriteRendererComponent::SetTexture(const std::string& texturePath) {
 		// 生成済みの場合だけ GPU 側の SRV を即座に更新する。
 		sprite_->ChangeTexture(texturePath_);
 	}
+}
+
+void SpriteRendererComponent::SetEmissive(const Vector3& color, float intensity) {
+	emissiveColor_ = color;
+	emissiveIntensity_ = (std::max)(0.0f, intensity);
 }

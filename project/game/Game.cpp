@@ -67,8 +67,7 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.gltf");
 	ModelManager::GetInstance()->LoadModel("Resource/human", "walk.gltf");
 	ModelManager::GetInstance()->LoadModel("Resource/mado", "mado.gltf");
-	ModelManager::GetInstance()->LoadModel("Resource/city", "GT ArcLink City Data Megapolis.obj");
-
+	
 	// 追加のアニメーションを読み込む
 	ModelManager::GetInstance()->LoadAnimation("walk.gltf","walk", "Resource/human", "walk.gltf");
 	ModelManager::GetInstance()->LoadAnimation("walk.gltf","sneakWalk", "Resource/human", "sneakWalk.gltf");
@@ -147,12 +146,13 @@ void Game::Draw() {
 	// トレイルエフェクト描画
 	TrailEffectManager::GetInstance()->RenderAll();
 
+	// 2DをHDRシーンバッファへ描画する。これによりエミッシブ文字もブルーム対象になる。
+	PostEffect::GetInstance()->SetSceneColorRenderTarget();
+	SceneManager::GetInstance()->Draw2D();
+
 	// ポストエフェクト描画
 	PostEffect::GetInstance()->PostDraw();
 	PostEffect::GetInstance()->Draw();
-
-	// シーンマネージャー描画(2D)
-	SceneManager::GetInstance()->Draw2D();
 	
 
 	// ImGui描画

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <cassert>
 #include <memory>
+#include <string>
 
 #include "BaseScene.h"
 #include "AbstractSceneFactory.h"
@@ -22,6 +23,8 @@ public:
 	void SetSceneFactory(std::unique_ptr <AbstractSceneFactory> sceneFactory) { sceneFactory_ = move(sceneFactory); }
 	// シーンの変更
 	void ChangeScene(const std::string& sceneName);
+	const std::string& GetCurrentSceneName() const { return currentSceneName_; }
+	bool IsSceneChangePending() const { return nextScene_ != nullptr; }
 
 	SceneManager() = default;
 	~SceneManager();
@@ -36,6 +39,8 @@ private:
 	std::unique_ptr <BaseScene> scene_ = nullptr;
 	// 次のシーン
 	std::unique_ptr <BaseScene> nextScene_ = nullptr;
+	std::string currentSceneName_;
+	std::string nextSceneName_;
 	// シーンファクトリー
 	std::unique_ptr <AbstractSceneFactory> sceneFactory_ = nullptr;
 

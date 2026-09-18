@@ -134,6 +134,8 @@ public:
 
 	// 描画前処理
 	void PreDraw();
+	// 2Dなど、HDRシーンカラーだけへ描画するための設定
+	void SetSceneColorRenderTarget();
 	// 描画後処理
 	void PostDraw();
 	// 最終合成先を指定する。Editor の Game ウィンドウにだけゲーム映像を表示するために使用する。

@@ -454,6 +454,13 @@ void PostEffect::PostDraw() {
 	TransitionResource(velocityRenderTarget_.resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
+void PostEffect::SetSceneColorRenderTarget() {
+	ID3D12GraphicsCommandList* const commandList = dxCommon_->GetCommandList();
+	commandList->OMSetRenderTargets(1, &renderTarget_.rtvHandle, FALSE, nullptr);
+	commandList->RSSetViewports(1, &viewport_);
+	commandList->RSSetScissorRects(1, &scissorRect_);
+}
+
 void PostEffect::SetOutputViewport(float left, float top, float width, float height) {
 	// 幅・高さが 0 になる（ウィンドウを折りたたんだ場合など）と D3D12 が不正になるため、1px は確保する。
 	const float safeWidth = width > 1.0f ? width : 1.0f;

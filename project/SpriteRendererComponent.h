@@ -21,10 +21,15 @@ public:
 
 	void SetSize(const Vector2& size) { size_ = size; }
 	Vector2 GetSize() const { return size_; }
+	void SetEmissive(const Vector3& color, float intensity);
+	const Vector3& GetEmissiveColor() const { return emissiveColor_; }
+	float GetEmissiveIntensity() const { return emissiveIntensity_; }
 
 private:
 	// 初期化後にのみ有効。GameObject の寿命とともに Sprite も破棄される。
 	std::unique_ptr<Sprite> sprite_;
 	std::string texturePath_ = "Resource/title/title.png";
 	Vector2 size_ = { 128.0f, 128.0f };
+	Vector3 emissiveColor_ = { 1.0f, 1.0f, 1.0f };
+	float emissiveIntensity_ = 0.0f;
 };

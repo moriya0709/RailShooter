@@ -168,13 +168,6 @@ private:
 	Vector2 gameViewPosition = { 300.0f, 30.0f };
 	Vector2 gameViewSize = { 1260.0f, 790.0f };
 	bool isGameViewHovered = false;
-	std::string dockDragWindow;
-	DockGuideTarget dockGuideTarget = DockGuideTarget::None;
-	bool isDockGuideVisible = false;
-	std::string dockMergeTarget;
-	std::vector<DockWindowInfo> dockWindowInfos;
-	std::vector<std::string> mergedWindowTabs;
-	std::string activeMergedWindow;
 
 	// カメラ
 	std::unique_ptr<Camera> camera = nullptr;
@@ -217,8 +210,5 @@ private:
 	void CreateLevel();
 	// Gizmo
 	void GizmoUpdate(bool showEditorControls);
-
-	// 当たり判定
-	void CollisionUpdate();
 
 };

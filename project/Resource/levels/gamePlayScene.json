@@ -551,6 +551,7 @@
             },
             "text_renderer": {
                 "bold": true,
+                "character_spacing": 0.0,
                 "color": [
                     1.0,
                     0.10810810327529907,

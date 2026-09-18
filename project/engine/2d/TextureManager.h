@@ -1,7 +1,9 @@
 ﻿#pragma once
 #include "string"
+#include <cstdint>
 #include <dxgi1_6.h>
 #include <unordered_map>
+#include <vector>
 
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
@@ -31,6 +33,9 @@ public:
 
 	// テクスチャファイルの読み込み
 	void LoadTexture(const std::string& filePath);
+	// CPUで生成したRGBA8画像を登録する。既存キーの場合はSRVを再利用する。
+	void LoadTextureFromRGBA8(const std::string& key, uint32_t width, uint32_t height,
+		const std::vector<uint8_t>& pixels);
 	// SRVインデックスの取得
 	uint32_t GetSrvIndex(const std::string& filePath);
 	// テクスチャ番号からGPUハンドルを取得
@@ -53,5 +58,6 @@ private:
 	DirectXCommon* dxCommon_ = nullptr;
 	// SrvManagerのポインタ
 	SrvManager* srvManager_ = nullptr;
-};
 
+	void CreateTextureData(const std::string& key, DirectX::ScratchImage& image);
+};

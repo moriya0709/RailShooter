@@ -36,6 +36,7 @@ public:
 	void SetPosition(const Vector2& position) { this->position = position; } // 座標
 	void SetRotation(float rotation) { this->rotation = rotation; } // 回転
 	void SetColor(const Vector4& color) { materialData->color = color; }
+	void SetEmissive(const Vector3& emissive) { materialData->emissive = emissive; }
 	void SetSize(const Vector2& size) { this->size = size; }
 	void SetAnchorPoint(const Vector2& anchorPoint) { this->anchorPoint = anchorPoint; }
 	void SetFlipX(bool isFlipX) { this->isFlipX_ = isFlipX; }
@@ -110,4 +111,3 @@ private:
 	void AdjustTextureSize();
 
 };
-

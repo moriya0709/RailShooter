@@ -187,6 +187,8 @@
       <Filter>ソース ファイル\engine\2d</Filter>
     </ClCompile>
     <ClCompile Include="SpriteRendererComponent.cpp" />
+    <ClCompile Include="TextRendererComponent.cpp" />
+	<ClCompile Include="ColliderComponent.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp">
       <Filter>ソース ファイル\engine\2d</Filter>
     </ClCompile>
@@ -259,6 +261,7 @@
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="ImGuiFunction.cpp" />
+    <ClCompile Include="LevelEditorCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -376,6 +379,7 @@
       <Filter>ヘッダー ファイル\engine\2d</Filter>
     </ClInclude>
     <ClInclude Include="SpriteRendererComponent.h" />
+    <ClInclude Include="TextRendererComponent.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h">
       <Filter>ヘッダー ファイル\engine\2d</Filter>
     </ClInclude>
@@ -426,6 +430,7 @@
     </ClInclude>
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Component.h" />
+	<ClInclude Include="ColliderComponent.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="ModelRendererComponent.h" />
     <ClInclude Include="RailPointComponent.h" />
@@ -452,6 +457,7 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="ImGuiFunction.h" />
+    <ClInclude Include="LevelEditorCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

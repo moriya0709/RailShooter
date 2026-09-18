@@ -60,6 +60,7 @@ void Sprite::Initialize(std::string textureFilePath) {
 	materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialData->enableLighting = false;
 	materialData->uvTransform = MakeIdentity4x4();
+	materialData->emissive = { 0.0f, 0.0f, 0.0f };
 	
 	// *座標変換行列* //
 

@@ -68,6 +68,8 @@ void M_Framework::Update() {
 
 	// 入力の更新
 	input->Update();
+
+	windowAPI->Update();
 }
 
 void M_Framework::Draw() {

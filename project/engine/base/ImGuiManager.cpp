@@ -11,6 +11,18 @@ void ImGuiManager::Initialize([[maybe_unused]]WindowAPI* windowAPI, [[maybe_unus
 	
 	// ImGuiのコンテキストを生成
 	ImGui::CreateContext();
+	// 日本語のラベル・Inspector入力を描画できるよう、Windows標準のメイリオを
+	// 日本語グリフ範囲でフォントアトラスへ追加する。
+	ImGuiIO& io = ImGui::GetIO();
+	ImFontConfig fontConfig{};
+	fontConfig.OversampleH = 2;
+	fontConfig.OversampleV = 2;
+	fontConfig.PixelSnapH = true;
+	if (io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\meiryo.ttc", 18.0f, &fontConfig,
+		io.Fonts->GetGlyphRangesJapanese()) == nullptr) {
+		// フォントが利用できない環境でも ImGui の既定フォントで起動を継続する。
+		io.Fonts->AddFontDefault();
+	}
 	// エディタの各パネルはタイトルバーを掴んだ時だけ移動する。
 	// コンテンツ領域のドラッグは、ゲームビューやスライダーなどの操作へ渡す。
 	ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;

@@ -12,6 +12,7 @@ void SceneManager::Update() {
 
 		// シーン切り換え
 		scene_ = std::move(nextScene_);
+		currentSceneName_ = std::move(nextSceneName_);
 
 		// 初期化より先に管理者を渡し、Initialize 内からのシーン操作を可能にする。
 		scene_->SetSceneManager(this);
@@ -45,7 +46,11 @@ void SceneManager::ChangeScene(const std::string& sceneName) {
 	assert(nextScene_ == nullptr);
 
 	// 次シーンを生成
-	nextScene_ = sceneFactory_->CreateScene(sceneName);
+	auto nextScene = sceneFactory_->CreateScene(sceneName);
+	if (nextScene) {
+		nextScene_ = std::move(nextScene);
+		nextSceneName_ = sceneName;
+	}
 
 }
 

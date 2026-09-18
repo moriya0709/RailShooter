@@ -10,7 +10,10 @@
 #include "EnemySpawnerComponent.h"
 #include "EnemyNormal.h"
 #include "SpriteRendererComponent.h"
+#include "TextRendererComponent.h"
 #include "RectTransformComponent.h"
+#include "ColliderComponent.h"
+#include "LevelEditorCommon.h"
 #include "SkyBox.h"
 #include "LineCommon.h"
 #include "ModelManager.h"
@@ -35,7 +38,7 @@ void GamePlayScene::Initialize() {
 
 	// レベル
 	level = std::make_unique<Level>();
-	level->LoadJson("scene");
+	level->LoadJson("gamePlayScene");
 	CreateLevel();
 
 
@@ -199,10 +202,10 @@ void GamePlayScene::Update() {
 	player->UpdateReticle();
 
 	// ENTERキーを押したら
-	if (input->TriggerKey(DIK_RETURN)) {
-		// ゲームプレイシーン(次シーン)を生成
-		SceneManager::GetInstance()->ChangeScene("Title");
-	}
+	//if (input->TriggerKey(DIK_RETURN)) {
+	//	// ゲームプレイシーン(次シーン)を生成
+	//	SceneManager::GetInstance()->ChangeScene("TITLE");
+	//}
 
 	// 数字の０キーが押されていたら
 	if (input->TriggerKey(DIK_0)) {
@@ -218,7 +221,7 @@ void GamePlayScene::Update() {
 	}
 
 	// 当たり判定
-	CollisionUpdate();
+	LevelEditorCommon::UpdateEnemyCollisions(*player, enemies, levelObjects);
 
 	// --- 撃破された敵の削除 ---
 	for (auto it = enemies.begin(); it != enemies.end();) {
@@ -246,9 +249,9 @@ void GamePlayScene::Update() {
 #ifdef _DEBUG
 	// プレイヤーの当たり判定を登録
 	if (player->IsHit()) {
-		DrawOBB(debugLineHit.get(), player->GetOBB()); // 赤用のバッファに追加
+		DrawOBB(debugLineHit.get(), LevelEditorCommon::GetColliderOBB(playerObject, player->GetOBB())); // 赤用のバッファに追加
 	} else {
-		DrawOBB(debugLineNormal.get(), player->GetOBB()); // 緑用のバッファに追加
+		DrawOBB(debugLineNormal.get(), LevelEditorCommon::GetColliderOBB(playerObject, player->GetOBB())); // 緑用のバッファに追加
 	}
 
 	// 敵キャラクターの当たり判定も一括登録可能
@@ -256,10 +259,19 @@ void GamePlayScene::Update() {
 		auto* enemy = enemyObject->GetComponent<Enemy>();
 		if (!enemy) continue;
 		if (enemy->IsHit()) {
-			DrawOBB(debugLineHit.get(), enemy->GetOBB()); // 赤用のバッファに追加
+			DrawOBB(debugLineHit.get(), LevelEditorCommon::GetColliderOBB(enemyObject.get(), enemy->GetOBB())); // 赤用のバッファに追加
 		} else {
-			DrawOBB(debugLineNormal.get(), enemy->GetOBB()); // 緑用のバッファに追加
+			DrawOBB(debugLineNormal.get(), LevelEditorCommon::GetColliderOBB(enemyObject.get(), enemy->GetOBB())); // 緑用のバッファに追加
 		}
+	}
+
+	// Empty に追加した Collider も緑のOBBラインで表示する。
+	for (const auto& levelObject : levelObjects) {
+		const auto* collider = levelObject->GetComponent<ColliderComponent>();
+		if (!collider || !collider->IsEnabled() || !levelObject->IsActive()) {
+			continue;
+		}
+		DrawOBB(debugLineNormal.get(), collider->GetOBB());
 	}
 
 	// 弾の当たり判定
@@ -396,9 +408,8 @@ void GamePlayScene::Update() {
 	ImGui::Begin("Editor Toolbar", nullptr,
 		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
-	ImGui::TextUnformatted("Rail Shooter Editor");
-	ImGui::SameLine();
-	ImGui::TextDisabled("GamePlay Scene");
+	static char levelFileName[128] = "gamePlayScene";
+	LevelEditorCommon::DrawToolbar(*level, levelObjects, levelFileName, IM_ARRAYSIZE(levelFileName));
 	ImGui::End();
 
 	if (ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Game")) {
@@ -659,7 +670,7 @@ void GamePlayScene::Update() {
 			break;
 		}
 	}
-	if (playerObject && !playerIsInHierarchy) {
+	if (playerObject && playerObject->IsActive() && !playerIsInHierarchy) {
 		const std::string playerLabel = std::string("[P] ") + playerObject->GetName() + "##RuntimePlayer";
 		if (ImGui::Selectable(playerLabel.c_str(), selectedObject == playerObject)) {
 			selectedObject = playerObject;
@@ -670,6 +681,7 @@ void GamePlayScene::Update() {
 		auto* object = levelObjects[index].get();
 		const bool isEmpty = !object->GetComponent<ModelRendererComponent>() &&
 			!object->GetComponent<SpriteRendererComponent>() &&
+			!object->GetComponent<TextRendererComponent>() &&
 			!object->GetComponent<RailPointComponent>() &&
 			!object->GetComponent<EnemySpawnerComponent>() &&
 			!object->GetComponent<Player>() &&
@@ -1010,6 +1022,113 @@ void GamePlayScene::Update() {
 				if (ImGui::DragFloat2("Size", &spriteSize.x, 1.0f, 1.0f, 4096.0f)) {
 					spriteRenderer->SetSize(spriteSize);
 				}
+				Vector3 emissiveColor = spriteRenderer->GetEmissiveColor();
+				float emissiveIntensity = spriteRenderer->GetEmissiveIntensity();
+				bool emissiveChanged = ImGui::ColorEdit3("Emissive Color##SpriteRenderer", &emissiveColor.x);
+				emissiveChanged |= ImGui::DragFloat("Emissive Intensity##SpriteRenderer", &emissiveIntensity, 0.05f, 0.0f, 10.0f);
+				if (emissiveChanged) {
+					spriteRenderer->SetEmissive(emissiveColor, emissiveIntensity);
+					if (selectedIndex != -1) {
+						auto& objectData = level->GetLevelData()->objects[selectedIndex];
+						objectData.spriteEmissiveColor = emissiveColor;
+						objectData.spriteEmissiveIntensity = emissiveIntensity;
+					}
+				}
+			}
+		}
+
+		if (auto* textRenderer = selectedObject->GetComponent<TextRendererComponent>()) {
+			if (ImGui::CollapsingHeader("Text Renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
+				bool enabled = textRenderer->IsEnabled();
+				if (ImGui::Checkbox("Enabled##TextRenderer", &enabled)) {
+					textRenderer->SetEnabled(enabled);
+				}
+
+				char textBuffer[1024]{};
+				strncpy_s(textBuffer, textRenderer->GetText().c_str(), _TRUNCATE);
+				if (ImGui::InputTextMultiline("Text", textBuffer, IM_ARRAYSIZE(textBuffer), ImVec2(-1.0f, 72.0f))) {
+					textRenderer->SetText(textBuffer);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].text = textBuffer;
+				}
+
+				char fontFamilyBuffer[256]{};
+				strncpy_s(fontFamilyBuffer, textRenderer->GetFontFamilyUtf8().c_str(), _TRUNCATE);
+				if (ImGui::InputText("Font Family", fontFamilyBuffer, IM_ARRAYSIZE(fontFamilyBuffer))) {
+					textRenderer->SetFontFamilyUtf8(fontFamilyBuffer);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textFontFamily = fontFamilyBuffer;
+				}
+				const std::string currentFontFamily = textRenderer->GetFontFamilyUtf8();
+				const auto& fontPresets = TextRendererComponent::GetInstalledFontFamilies();
+				if (ImGui::BeginCombo("Font Preset", currentFontFamily.c_str())) {
+					for (const auto& fontPreset : fontPresets) {
+						const bool selected = currentFontFamily == fontPreset;
+						if (ImGui::Selectable(fontPreset.c_str(), selected)) {
+							textRenderer->SetFontFamilyUtf8(fontPreset);
+							if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textFontFamily = fontPreset;
+						}
+						if (selected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+
+				bool bold = textRenderer->IsBold();
+				if (ImGui::Checkbox("Bold", &bold)) {
+					textRenderer->SetBold(bold);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textBold = bold;
+				}
+				bool outlineEnabled = textRenderer->IsOutlineEnabled();
+				if (ImGui::Checkbox("Outline", &outlineEnabled)) {
+					textRenderer->SetOutlineEnabled(outlineEnabled);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textOutlineEnabled = outlineEnabled;
+				}
+				if (outlineEnabled) {
+					float outlineThickness = textRenderer->GetOutlineThickness();
+					if (ImGui::DragFloat("Outline Thickness", &outlineThickness, 0.1f, 0.0f, 10.0f)) {
+						textRenderer->SetOutlineThickness(outlineThickness);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textOutlineThickness = outlineThickness;
+					}
+					Vector4 outlineColor = textRenderer->GetOutlineColor();
+					if (ImGui::ColorEdit4("Outline Color", &outlineColor.x)) {
+						textRenderer->SetOutlineColor(outlineColor);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textOutlineColor = outlineColor;
+					}
+				}
+
+				Vector3 emissiveColor = textRenderer->GetEmissiveColor();
+				float emissiveIntensity = textRenderer->GetEmissiveIntensity();
+				bool emissiveChanged = ImGui::ColorEdit3("Emissive Color", &emissiveColor.x);
+				emissiveChanged |= ImGui::DragFloat("Emissive Intensity", &emissiveIntensity, 0.05f, 0.0f, 10.0f);
+				if (emissiveChanged) {
+					textRenderer->SetEmissive(emissiveColor, emissiveIntensity);
+					if (selectedIndex != -1) {
+						auto& objectData = level->GetLevelData()->objects[selectedIndex];
+						objectData.textEmissiveColor = emissiveColor;
+						objectData.textEmissiveIntensity = emissiveIntensity;
+					}
+				}
+				float characterSpacing = textRenderer->GetCharacterSpacing();
+				if (ImGui::DragFloat("Character Spacing", &characterSpacing, 0.1f, -10.0f, 50.0f)) {
+					textRenderer->SetCharacterSpacing(characterSpacing);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textCharacterSpacing = characterSpacing;
+				}
+
+				int fontSize = textRenderer->GetFontSize();
+				if (ImGui::DragInt("Font Size", &fontSize, 1.0f, 1, 256)) {
+					textRenderer->SetFontSize(fontSize);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textFontSize = fontSize;
+				}
+				float maxWidth = textRenderer->GetMaxWidth();
+				if (ImGui::DragFloat("Max Width (0 = no wrap)", &maxWidth, 1.0f, 0.0f, 1920.0f)) {
+					textRenderer->SetMaxWidth(maxWidth);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textMaxWidth = maxWidth;
+				}
+				Vector4 color = textRenderer->GetColor();
+				if (ImGui::ColorEdit4("Color##TextRenderer", &color.x)) {
+					textRenderer->SetColor(color);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textColor = color;
+				}
 			}
 		}
 
@@ -1039,6 +1158,11 @@ void GamePlayScene::Update() {
 				}
 			}
 		}
+		if (auto* collider = selectedObject->GetComponent<ColliderComponent>()) {
+			if (selectedIndex != -1) {
+				LevelEditorCommon::DrawColliderInspector(*collider, level->GetLevelData()->objects[selectedIndex]);
+			}
+		}
 
 		if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size() &&
 			ImGui::CollapsingHeader("Add Component")) {
@@ -1061,11 +1185,41 @@ void GamePlayScene::Update() {
 				auto* spriteRenderer = selectedObject->AddComponent<SpriteRendererComponent>();
 				spriteRenderer->SetTexture("Resource/title/title.png");
 				objectData.sprite_file_name = "Resource/title/title.png";
+				objectData.spriteEmissiveColor = { 1.0f, 1.0f, 1.0f };
+				objectData.spriteEmissiveIntensity = 0.0f;
 				objectData.rectPosition = rectTransform->position;
 				objectData.rectRotation = rectTransform->rotation;
 				objectData.rectScale = rectTransform->scale;
 				addSerializedComponent("RectTransform");
 				addSerializedComponent("SpriteRenderer");
+			}
+			if (!selectedObject->GetComponent<TextRendererComponent>() && ImGui::Button("Text Renderer")) {
+				auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>();
+				if (!rectTransform) {
+					rectTransform = selectedObject->AddComponent<RectTransformComponent>();
+					rectTransform->position = { 960.0f, 540.0f };
+				}
+				auto* textRenderer = selectedObject->AddComponent<TextRendererComponent>();
+				textRenderer->SetText("New Text");
+				textRenderer->SetFontFamilyUtf8("Meiryo UI");
+				textRenderer->SetFontSize(32);
+				objectData.text = "New Text";
+				objectData.textFontFamily = "Meiryo UI";
+				objectData.textFontSize = 32;
+				objectData.textColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+				objectData.textMaxWidth = 0.0f;
+				objectData.textBold = false;
+				objectData.textOutlineEnabled = false;
+				objectData.textOutlineThickness = 1.0f;
+				objectData.textOutlineColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+				objectData.textEmissiveColor = { 1.0f, 1.0f, 1.0f };
+				objectData.textEmissiveIntensity = 0.0f;
+				objectData.textCharacterSpacing = 0.0f;
+				objectData.rectPosition = rectTransform->position;
+				objectData.rectRotation = rectTransform->rotation;
+				objectData.rectScale = rectTransform->scale;
+				addSerializedComponent("RectTransform");
+				addSerializedComponent("TextRenderer");
 			}
 			if (!selectedObject->GetComponent<RailPointComponent>() && ImGui::Button("Rail Camera Point")) {
 				selectedObject->AddComponent<RailPointComponent>();
@@ -1075,6 +1229,13 @@ void GamePlayScene::Update() {
 				auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();
 				spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
 				addSerializedComponent("EnemySpawner");
+			}
+			if ((objectData.type == "EMPTY" || objectData.type == "empty") &&
+				!selectedObject->GetComponent<ColliderComponent>() && ImGui::Button("Collider")) {
+				auto* collider = selectedObject->AddComponent<ColliderComponent>();
+				objectData.colliderSize = collider->size;
+				objectData.colliderCenterOffset = collider->centerOffset;
+				addSerializedComponent("Collider");
 			}
 			if (!selectedObject->GetComponent<Player>() && ImGui::Button("Player Controller")) {
 				auto* playerComponent = selectedObject->AddComponent<Player>();
@@ -1097,25 +1258,25 @@ void GamePlayScene::Update() {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.1f, 0.1f, 1.0f));
 
-		if (selectedObject != playerObject && ImGui::Button("Delete Object", ImVec2(-1, 0))) { // -1指定で横幅いっぱいに拡大
-			// 1. LevelData(セーブ用)配列から削除
-			level->GetLevelData()->objects.erase(level->GetLevelData()->objects.begin() + selectedIndex);
-
-			// 2. levelObjects(実体)配列から削除
-			levelObjects.erase(levelObjects.begin() + selectedIndex);
-
-			// 3. 選択状態を解除してNULLにする（ポインタ参照エラー・クラッシュ防止）
+		if ((selectedIndex != -1 || selectedObject == playerObject) && ImGui::Button("Delete Object", ImVec2(-1, 0))) {
+			if (selectedObject == playerObject) {
+				// Keep a hidden fallback alive so gameplay code never retains a dangling Player pointer.
+				defaultPlayerObject = std::make_unique<GameObject>("Deleted Player Fallback");
+				playerObject = defaultPlayerObject.get();
+				player = playerObject->AddComponent<Player>();
+				playerObject->SetActive(false);
+				playerObject->Initialize();
+			}
+			if (selectedIndex != -1) {
+				level->GetLevelData()->objects.erase(level->GetLevelData()->objects.begin() + selectedIndex);
+				levelObjects.erase(levelObjects.begin() + selectedIndex);
+			}
 			selectedObject = nullptr;
-
-			// スタイルを元に戻して、これ以降の描画処理を行わずに抜ける
 			ImGui::PopStyleColor(3);
 			ImGui::End();
 			return;
 		}
 		ImGui::PopStyleColor(3);
-		if (selectedObject == playerObject) {
-			ImGui::TextDisabled("The active Player cannot be deleted.");
-		}
 
 		// =========================================================================
 		// SPAWNER 専用のタイムライン編集 UI
@@ -1265,6 +1426,11 @@ void GamePlayScene::Draw2D() {
 				spriteRenderer->DrawSprite();
 			}
 		}
+		if (auto* textRenderer = levelObject->GetComponent<TextRendererComponent>()) {
+			if (levelObject->IsActive() && textRenderer->IsEnabled()) {
+				textRenderer->DrawTextSprite();
+			}
+		}
 	}
 }
 void GamePlayScene::Draw3D() {
@@ -1409,12 +1575,35 @@ void GamePlayScene::CreateLevel() {
 				rectTransform->rotation = objectData.rectRotation;
 				rectTransform->scale = objectData.rectScale;
 			}
+			if (hasComponent("Collider")) {
+				auto* collider = gameObject->AddComponent<ColliderComponent>();
+				collider->size = objectData.colliderSize;
+				collider->centerOffset = objectData.colliderCenterOffset;
+			}
 			if (hasComponent("SpriteRenderer")) {
 				if (!gameObject->GetComponent<RectTransformComponent>()) {
 					gameObject->AddComponent<RectTransformComponent>();
 				}
 				auto* spriteRenderer = gameObject->AddComponent<SpriteRendererComponent>();
 				spriteRenderer->SetTexture(objectData.sprite_file_name.empty() ? "Resource/title/title.png" : objectData.sprite_file_name);
+				spriteRenderer->SetEmissive(objectData.spriteEmissiveColor, objectData.spriteEmissiveIntensity);
+			}
+			if (hasComponent("TextRenderer")) {
+				if (!gameObject->GetComponent<RectTransformComponent>()) {
+					gameObject->AddComponent<RectTransformComponent>();
+				}
+				auto* textRenderer = gameObject->AddComponent<TextRendererComponent>();
+				textRenderer->SetText(objectData.text);
+				textRenderer->SetFontFamilyUtf8(objectData.textFontFamily);
+				textRenderer->SetFontSize(objectData.textFontSize);
+				textRenderer->SetColor(objectData.textColor);
+				textRenderer->SetMaxWidth(objectData.textMaxWidth);
+				textRenderer->SetBold(objectData.textBold);
+				textRenderer->SetOutlineEnabled(objectData.textOutlineEnabled);
+				textRenderer->SetOutlineThickness(objectData.textOutlineThickness);
+				textRenderer->SetOutlineColor(objectData.textOutlineColor);
+				textRenderer->SetEmissive(objectData.textEmissiveColor, objectData.textEmissiveIntensity);
+				textRenderer->SetCharacterSpacing(objectData.textCharacterSpacing);
 			}
 			if (hasComponent("RailPoint")) {
 				gameObject->AddComponent<RailPointComponent>();
@@ -1599,28 +1788,6 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 		return;
 	}
 
-	// セーブ機能のUI
-	ImGui::Separator(); // 区切り線
-	if (ImGui::Button("Save JSON Level")) {
-		// すべての GameObject（Empty / Rail / Mesh / Spawner）の最新状態を同期する。
-		for (size_t i = 0; i < levelObjects.size(); ++i) {
-			if (i < level->GetLevelData()->objects.size()) {
-				auto transformComp = levelObjects[i]->GetComponent<TransformComponent>();
-				if (transformComp) {
-					level->GetLevelData()->objects[i].transform = transformComp->transform;
-				}
-				if (auto* rectTransform = levelObjects[i]->GetComponent<RectTransformComponent>()) {
-					level->GetLevelData()->objects[i].rectPosition = rectTransform->position;
-					level->GetLevelData()->objects[i].rectRotation = rectTransform->rotation;
-					level->GetLevelData()->objects[i].rectScale = rectTransform->scale;
-				}
-			}
-		}
-
-		// JSON へ書き出し
-		level->SaveJson("scene");
-	}
-
 	// 敵の出現地点のプレビュー表示
 	if (selectedObject != nullptr) {
 		// 選択中オブジェクトのインデックスを探す
@@ -1737,51 +1904,3 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 	}
 }
 
-void GamePlayScene::CollisionUpdate() {
-	// 敵とプレイヤーの弾
-	const auto& bullets = player->GetBullets();
-	for (auto& enemyObject : enemies) {
-		auto* enemy = enemyObject->GetComponent<Enemy>();
-		if (!enemy) continue;
-		for (auto& bullet : bullets) {
-			if (CheckOBBToOBB(enemy->GetOBB(), bullet->GetOBB())) {
-				enemy->OnCollisionBullet(bullet->GetDamage());
-				bullet->OnCollision();
-			}
-		}
-	}
-	for (auto& enemyObject : levelObjects) {
-		auto* enemy = enemyObject->GetComponent<Enemy>();
-		if (!enemy || !enemyObject->IsActive()) continue;
-		for (auto& bullet : bullets) {
-			if (CheckOBBToOBB(enemy->GetOBB(), bullet->GetOBB())) {
-				enemy->OnCollisionBullet(bullet->GetDamage());
-				bullet->OnCollision();
-			}
-		}
-	}
-
-	// プレイヤーと敵の弾
-	for (auto& enemyObject : enemies) {
-		auto* enemy = enemyObject->GetComponent<Enemy>();
-		if (!enemy) continue;
-		const auto& bullets = enemy->GetBullets();
-		for (auto& bullet : bullets) {
-			if (CheckOBBToOBB(player->GetOBB(), bullet->GetOBB())) {
-				player->OnCollision();
-				bullet->OnCollision();
-			}
-		}
-	}
-	for (auto& enemyObject : levelObjects) {
-		auto* enemy = enemyObject->GetComponent<Enemy>();
-		if (!enemy || !enemyObject->IsActive()) continue;
-		const auto& enemyBullets = enemy->GetBullets();
-		for (auto& bullet : enemyBullets) {
-			if (CheckOBBToOBB(player->GetOBB(), bullet->GetOBB())) {
-				player->OnCollision();
-				bullet->OnCollision();
-			}
-		}
-	}
-}

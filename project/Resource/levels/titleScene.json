@@ -64,6 +64,31 @@
                 ]
             },
             "type": "EMPTY"
+        },
+        {
+            "components": [
+                "ModelRenderer"
+            ],
+            "file_name": "building.obj",
+            "name": "Empty_2",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
         }
     ]
 }

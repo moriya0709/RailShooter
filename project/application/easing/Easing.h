@@ -71,7 +71,7 @@ private:
 	// 制御点の数
 	int kNumControlPoints = 4;
 
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	// 制御点
 	std::vector<ImVec2> kControlPoints = {
 		{50,  50 }, // スタート

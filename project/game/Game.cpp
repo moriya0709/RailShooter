@@ -58,15 +58,9 @@ void Game::Initialize() {
 	ParticleManager::GetInstance()->CreateParticleGroup("Tornado7", "Resource/plane", "plane.obj", "Resource/particle/particle.png",0);
 	ParticleManager::GetInstance()->CreateParticleGroup("Tornado8", "Resource/plane", "plane.obj", "Resource/particle/particle.png",0);
 
-	// モデル読み込み
-	ModelManager::GetInstance()->LoadModel("Resource/plane","plane.obj");
-	ModelManager::GetInstance()->LoadModel("Resource/axis", "axis.obj");
-	ModelManager::GetInstance()->LoadModel("Resource/rail", "rail.obj");
-	ModelManager::GetInstance()->LoadModel("Resource/emission", "emission.obj");
-	ModelManager::GetInstance()->LoadModel("Resource/ball", "ball.gltf");
-	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.gltf");
-	ModelManager::GetInstance()->LoadModel("Resource/human", "walk.gltf");
-	ModelManager::GetInstance()->LoadModel("Resource/mado", "mado.gltf");
+	// Resource 以下のモデルの場所だけを登録する。
+	// 実体のロードは、シーンやエディタがモデルを使用した時点で行う。
+	ModelManager::GetInstance()->RegisterModelsInResourceDirectory();
 	
 	// 追加のアニメーションを読み込む
 	ModelManager::GetInstance()->LoadAnimation("walk.gltf","walk", "Resource/human", "walk.gltf");

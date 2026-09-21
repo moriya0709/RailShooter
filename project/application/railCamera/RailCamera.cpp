@@ -26,8 +26,10 @@ void RailCamera::Initialize() {
 void RailCamera::Update() {
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
-	if (isRail) {
-		float tEnd = (float)(points.size() - 2);
+	// Catmull-Rom 補間には 4 点必要。Empty を制御点にした場合も、
+	// 4 点未満ではプレビュー線だけを表示し、無効な添字アクセスはしない。
+	if (isRail && points.size() >= 4) {
+		const float tEnd = static_cast<float>(points.size() - 3);
 
 		// tを進める
 		railT += railSpeed * deltaTime;
@@ -53,6 +55,15 @@ void RailCamera::Update() {
 	}
 }
 
+void RailCamera::StartRail() {
+	if (!CanStartRail()) {
+		return;
+	}
+
+	railT = 0.0f;
+	isRail = true;
+}
+
 void RailCamera::EditorUpdate() { 
 #ifdef USE_IMGUI 
 	if (ImGui::Begin("RailEditor")) {
@@ -75,7 +86,19 @@ void RailCamera::EditorUpdate() {
 		}
 
 		ImGui::DragFloat("time", &railT,0.01f);
-		ImGui::Checkbox("isRail", &isRail);
+		const bool canStart = CanStartRail();
+		if (!canStart) {
+			ImGui::TextDisabled("Add %d more Rail Camera Point(s) to start.", 4 - static_cast<int>(points.size()));
+		}
+		ImGui::BeginDisabled(!canStart);
+		if (ImGui::Button("Start / Restart Rail Camera")) {
+			StartRail();
+		}
+		ImGui::EndDisabled();
+		ImGui::SameLine();
+		if (ImGui::Button("Stop Rail Camera")) {
+			StopRail();
+		}
 		// カメラ
 		ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f, -1000.0f, 1000.0f);
 		ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -180.0f, 180.0f);
@@ -108,8 +131,10 @@ void RailCamera::EditorDraw() {
 			spheres[i]->Draw();
 		}
 
-		DrawRailLine();
 	}
+
+	// 停止中・再生中どちらでも、Empty の RailPointComponent を結ぶ線を表示する。
+	DrawRailLine();
 
 #endif 
 }
@@ -180,13 +205,25 @@ void RailCamera::AddPoint(Vector3 pos,Vector3 rotate)
 }
 
 void RailCamera::DrawRailLine() {
-	if (points.size() < 4) return;
+	if (points.size() < 2) return;
 
 	// 毎フレーム前回の線をクリアする
 	railLine->Clear();
 
-	float tStart = 0.0f;
-	float tEnd = (float)(points.size() - 2);
+	// Catmull-Rom が使える 4 点に達するまで、Empty の配置順が分かる直線を描く。
+	// これにより、制御点を作成した直後から接続状態を確認できる。
+	if (points.size() < 4) {
+		for (size_t index = 1; index < points.size(); ++index) {
+			railLine->AddLine(points[index - 1].position, points[index].position);
+		}
+		railLine->Update();
+		LineCommon::GetInstance()->SetCommonPipelineState();
+		railLine->Draw();
+		return;
+	}
+
+	const float tStart = 0.0f;
+	const float tEnd = static_cast<float>(points.size() - 3);
 
 	// 線の分割数（数値を大きくするほど滑らかになります）
 	int segmentCount = 200;

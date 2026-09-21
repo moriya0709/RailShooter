@@ -12,6 +12,8 @@
 struct LevelData {
 	// "name"
 	std::string name;
+	// Visual Studio のフィルターのような、エディタ表示専用のグループ一覧。
+	std::vector<std::string> groups;
 	// "objects"
 	std::vector<ObjectData> objects;
 };

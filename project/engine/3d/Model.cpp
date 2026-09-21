@@ -14,6 +14,85 @@
 #include <assimp/quaternion.h>
 #include <cassert>
 #include <algorithm>
+#include <cmath>
+#include <filesystem>
+#include <unordered_map>
+
+namespace {
+
+// アウトラインの継ぎ目をなくすため、同一位置の頂点をまとめるキー。
+// 読み込んだ浮動小数点値の微小な差も同一頂点として扱えるようにする。
+struct OutlineNormalKey {
+	int32_t x;
+	int32_t y;
+	int32_t z;
+
+	bool operator==(const OutlineNormalKey& other) const = default;
+};
+
+struct OutlineNormalKeyHash {
+	size_t operator()(const OutlineNormalKey& key) const noexcept {
+		const size_t h1 = std::hash<int32_t>{}(key.x);
+		const size_t h2 = std::hash<int32_t>{}(key.y);
+		const size_t h3 = std::hash<int32_t>{}(key.z);
+		return h1 ^ (h2 << 1) ^ (h3 << 2);
+	}
+};
+
+OutlineNormalKey MakeOutlineNormalKey(const Vector4& position) {
+	constexpr float kPositionTolerance = 0.0001f;
+	return {
+		static_cast<int32_t>(std::round(position.x / kPositionTolerance)),
+		static_cast<int32_t>(std::round(position.y / kPositionTolerance)),
+		static_cast<int32_t>(std::round(position.z / kPositionTolerance)),
+	};
+}
+
+// モデルデータに記録されたテクスチャパスを、モデル配置先を基準に解決する。
+// DCC ツールが出力した .mtl には作成元PCの絶対パスが残ることがあるため、
+// その場合はモデルフォルダ配下から同名ファイルを探す。
+std::string ResolveModelTexturePath(const std::string& directoryPath, const std::string& sourcePath,
+	const std::string& fallbackPath) {
+	namespace fs = std::filesystem;
+	// glTF/GLB の埋め込みテクスチャは Assimp では "*0" の形式になる。
+	// これはファイル名ではないため、フォルダ全体を探索せず直ちにフォールバックする。
+	// （現行の TextureManager はファイルパスからの読み込みのみをサポートしている。）
+	if (sourcePath.empty() || sourcePath.front() == '*') {
+		return fallbackPath;
+	}
+
+	std::error_code error;
+	const fs::path modelDirectory(directoryPath);
+	const fs::path texturePath(sourcePath);
+
+	const auto isUsableFile = [&error](const fs::path& path) {
+		error.clear();
+		return fs::is_regular_file(path, error) && !error;
+	};
+
+	// 通常の相対パス、または有効な絶対パスを優先する。
+	const fs::path directPath = texturePath.is_absolute() ? texturePath : modelDirectory / texturePath;
+	if (isUsableFile(directPath)) {
+		return directPath.generic_string();
+	}
+
+	// 絶対パスや壊れた相対パスは、モデルフォルダ以下からファイル名で復旧する。
+	const fs::path fileName = texturePath.filename();
+	if (!fileName.empty()) {
+		for (fs::recursive_directory_iterator iterator(modelDirectory,
+			fs::directory_options::skip_permission_denied, error), end;
+			!error && iterator != end; iterator.increment(error)) {
+			const fs::directory_entry& entry = *iterator;
+			if (entry.is_regular_file(error) && !error && entry.path().filename() == fileName) {
+				return entry.path().generic_string();
+			}
+		}
+	}
+
+	return fallbackPath;
+}
+
+}
 
 void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, SrvManager* srvManager, const std::string& directoryPath, const std::string& filename) {
 	// 引数で受け取ってメンバ変数に記録する
@@ -343,7 +422,8 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 		if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
 			aiString textureFilePath;
 			if (material->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilePath) == AI_SUCCESS) {
-				materialData.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
+				materialData.textureFilePath = ResolveModelTexturePath(
+					directoryPath, textureFilePath.C_Str(), kFallbackTexture);
 			}
 		}
 
@@ -425,23 +505,17 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 }
 
 void Model::GenerateOutlineNormal(std::vector<VertexData>& vertices) {
-	const float epsilon = 0.0001f;
+	// 以前は各頂点について全頂点を走査していたため O(N^2) だった。
+	// 位置ごとに法線を一度だけ集計し、2 パスで各頂点へ書き戻すことで O(N) にする。
+	std::unordered_map<OutlineNormalKey, Vector3, OutlineNormalKeyHash> normalSums;
+	normalSums.reserve(vertices.size());
 
-	for (size_t i = 0; i < vertices.size(); ++i) {
+	for (const VertexData& vertex : vertices) {
+		normalSums[MakeOutlineNormalKey(vertex.position)] += vertex.normal;
+	}
 
-		Vector3 sumNormal = { 0,0,0 };
-
-		for (size_t j = 0; j < vertices.size(); ++j) {
-
-			// 座標がほぼ同じなら同一頂点とみなす
-			if (fabs(vertices[i].position.x - vertices[j].position.x) < epsilon &&
-				fabs(vertices[i].position.y - vertices[j].position.y) < epsilon &&
-				fabs(vertices[i].position.z - vertices[j].position.z) < epsilon) {
-				sumNormal += vertices[j].normal;
-			}
-		}
-
-		vertices[i].outlineNormal = Normalize(sumNormal);
+	for (VertexData& vertex : vertices) {
+		vertex.outlineNormal = Normalize(normalSums.at(MakeOutlineNormalKey(vertex.position)));
 	}
 }
 

@@ -35,6 +35,9 @@ void Level::LoadJson(const std::string fileName) {
 	// "name"を文字列として取得
 	levelData->name = deserialized["name"].get<std::string>();
 	assert(levelData->name == "scene");
+	if (deserialized.contains("groups") && deserialized["groups"].is_array()) {
+		levelData->groups = deserialized["groups"].get<std::vector<std::string>>();
+	}
 
 	// "objects"の全オブジェクトを走査
 	for (nlohmann::json& object : deserialized["objects"]) {
@@ -46,6 +49,7 @@ void Level::LoadJson(const std::string fileName) {
 			ObjectData newData{};
 			newData.type = objType;
 			newData.name = object["name"].get<std::string>();
+			newData.groupName = object.value("group", std::string{});
 
 			nlohmann::json& transform = object["transform"];
 			newData.transform.translate.x = (float)transform["translation"][0];
@@ -192,6 +196,7 @@ void Level::SaveJson(const std::string fileName) {
 		deserialized = nlohmann::json::object();
 	}
 	deserialized["name"] = levelData->name.empty() ? "scene" : levelData->name;
+	deserialized["groups"] = levelData->groups;
 	deserialized["objects"] = nlohmann::json::array();
 
 	// ★ JSONの objects 配列を一旦クリアし、現在の levelData で完全に作り直す（インデックスのズレを防止）
@@ -200,6 +205,9 @@ void Level::SaveJson(const std::string fileName) {
 		nlohmann::json newObjJson;
 		newObjJson["type"] = obj.type;
 		newObjJson["name"] = obj.name;
+		if (!obj.groupName.empty()) {
+			newObjJson["group"] = obj.groupName;
+		}
 		if (!obj.file_name.empty()) {
 			newObjJson["file_name"] = obj.file_name;
 		}

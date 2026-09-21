@@ -217,6 +217,8 @@ struct SpawnData {
 struct ObjectData {
     std::string type;
     std::string name;
+	// 実行時のTransformには影響しない、エディタ整理用のグループ名。
+	std::string groupName;
 	std::string file_name;
 	std::string sprite_file_name;
 	Vector3 spriteEmissiveColor = { 1.0f, 1.0f, 1.0f };

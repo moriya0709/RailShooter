@@ -108,6 +108,10 @@ void GamePlayScene::Update() {
 	// 3. その後、RailCamera自身の更新処理を呼ぶ
 	if (railCamera) {
 		railCamera->EditorUpdate();
+		// レール開始時はデバッグカメラよりレールカメラを優先する。
+		if (railCamera->IsRailActive()) {
+			isDebugCamera = false;
+		}
 		railCamera->Update();
 	}
 
@@ -661,8 +665,24 @@ void GamePlayScene::Update() {
 		emptyData.transform = selectedObject->GetTransform()->transform;
 		level->GetLevelData()->objects.push_back(emptyData);
 	}
+	ImGui::SameLine();
+	static char newGroupName[128]{};
+	ImGui::SetNextItemWidth(160.0f);
+	ImGui::InputTextWithHint("##NewGroup", "New group name", newGroupName, IM_ARRAYSIZE(newGroupName));
+	ImGui::SameLine();
+	if (ImGui::Button("Create Group") && newGroupName[0] != '\0') {
+		const std::string groupName = newGroupName;
+		auto& groups = level->GetLevelData()->groups;
+		if (std::find(groups.begin(), groups.end(), groupName) == groups.end()) {
+			groups.push_back(groupName);
+		}
+		newGroupName[0] = '\0';
+	}
 
 	ImGui::Separator();
+	std::string groupToDelete;
+	int emptyToDuplicate = -1;
+	int emptyToDelete = -1;
 	bool playerIsInHierarchy = false;
 	for (const auto& object : levelObjects) {
 		if (object.get() == playerObject) {
@@ -677,7 +697,7 @@ void GamePlayScene::Update() {
 		}
 		ImGui::Separator();
 	}
-	for (size_t index = 0; index < levelObjects.size(); ++index) {
+	auto drawHierarchyObject = [&](size_t index) {
 		auto* object = levelObjects[index].get();
 		const bool isEmpty = !object->GetComponent<ModelRendererComponent>() &&
 			!object->GetComponent<SpriteRendererComponent>() &&
@@ -691,6 +711,86 @@ void GamePlayScene::Update() {
 		if (ImGui::Selectable(label.c_str(), selectedObject == object)) {
 			selectedObject = object;
 		}
+		if (isEmpty && ImGui::BeginDragDropSource()) {
+			ImGui::SetDragDropPayload("DND_EMPTY_TO_GROUP", &index, sizeof(index));
+			ImGui::Text("Move %s", object->GetName().c_str());
+			ImGui::EndDragDropSource();
+		}
+		if (isEmpty && ImGui::BeginPopupContextItem()) {
+			if (ImGui::MenuItem("Duplicate Empty")) {
+				emptyToDuplicate = static_cast<int>(index);
+			}
+			if (ImGui::MenuItem("Delete Empty")) {
+				emptyToDelete = static_cast<int>(index);
+			}
+			ImGui::EndPopup();
+		}
+	};
+	for (const std::string& groupName : level->GetLevelData()->groups) {
+		const bool groupOpen = ImGui::TreeNodeEx(
+			groupName.c_str(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth);
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_EMPTY_TO_GROUP")) {
+				const size_t index = *static_cast<const size_t*>(payload->Data);
+				if (index < level->GetLevelData()->objects.size()) {
+					level->GetLevelData()->objects[index].groupName = groupName;
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+		if (ImGui::BeginPopupContextItem()) {
+			if (ImGui::MenuItem("Delete Group")) {
+				groupToDelete = groupName;
+			}
+			ImGui::EndPopup();
+		}
+		if (groupOpen) {
+			for (size_t index = 0; index < levelObjects.size(); ++index) {
+				if (level->GetLevelData()->objects[index].groupName == groupName) {
+					drawHierarchyObject(index);
+				}
+			}
+			ImGui::TreePop();
+		}
+	}
+	if (ImGui::TreeNodeEx("Ungrouped", ImGuiTreeNodeFlags_DefaultOpen)) {
+		for (size_t index = 0; index < levelObjects.size(); ++index) {
+			if (level->GetLevelData()->objects[index].groupName.empty()) {
+				drawHierarchyObject(index);
+			}
+		}
+		ImGui::TreePop();
+	}
+	if (!groupToDelete.empty()) {
+		for (auto& objectData : level->GetLevelData()->objects) {
+			if (objectData.groupName == groupToDelete) objectData.groupName.clear();
+		}
+		auto& groups = level->GetLevelData()->groups;
+		groups.erase(std::remove(groups.begin(), groups.end(), groupToDelete), groups.end());
+	}
+	if (emptyToDuplicate >= 0) {
+		ObjectData copyData = level->GetLevelData()->objects[emptyToDuplicate];
+		const std::string sourceName = copyData.name;
+		copyData.name = sourceName + " Copy";
+		int suffix = 2;
+		while (std::any_of(level->GetLevelData()->objects.begin(), level->GetLevelData()->objects.end(),
+			[&copyData](const ObjectData& objectData) { return objectData.name == copyData.name; })) {
+			copyData.name = sourceName + " Copy " + std::to_string(suffix++);
+		}
+		copyData.transform.translate.x += 1.0f;
+		auto copyObject = std::make_unique<GameObject>(copyData.name);
+		copyObject->GetTransform()->transform = copyData.transform;
+		copyObject->Initialize();
+		selectedObject = copyObject.get();
+		levelObjects.push_back(std::move(copyObject));
+		level->GetLevelData()->objects.push_back(std::move(copyData));
+	}
+	if (emptyToDelete >= 0) {
+		if (selectedObject == levelObjects[emptyToDelete].get()) {
+			selectedObject = nullptr;
+		}
+		levelObjects.erase(levelObjects.begin() + emptyToDelete);
+		level->GetLevelData()->objects.erase(level->GetLevelData()->objects.begin() + emptyToDelete);
 	}
 	ImGui::End();
 	}
@@ -944,9 +1044,30 @@ void GamePlayScene::Update() {
 		// Transform は必須コンポーネント。Unity の Inspector と同じように常に表示する。
 		auto transformComp = selectedObject->GetTransform();
 		if (transformComp && ImGui::CollapsingHeader(selectedObject->GetComponent<RectTransformComponent>() ? "Transform (3D - unused by Sprite)" : "Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::DragFloat3("Position", &transformComp->transform.translate.x, 0.1f);
-			ImGui::DragFloat3("Rotation", &transformComp->transform.rotate.x, 0.05f);
-			ImGui::DragFloat3("Scale", &transformComp->transform.scale.x, 0.1f);
+			bool transformChanged = ImGui::DragFloat3("Position", &transformComp->transform.translate.x, 0.1f);
+			transformChanged |= ImGui::DragFloat3("Rotation", &transformComp->transform.rotate.x, 0.05f);
+			transformChanged |= ImGui::DragFloat3("Scale", &transformComp->transform.scale.x, 0.1f);
+			if (transformChanged && selectedIndex != -1) {
+				level->GetLevelData()->objects[selectedIndex].transform = transformComp->transform;
+			}
+		}
+
+		if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size() &&
+			ImGui::CollapsingHeader("Group", ImGuiTreeNodeFlags_DefaultOpen)) {
+			auto& objectData = level->GetLevelData()->objects[selectedIndex];
+			const char* groupPreview = objectData.groupName.empty() ? "<Ungrouped>" : objectData.groupName.c_str();
+			if (ImGui::BeginCombo("Group", groupPreview)) {
+				if (ImGui::Selectable("<Ungrouped>", objectData.groupName.empty())) {
+					objectData.groupName.clear();
+				}
+				for (const std::string& groupName : level->GetLevelData()->groups) {
+					if (ImGui::Selectable(groupName.c_str(), objectData.groupName == groupName)) {
+						objectData.groupName = groupName;
+					}
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::TextDisabled("Groups organize the editor only; transforms are unchanged.");
 		}
 
 		if (auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>()) {
@@ -1626,6 +1747,7 @@ void GamePlayScene::CreateLevel() {
 		}
 
 	}
+
 }
 
 void GamePlayScene::GizmoUpdate(bool showEditorControls) {

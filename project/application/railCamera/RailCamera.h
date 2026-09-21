@@ -41,6 +41,11 @@ public:
     Vector3 GetBaseRotation() const { return cameraTransform.rotate; }
 	// 制御点の取得
 	const std::vector<RailPoint>& GetPoints() const { return points; }
+	bool IsRailActive() const { return isRail; }
+	bool CanStartRail() const { return points.size() >= 4; }
+	// 先頭からレール移動を開始する。Catmull-Rom のため制御点は 4 個以上必要。
+	void StartRail();
+	void StopRail() { isRail = false; }
     // 進行度 (railT) を取得する関数
     float GetRailT() const { return railT; }
 

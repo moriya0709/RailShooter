@@ -23,7 +23,12 @@ struct TransformationMatrix {
 struct MaterialData {
 	std::string textureFilePath;
 	uint32_t textureIndex = 0;
-	Vector3 emissive;
+	std::string normalTextureFilePath = "__pbr_flat_normal";
+	std::string roughnessTextureFilePath = "__pbr_roughness";
+	std::string metallicTextureFilePath = "__pbr_metallic";
+	std::string emissionTextureFilePath = "__pbr_black";
+	Vector3 emissive = { 0.0f, 0.0f, 0.0f };
+	bool isGlass = false;
 };
 // 1つのメッシュを描画するための、インデックス範囲と使用マテリアルの対応
 struct MaterialRange {
@@ -37,6 +42,8 @@ struct VertexData {
 	Vector2 texcoord; // テクスチャ座標
 	Vector3 normal; // 正規化座標
 	Vector3 outlineNormal;   // 第二法線
+	// xyz は接線、w はビット接線の向き。ノーマルマップの TBN 行列に使用する。
+	Vector4 tangent;
 };
 struct EulerTransform {
     Vector3 scale;
@@ -242,6 +249,8 @@ struct ObjectData {
 	// Editable local-space OBB data for the Collider component.
 	Vector3 colliderSize = { 1.0f, 1.0f, 1.0f };
 	Vector3 colliderCenterOffset = { 0.0f, 0.0f, 0.0f };
+	// 0 は無制限。正の値の場合、カメラからこの距離より遠いモデルは描画しない。
+	float maxDrawDistance = 0.0f;
 	// Unity のように複数の機能を 1 つの GameObject に追加するための型一覧。
 	std::vector<std::string> components;
 

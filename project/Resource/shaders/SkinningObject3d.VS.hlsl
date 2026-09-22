@@ -26,6 +26,7 @@ struct VertexShaderInput
     float32_t4 position : POSITION0;
     float32_t2 texcoord : TEXCOORD0;
     float32_t3 normal : NORMAL0;
+    float32_t4 tangent : TANGENT0;
     float32_t4 weight : WEIGHT0;
     int32_t4 index : INDEX0;
 };
@@ -77,6 +78,8 @@ VertexShaderOutput main(VertexShaderInput input)
     
     // 法線もワールド空間へ
     output.normal = normalize(mul(localNormal, (float32_t3x3) gTransformationMatrix.World));
+    output.tangent.xyz = normalize(mul(input.tangent.xyz, (float32_t3x3) gTransformationMatrix.World));
+    output.tangent.w = input.tangent.w;
 
     // モーションブラー
     output.currentClipPos = output.position;

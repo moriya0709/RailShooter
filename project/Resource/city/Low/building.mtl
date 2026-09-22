@@ -1,0 +1,206 @@
+# Blender 5.1.0 MTL File: 'Medium.blend'
+# www.blender.org
+
+newmtl GT_MC_Facade_1
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Facade 1_BaseColor.png
+map_Ns C:/GT_MC_Facade 1_Roughness.png
+map_refl C:/GT_MC_Facade 1_Metallic.png
+map_Ke C:/GT_MC_Facade 1_Emission.png
+map_Bump -bm 1.000000 C:/GT_MC_Facade 1_Normal.png
+
+newmtl GT_MC_Facade_1B
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Facade 1B_BaseColor.png
+map_Ns C:/GT_MC_Facade 1B_Roughness.png
+map_refl C:/GT_MC_Facade 1B_Metallic.png
+map_Ke C:/GT_MC_Facade 1B_Emission.png
+map_Bump -bm 1.000000 C:/GT_MC_Facade 1B_Normal.png
+
+newmtl GT_MC_Glass_Facade_3
+Ka 0.386364 0.386364 0.386364
+Ks 0.500000 0.500000 0.500000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd C:/GT_MC_Glass Facade 3_BaseColor.png
+map_Ns C:/GT_MC_Glass Facade 3_Roughness.png
+map_refl C:/GT_MC_Glass Facade 3_Metallic.png
+map_Ke C:/GT_MC_Glass Facade 3_Emission.png
+map_Bump -bm 1.000000 C:/GT_MC_Glass Facade 3_Normal.png
+
+newmtl GT_MC_Light
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Lights_BaseColor.png
+map_Ns C:/GT_MC_Lights_Roughness.png
+map_refl C:/GT_MC_Lights_Metallic.png
+map_Ke C:/GT_MC_Lights_BaseColor.png
+map_Bump -bm 1.000000 C:/GT_MC_Lights_Normal.png
+
+newmtl GT_MC_Panel_1
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Panel 1_BaseColor.png
+map_Ns C:/GT_MC_Panel 1_Roughness.png
+map_refl C:/GT_MC_Panel 1_Metallic.png
+map_Bump -bm 1.000000 C:/GT_MC_Panel 1_Normal.png
+
+newmtl GT_MC_Rooftop_1
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Rooftop 1_BaseColor.png
+map_Ns C:/GT_MC_Rooftop 1_Roughness.png
+map_refl C:/GT_MC_Rooftop 1_Metallic.png
+map_Bump -bm 1.000000 C:/GT_MC_Rooftop 1_Normal.png
+
+newmtl GT_MC_Suspended_Platform
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Suspended Platform_BaseColor.png
+map_Ns C:/GT_MC_Suspended Platform_Roughness.png
+map_refl C:/GT_MC_Suspended Platform_Metallic.png
+map_Bump -bm 1.000000 C:/GT_MC_Suspended Platform_Normal.png
+
+newmtl GT_MC_Tiling_Dark_Metal_Cladding
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Tiling Dark Metal Cladding_BaseColor.png
+map_Ns C:/GT_MC_Tiling Dark Metal Cladding_Roughness.png
+map_refl C:/GT_MC_Tiling Dark Metal Cladding_Metallic.png
+map_Ke C:/GT_MC_Tiling Dark Metal Cladding_Emission.png
+map_Bump -bm 1.000000 C:/GT_MC_Tiling Dark Metal Cladding_Normal.png
+
+newmtl GT_MC_Tiling_Dirty_Metal
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Tiling Dirty Metal_BaseColor.png
+map_Ns C:/GT_MC_Tiling Dirty Metal_Roughness.png
+map_refl C:/GT_MC_Tiling Dirty Metal_Metallic.png
+map_Bump -bm 1.000000 C:/GT_MC_Tiling Dirty Metal_Normal.png
+
+newmtl GT_MC_Tiling_Grey_Concrete_Slab
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Tiling Grey Concrete Slab_BaseColor.png
+map_Ns C:/GT_MC_Tiling Grey Concrete Slab_Roughness.png
+map_refl C:/GT_MC_Tiling Grey Concrete Slab_Metallic.png
+map_Bump -bm 1.000000 C:/GT_MC_Tiling Grey Concrete Slab_Normal.png
+
+newmtl GT_MC_Tiling_Scratched_Iron_Grey
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Tiling Grey Iron Scratched_BaseColor.png
+map_Ns C:/GT_MC_Tiling Grey Iron Scratched_Roughness.png
+map_refl C:/GT_MC_Tiling Grey Iron Scratched_Metallic.png
+map_Bump -bm 1.000000 C:/GT_MC_Tiling Grey Iron Scratched_Normal.png
+
+newmtl GT_MC_Tiling_White_Paint
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Tiling White Paint_BaseColor.png
+map_Ns C:/GT_MC_Tiling White Paint_Roughness.png
+map_refl C:/GT_MC_Tiling White Paint_Metallic.png
+map_Bump -bm 1.000000 C:/GT_MC_Tiling White Paint_Normal.png
+
+newmtl GT_MC_Tiling_Wide_Brick
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Tiling Wide Brick_BaseColor.png
+map_Ns C:/GT_MC_Tiling Wide Brick_Roughness.png
+map_refl C:/GT_MC_Tiling Wide Brick_Metallic.png
+map_Bump -bm 1.000000 C:/GT_MC_Tiling Wide Brick_Normal.png
+
+newmtl GT_MC_Tiling_X_Dark_Concrete
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Tiling X Dark Concrete_BaseColor.png
+map_Ns C:/GT_MC_Tiling X Dark Concrete_Roughness.png
+map_refl C:/GT_MC_Tiling X Dark Concrete_Metallic.png
+map_Bump -bm 1.000000 C:/GT_MC_Tiling X Dark Concrete_Normal.png
+
+newmtl GT_MC_Tiling_X_Red_Paint
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Tiling X Red Paint_BaseColor.png
+map_Ns C:/GT_MC_Tiling X Red Paint_Roughness.png
+map_refl C:/GT_MC_Tiling X Red Paint_Metallic.png
+map_Bump -bm 1.000000 C:/GT_MC_Tiling X Red Paint_Normal.png
+
+newmtl GT_MC_Trimsheet_1
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Trimsheet 1_BaseColor.png
+map_Ns C:/GT_MC_Trimsheet 1_Roughness.png
+map_refl C:/GT_MC_Trimsheet 1_Metallic.png
+map_Bump -bm 1.000000 C:/GT_MC_Trimsheet 1_Normal.png
+
+newmtl GT_MC_Trimsheet_2
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/GT_MC_Trimsheet 2_BaseColor.png
+map_Ns C:/GT_MC_Trimsheet 2_Roughness.png
+map_refl C:/GT_MC_Trimsheet 2_Metallic.png
+map_Bump -bm 1.000000 C:/GT_MC_Trimsheet 2_Normal.png

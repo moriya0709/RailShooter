@@ -13,6 +13,7 @@ struct VertexShaderInput
     float32_t4 position : POSITION0;
     float32_t2 texcoord : TEXCOORD0;
     float32_t3 normal : NORMAL0;
+    float32_t4 tangent : TANGENT0;
 };
 
 VertexShaderOutput main(VertexShaderInput input)
@@ -26,6 +27,8 @@ VertexShaderOutput main(VertexShaderInput input)
     output.texcoord = input.texcoord;
     // 法線もワールド空間へ
     output.normal = normalize(mul(input.normal, (float32_t3x3) gTransformationMatrix.World));
+    output.tangent.xyz = normalize(mul(input.tangent.xyz, (float32_t3x3) gTransformationMatrix.World));
+    output.tangent.w = input.tangent.w;
 
     // ==========================================
     // ★追加: 現在と過去のクリップ空間座標をPSに渡す

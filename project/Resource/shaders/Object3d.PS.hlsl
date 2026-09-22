@@ -5,7 +5,8 @@ struct Material
     float4 color;
     int enableLighting;
     int enableToonShading;
-    float2 pad1;
+    int isGlass;
+    float pad1;
     float4x4 uvTransform;
     float3 emissive;
     float shininess;
@@ -84,6 +85,10 @@ ConstantBuffer<MotionBlur> gMotionBlur : register(b7);
 
 Texture2D<float32_t4> gTexture : register(t0);
 TextureCube<float32_t4> gEnviromentTexture : register(t1);
+Texture2D<float32_t4> gNormalTexture : register(t2);
+Texture2D<float32_t4> gRoughnessTexture : register(t3);
+Texture2D<float32_t4> gMetallicTexture : register(t4);
+Texture2D<float32_t4> gEmissionTexture : register(t5);
 SamplerState gSampler : register(s0);
 
 PixelShaderOutput main(VertexShaderOutput input)
@@ -91,15 +96,47 @@ PixelShaderOutput main(VertexShaderOutput input)
     PixelShaderOutput output;
     float4 transformedUV = mul(float32_t4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float32_t4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
-        
+    float3 baseColor = (gMaterial.color * textureColor).rgb;
+    float roughness = saturate(gRoughnessTexture.Sample(gSampler, transformedUV.xy).r);
+    float metallic = saturate(gMetallicTexture.Sample(gSampler, transformedUV.xy).r);
+    float3 emission = gMaterial.emissive + gEmissionTexture.Sample(gSampler, transformedUV.xy).rgb;
+
+    // 接線空間のノーマルをワールド空間へ変換する。接線を直交化して、
+    // スケールを含むワールド行列でも安定した TBN 行列にする。
+    float3 geometricNormal = input.normal;
+    if (dot(geometricNormal, geometricNormal) < 1.0e-6f)
+    {
+        geometricNormal = float3(0.0f, 1.0f, 0.0f);
+    }
+    geometricNormal = normalize(geometricNormal);
+    float3 tangent = input.tangent.xyz - geometricNormal * dot(input.tangent.xyz, geometricNormal);
+    // UV が縮退したメッシュでは Assimp がゼロ接線を返す場合がある。
+    // normalize(0) は NaN となり画面全体の合成まで壊れるため、直交軸から安全に補う。
+    if (dot(tangent, tangent) < 1.0e-6f)
+    {
+        float3 referenceAxis = abs(geometricNormal.y) < 0.999f
+            ? float3(0.0f, 1.0f, 0.0f)
+            : float3(1.0f, 0.0f, 0.0f);
+        tangent = cross(referenceAxis, geometricNormal);
+    }
+    tangent = normalize(tangent);
+    float3 bitangent = normalize(cross(geometricNormal, tangent)) * input.tangent.w;
+    float3 tangentSpaceNormal = gNormalTexture.Sample(gSampler, transformedUV.xy).xyz * 2.0f - 1.0f;
+    float3 normal = normalize(tangent * tangentSpaceNormal.x + bitangent * tangentSpaceNormal.y + geometricNormal * tangentSpaceNormal.z);
+
     float32_t3 cameraToPosition = normalize(input.worldPosition - gView.cameraPos);
-    float32_t3 reflectedVector = reflect(cameraToPosition, normalize(input.normal));
-    float32_t4 environmentColor = gEnviromentTexture.Sample(gSampler, reflectedVector);
+    float32_t3 reflectedVector = reflect(cameraToPosition, normal);
+    // 粗い面ほど環境マップの低いミップを読むことで、反射を自然にぼかす。
+    float3 environmentColor = gEnviromentTexture.SampleLevel(gSampler, reflectedVector, roughness * 8.0f).rgb;
     
     if (gMaterial.enableLighting != 0)
     {
-        float3 normal = normalize(input.normal);
         float3 viewDir = normalize(gView.cameraPos - input.worldPosition);
+        float3 dielectricF0 = gMaterial.isGlass != 0
+            ? float3(0.16f, 0.18f, 0.20f)
+            : float3(0.04f, 0.04f, 0.04f);
+        float3 specularColor = lerp(dielectricF0, baseColor, metallic);
+        float diffuseWeight = 1.0f - metallic;
 
         float4 directional = float4(0, 0, 0, 0);
         float4 directionalSpecular = float4(0, 0, 0, 0); // 鏡面反射用
@@ -126,15 +163,16 @@ PixelShaderOutput main(VertexShaderOutput input)
                 // 従来
                 diffuse = pow(halfLambert, 2.0f);
             }
-            directional = gDirectionalLight.color * diffuse * gDirectionalLight.intensity;
+            directional = gDirectionalLight.color * (diffuse * diffuseWeight) * gDirectionalLight.intensity;
         
             // --- 鏡面反射 (Specular) ---
             if (NdotL > 0.0f)
             {
                 float3 halfwayDir = normalize(lightDir + viewDir);
                 float NdotH = saturate(dot(normal, halfwayDir));
-                float specFactor = pow(NdotH, gMaterial.shininess);
-                directionalSpecular = gDirectionalLight.color * specFactor * gDirectionalLight.intensity;
+                float specularPower = lerp(256.0f, 2.0f, roughness);
+                float specFactor = pow(NdotH, specularPower);
+                directionalSpecular = float4(gDirectionalLight.color.rgb * specularColor * specFactor * gDirectionalLight.intensity, 1.0f);
             }
         }
 
@@ -164,7 +202,7 @@ PixelShaderOutput main(VertexShaderOutput input)
                 diffuse = saturate(NdotL);
             }
 
-            pointLight = gPointLight.color * diffuse * attenuation * gPointLight.intensity;
+            pointLight = gPointLight.color * (diffuse * diffuseWeight) * attenuation * gPointLight.intensity;
         }
 
         // スポットライト (Spot Light)
@@ -192,7 +230,7 @@ PixelShaderOutput main(VertexShaderOutput input)
                 diffuse = saturate(NdotL);
             }
 
-            spot = gSpotLight.color * diffuse * attenuation * angleFactor * gSpotLight.intensity;
+            spot = gSpotLight.color * (diffuse * diffuseWeight) * attenuation * angleFactor * gSpotLight.intensity;
         }
         
         // フレネル / リムライトの計算
@@ -224,23 +262,26 @@ PixelShaderOutput main(VertexShaderOutput input)
         }
 
         // 環境マップ
-        float4 envColor = { environmentColor.rgb * gMaterial.environmentCoefficient, 1.0f };
+        float3 envColor = environmentColor * gMaterial.environmentCoefficient * lerp(0.25f, 1.0f, metallic);
         
         // ライティングの合成
-        float4 lighting = directional + directionalSpecular + ambient + pointLight + spot + fresnel + envColor;
+        float4 lighting = directional + directionalSpecular + ambient + pointLight + spot + fresnel;
         
         // ベースカラー（マテリアルカラー × テクスチャカラー）を計算
-        float4 baseColor = gMaterial.color * textureColor;
-        
         // ベースカラーにライティング（光の当たり具合）を掛け算し、一番最後にエミッシブを加算する
-        output.color.rgb = (baseColor.rgb * lighting.rgb) + gMaterial.emissive;
+        float NdotV = saturate(dot(normal, viewDir));
+        float fresnelReflection = pow(1.0f - NdotV, 5.0f);
+        float glassReflection = gMaterial.isGlass != 0 ? lerp(0.28f, 1.0f, fresnelReflection) : fresnelReflection;
+        float3 reflectionTint = lerp(float3(1.0f, 1.0f, 1.0f), baseColor, metallic);
+        float3 reflection = envColor * lerp(dielectricF0, float3(1.0f, 1.0f, 1.0f), glassReflection) * reflectionTint;
+        output.color.rgb = (baseColor * lighting.rgb) + reflection + emission;
         
         // アルファ値（透明度）はベースカラーのものをそのまま使う
-        output.color.a = baseColor.a;
+        output.color.a = gMaterial.color.a * textureColor.a;
     }
     else
     {
-        output.color = gMaterial.color * textureColor;
+        output.color = float4(baseColor + emission, gMaterial.color.a * textureColor.a);
     }
     
     if (output.color.a == 0.0f)

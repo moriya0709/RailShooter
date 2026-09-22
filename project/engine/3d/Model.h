@@ -104,6 +104,8 @@ private:
 		uint32_t vertexCount;
 	};
 	SkinningInfo* skinningInfoData = nullptr;
+	// スキニング出力は UAV と頂点バッファをフレームごとに切り替える。
+	bool outputVertexInVertexBufferState_ = false;
 
 	// アニメーションブレンド用の状態管理
 	const Animation* currentAnimation_ = nullptr; // 再生中のアニメーション

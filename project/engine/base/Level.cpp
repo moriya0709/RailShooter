@@ -67,6 +67,7 @@ void Level::LoadJson(const std::string fileName) {
 			if (object.contains("file_name")) {
 				newData.file_name = object["file_name"].get<std::string>();
 			}
+			newData.maxDrawDistance = object.value("max_draw_distance", newData.maxDrawDistance);
 			if (object.contains("sprite_file_name")) {
 				newData.sprite_file_name = object["sprite_file_name"].get<std::string>();
 			}
@@ -210,6 +211,9 @@ void Level::SaveJson(const std::string fileName) {
 		}
 		if (!obj.file_name.empty()) {
 			newObjJson["file_name"] = obj.file_name;
+		}
+		if (obj.maxDrawDistance > 0.0f) {
+			newObjJson["max_draw_distance"] = obj.maxDrawDistance;
 		}
 		if (!obj.sprite_file_name.empty()) {
 			newObjJson["sprite_file_name"] = obj.sprite_file_name;

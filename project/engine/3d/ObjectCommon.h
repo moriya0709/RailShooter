@@ -42,7 +42,8 @@ private:
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> animationRootSignature = nullptr;
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> computeRootSignature = nullptr;
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[6] = {};
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[5] = {};
+	D3D12_INPUT_ELEMENT_DESC animationInputElementDescs[7] = {};
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = nullptr;
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = nullptr;
 	Microsoft::WRL::ComPtr<IDxcBlob> computeShaderBlob = nullptr;
@@ -79,4 +80,3 @@ private:
 	// 
 
 };
-

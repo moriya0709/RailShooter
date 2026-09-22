@@ -23,7 +23,7 @@ TextureManager* TextureManager::GetInstance() {
 	return instance.get();
 }
 
-void TextureManager::LoadTexture(const std::string& filePath) {
+void TextureManager::LoadTexture(const std::string& filePath, bool isSRGB) {
 	// 読み込み済みテクスチャを検索
 	if (textureDatas.contains(filePath)) {
 		OutputDebugStringA(("LoadTexture SKIP: [" + filePath + "]\n").c_str());
@@ -43,36 +43,43 @@ void TextureManager::LoadTexture(const std::string& filePath) {
 		hr = DirectX::LoadFromDDSFile(filePathW.c_str(), DirectX::DDS_FLAGS_NONE,nullptr,image);
 	} else {
 		// WICの読み込み
-		hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+		const DirectX::WIC_FLAGS flags = isSRGB
+			? DirectX::WIC_FLAGS_FORCE_SRGB
+			: DirectX::WIC_FLAGS_IGNORE_SRGB;
+		hr = DirectX::LoadFromWICFile(filePathW.c_str(), flags, nullptr, image);
 	}
 
 	assert(SUCCEEDED(hr));
-	CreateTextureData(filePath, image);
+	CreateTextureData(filePath, image, isSRGB);
 
 }
 
 void TextureManager::LoadTextureFromRGBA8(const std::string& key, uint32_t width, uint32_t height,
-	const std::vector<uint8_t>& pixels) {
+	const std::vector<uint8_t>& pixels, bool isSRGB) {
 	assert(width > 0 && height > 0);
 	assert(pixels.size() == static_cast<size_t>(width) * height * 4);
 
 	DirectX::ScratchImage image{};
-	const HRESULT hr = image.Initialize2D(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, width, height, 1, 1);
+	const DXGI_FORMAT format = isSRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM;
+	const HRESULT hr = image.Initialize2D(format, width, height, 1, 1);
 	assert(SUCCEEDED(hr));
 	const DirectX::Image* destination = image.GetImage(0, 0, 0);
 	assert(destination != nullptr);
 	std::memcpy(destination->pixels, pixels.data(), pixels.size());
-	CreateTextureData(key, image);
+	CreateTextureData(key, image, isSRGB);
 }
 
-void TextureManager::CreateTextureData(const std::string& key, DirectX::ScratchImage& image) {
+void TextureManager::CreateTextureData(const std::string& key, DirectX::ScratchImage& image, bool isSRGB) {
 	DirectX::ScratchImage mipImages{};
 	HRESULT hr = S_OK;
-	if (DirectX::IsCompressed(image.GetMetadata().format)) {
+	const DirectX::TexMetadata& metadata = image.GetMetadata();
+	// 1x1 の既定値テクスチャにミップは存在しない。DirectXTex へ生成を依頼すると
+	// 空の ScratchImage になり、後段の GPU リソース生成が失敗するためそのまま使う。
+	if (DirectX::IsCompressed(metadata.format) || (metadata.width == 1 && metadata.height == 1)) {
 		mipImages = std::move(image);
 	} else {
-		hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(),
-			DirectX::TEX_FILTER_SRGB, 4, mipImages);
+		const DirectX::TEX_FILTER_FLAGS filter = isSRGB ? DirectX::TEX_FILTER_SRGB : DirectX::TEX_FILTER_DEFAULT;
+		hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), filter, 4, mipImages);
 	}
 	assert(SUCCEEDED(hr));
 

@@ -16,6 +16,9 @@ public:
 	void SetModel(const std::string& filePath);
 	Model* GetModel() const { return model_; }
 	const std::string& GetModelPath() const { return modelPath_; }
+	// A value of 0 disables distance culling. Objects beyond this distance issue no draw calls.
+	void SetMaxDrawDistance(float distance) { maxDrawDistance_ = distance; }
+	float GetMaxDrawDistance() const { return maxDrawDistance_; }
 
 private:
 	// バッファリソース
@@ -42,4 +45,5 @@ private:
 	Camera* camera_ = nullptr;
 	// DirectXCommonのポインタ
 	DirectXCommon* dxCommon_ = nullptr;
+	float maxDrawDistance_ = 0.0f;
 };

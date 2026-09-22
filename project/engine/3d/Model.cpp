@@ -14,8 +14,11 @@
 #include <assimp/quaternion.h>
 #include <cassert>
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <filesystem>
+#include <initializer_list>
+#include <string_view>
 #include <unordered_map>
 
 namespace {
@@ -92,6 +95,48 @@ std::string ResolveModelTexturePath(const std::string& directoryPath, const std:
 	return fallbackPath;
 }
 
+std::string FindMaterialTexturePath(aiMaterial* material, const std::string& directoryPath,
+	std::initializer_list<aiTextureType> textureTypes, const std::string& fallbackPath) {
+	for (const aiTextureType textureType : textureTypes) {
+		if (material->GetTextureCount(textureType) == 0) {
+			continue;
+		}
+
+		aiString texturePath;
+		if (material->GetTexture(textureType, 0, &texturePath) == AI_SUCCESS) {
+			return ResolveModelTexturePath(directoryPath, texturePath.C_Str(), fallbackPath);
+		}
+	}
+	return fallbackPath;
+}
+
+std::string FindCompanionMetallicTexture(const std::string& roughnessTexturePath) {
+	constexpr std::string_view kRoughnessSuffix = "_Roughness.png";
+	if (!roughnessTexturePath.ends_with(kRoughnessSuffix)) {
+		return "__pbr_metallic";
+	}
+
+	std::string metallicTexturePath = roughnessTexturePath.substr(0, roughnessTexturePath.size() - kRoughnessSuffix.size());
+	metallicTexturePath += "_Metallic.png";
+	return std::filesystem::exists(metallicTexturePath) ? metallicTexturePath : "__pbr_metallic";
+}
+
+bool IsGlassMaterialName(const std::string& materialName) {
+	std::string lowerName = materialName;
+	std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(),
+		[](unsigned char character) { return static_cast<char>(std::tolower(character)); });
+	return lowerName.find("glass") != std::string::npos || lowerName.find("facade") != std::string::npos;
+}
+
+void EnsurePbrFallbackTextures() {
+	TextureManager* textureManager = TextureManager::GetInstance();
+	// 法線は (0.5, 0.5, 1.0)、粗さは 1、メタリックと発光は 0 が標準の無効値。
+	textureManager->LoadTextureFromRGBA8("__pbr_flat_normal", 1, 1, { 128, 128, 255, 255 }, false);
+	textureManager->LoadTextureFromRGBA8("__pbr_roughness", 1, 1, { 255, 255, 255, 255 }, false);
+	textureManager->LoadTextureFromRGBA8("__pbr_metallic", 1, 1, { 0, 0, 0, 255 }, false);
+	textureManager->LoadTextureFromRGBA8("__pbr_black", 1, 1, { 0, 0, 0, 255 }, false);
+}
+
 }
 
 void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, SrvManager* srvManager, const std::string& directoryPath, const std::string& filename) {
@@ -103,6 +148,7 @@ void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, SrvMan
 
 	// モデル読み込み
 	modelData = LoadModelFile(directoryPath, filename);
+	EnsurePbrFallbackTextures();
 	// スケルトン生成
 	skeleton = CreateSkeleton(modelData.rootNode);
 
@@ -118,39 +164,39 @@ void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, SrvMan
 	inputVertexResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedInput));
 	std::memcpy(mappedInput, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
 
-	// ⭕ 修正後: DirectXのAPIを直接叩いてUAV用のフラグ付きで作成する
-	D3D12_HEAP_PROPERTIES heapProps{};
-	heapProps.Type = D3D12_HEAP_TYPE_DEFAULT; // UAVはGPU側で読み書きするため DEFAULT ヒープを使用
+	// スキニングを持つモデルだけがコンピュート出力用のUAVを必要とする。
+	// 静的モデルにUAVを作成・バインドすると、不要な状態遷移とSRV消費が発生する。
+	if (IsSkinning()) {
+		D3D12_HEAP_PROPERTIES heapProps{};
+		heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
 
-	D3D12_RESOURCE_DESC resourceDesc{};
-	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	resourceDesc.Width = sizeof(VertexData) * modelData.vertices.size(); // バッファ全体のサイズ
-	resourceDesc.Height = 1;
-	resourceDesc.DepthOrArraySize = 1;
-	resourceDesc.MipLevels = 1;
-	resourceDesc.SampleDesc.Count = 1;
-	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	// ★最重要: コンピュートシェーダーからの書き込み（UAV）を許可するフラグ
-	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		D3D12_RESOURCE_DESC resourceDesc{};
+		resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		resourceDesc.Width = sizeof(VertexData) * modelData.vertices.size();
+		resourceDesc.Height = 1;
+		resourceDesc.DepthOrArraySize = 1;
+		resourceDesc.MipLevels = 1;
+		resourceDesc.SampleDesc.Count = 1;
+		resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
-	HRESULT hr = dxCommon_->GetDevice()->CreateCommittedResource(
-		&heapProps,
-		D3D12_HEAP_FLAG_NONE,
-		&resourceDesc,
-		D3D12_RESOURCE_STATE_COMMON, // または D3D12_RESOURCE_STATE_UNORDERED_ACCESS
-		nullptr,
-		IID_PPV_ARGS(&outputVertexResource)
-	);
-	assert(SUCCEEDED(hr));
-	// 描画で使う頂点バッファビュー(vertexBufferView)のターゲットを出力用(outputVertexResource)にしておく
-	vertexBufferView.BufferLocation = outputVertexResource->GetGPUVirtualAddress();
-	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
+		HRESULT hr = dxCommon_->GetDevice()->CreateCommittedResource(
+			&heapProps,
+			D3D12_HEAP_FLAG_NONE,
+			&resourceDesc,
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+			nullptr,
+			IID_PPV_ARGS(&outputVertexResource)
+		);
+		assert(SUCCEEDED(hr));
+		vertexBufferView.BufferLocation = outputVertexResource->GetGPUVirtualAddress();
+		vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());
+		vertexBufferView.StrideInBytes = sizeof(VertexData);
 
-	// 【定数バッファ】4番用のSkinningInfoの作成
-	skinningInfoResource = dxCommon_->CreateBufferResource(sizeof(SkinningInfo));
-	skinningInfoResource->Map(0, nullptr, reinterpret_cast<void**>(&skinningInfoData));
-	skinningInfoData->vertexCount = static_cast<uint32_t>(modelData.vertices.size());
+		skinningInfoResource = dxCommon_->CreateBufferResource(sizeof(SkinningInfo));
+		skinningInfoResource->Map(0, nullptr, reinterpret_cast<void**>(&skinningInfoData));
+		skinningInfoData->vertexCount = static_cast<uint32_t>(modelData.vertices.size());
+	}
 
 	// *マテリアル* //
 
@@ -171,7 +217,9 @@ void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, SrvMan
 		currentMaterial->fresnelPower = 4.0f;
 		currentMaterial->rimColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		currentMaterial->rimThreshold = 0.5f;
-		currentMaterial->environmentCoefficient = 0.0f;
+		// 反射は粗さ／金属度マップで制御し、ガラスと窓面にはフレネル反射を強めに適用する。
+		currentMaterial->environmentCoefficient = modelData.materials[materialIndex].isGlass ? 1.0f : 0.18f;
+		currentMaterial->useNoise = modelData.materials[materialIndex].isGlass ? 1 : 0;
 	}
 	// 環境マップ用テクスチャ
 	enviromentTexture = "Resource/rostock_laage_airport_4k.dds";
@@ -187,10 +235,10 @@ void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, SrvMan
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedIndex));
 	std::memcpy(mappedIndex, modelData.indices.data(), sizeof(uint32_t) * modelData.indices.size());
 
-	// スキンクラスター
-	skinCluster = CreateSkinCluster(dxCommon_->GetDevice(), skeleton, modelData, dxCommon_->GetSrvHeap(), dxCommon_->GetSrvDescriptorSize());
-	// UAV生成
-	CreateUav();
+	if (IsSkinning()) {
+		skinCluster = CreateSkinCluster(dxCommon_->GetDevice(), skeleton, modelData, dxCommon_->GetSrvHeap(), dxCommon_->GetSrvDescriptorSize());
+		CreateUav();
+	}
 
 
 	// *テクスチャ* //
@@ -198,6 +246,10 @@ void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, SrvMan
 	for (MaterialData& material : modelData.materials) {
 		TextureManager::GetInstance()->LoadTexture(material.textureFilePath);
 		material.textureIndex = TextureManager::GetInstance()->GetSrvIndex(material.textureFilePath);
+		TextureManager::GetInstance()->LoadTexture(material.normalTextureFilePath, false);
+		TextureManager::GetInstance()->LoadTexture(material.roughnessTextureFilePath, false);
+		TextureManager::GetInstance()->LoadTexture(material.metallicTextureFilePath, false);
+		TextureManager::GetInstance()->LoadTexture(material.emissionTextureFilePath, false);
 	}
 	if (!modelData.materials.empty()) {
 		modelData.material = modelData.materials.front();
@@ -241,8 +293,9 @@ void Model::Update() {
 		}
 	}
 
-	// 2. スケルトン（ボーン）が存在する場合のみ、行列計算とスキニングを行う
-	if (!skeleton.joints.empty()) {
+	// 2. 実際に頂点ウェイトを持つモデルだけ、行列計算とスキニングを行う。
+	// 静的モデルにもシーンノードは存在するため、joints の有無だけでは判定できない。
+	if (IsSkinning()) {
 		for (Joint& joint : skeleton.joints) {
 			joint.localMatrix = MakeAffineMatrix(joint.transform.scale, joint.transform.rotate, joint.transform.translate);
 			if (joint.parent) {
@@ -300,6 +353,14 @@ void Model::Draw() {
 			0, materialResources[range.materialIndex]->GetGPUVirtualAddress());
 		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(
 			2, TextureManager::GetInstance()->GetSrvHandleGPU(material.textureFilePath));
+		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(
+			11, TextureManager::GetInstance()->GetSrvHandleGPU(material.normalTextureFilePath));
+		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(
+			12, TextureManager::GetInstance()->GetSrvHandleGPU(material.roughnessTextureFilePath));
+		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(
+			13, TextureManager::GetInstance()->GetSrvHandleGPU(material.metallicTextureFilePath));
+		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(
+			14, TextureManager::GetInstance()->GetSrvHandleGPU(material.emissionTextureFilePath));
 		dxCommon_->GetCommandList()->DrawIndexedInstanced(range.indexCount, 1, range.indexOffset, 0, 0);
 	}
 }
@@ -401,7 +462,7 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 	bool isGLTF = (ext == "gltf" || ext == "glb");
 
 	// Assimp読み込みフラグの決定
-	unsigned int pFlags = aiProcess_FlipWindingOrder;
+	unsigned int pFlags = aiProcess_FlipWindingOrder | aiProcess_CalcTangentSpace;
 	if (isOBJ) {
 		pFlags |= aiProcess_FlipUVs; // OBJの時だけUVを上下反転
 	}
@@ -417,15 +478,26 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 	for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; ++materialIndex) {
 		aiMaterial* material = scene->mMaterials[materialIndex];
 		MaterialData& materialData = modelData.materials[materialIndex];
-		materialData.textureFilePath = kFallbackTexture;
-
-		if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
-			aiString textureFilePath;
-			if (material->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilePath) == AI_SUCCESS) {
-				materialData.textureFilePath = ResolveModelTexturePath(
-					directoryPath, textureFilePath.C_Str(), kFallbackTexture);
-			}
+		materialData.emissive = { 0.0f, 0.0f, 0.0f };
+		aiString materialName;
+		if (material->Get(AI_MATKEY_NAME, materialName) == AI_SUCCESS) {
+			materialData.isGlass = IsGlassMaterialName(materialName.C_Str());
 		}
+		materialData.textureFilePath = FindMaterialTexturePath(material, directoryPath,
+			{ aiTextureType_BASE_COLOR, aiTextureType_DIFFUSE }, kFallbackTexture);
+		materialData.normalTextureFilePath = FindMaterialTexturePath(material, directoryPath,
+			{ aiTextureType_NORMALS, aiTextureType_HEIGHT }, "__pbr_flat_normal");
+		materialData.roughnessTextureFilePath = FindMaterialTexturePath(material, directoryPath,
+			{ aiTextureType_DIFFUSE_ROUGHNESS, aiTextureType_SHININESS }, "__pbr_roughness");
+		materialData.metallicTextureFilePath = FindMaterialTexturePath(material, directoryPath,
+			{ aiTextureType_METALNESS, aiTextureType_REFLECTION }, "__pbr_metallic");
+		if (materialData.metallicTextureFilePath == "__pbr_metallic") {
+			// Assimp の OBJ 読み込みでは map_refl が UNKNOWN 扱いになることがある。
+			// このアセットの命名規則（*_Roughness / *_Metallic）から対応する実テクスチャを拾う。
+			materialData.metallicTextureFilePath = FindCompanionMetallicTexture(materialData.roughnessTextureFilePath);
+		}
+		materialData.emissionTextureFilePath = FindMaterialTexturePath(material, directoryPath,
+			{ aiTextureType_EMISSION_COLOR, aiTextureType_EMISSIVE }, "__pbr_black");
 
 		aiColor3D emissiveColor(0.0f, 0.0f, 0.0f);
 		if (material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor) == AI_SUCCESS) {
@@ -450,6 +522,19 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 			v.position = { -position.x, position.y, position.z, 1.0f };
 			v.normal = { -normal.x, normal.y, normal.z };
 			v.texcoord = { texcoord.x, texcoord.y };
+			if (mesh->HasTangentsAndBitangents()) {
+				const aiVector3D& tangent = mesh->mTangents[vertexIndex];
+				const aiVector3D& bitangent = mesh->mBitangents[vertexIndex];
+				const Vector3 convertedTangent = { -tangent.x, tangent.y, tangent.z };
+				const Vector3 convertedBitangent = { -bitangent.x, bitangent.y, bitangent.z };
+				const float handedness = Dot(Cross(v.normal, convertedTangent), convertedBitangent) < 0.0f ? -1.0f : 1.0f;
+				v.tangent = { convertedTangent.x, convertedTangent.y, convertedTangent.z, handedness };
+			} else {
+				// UV が無い/壊れたモデルでも、法線マップ無し時に安定する直交接線を与える。
+				const Vector3 reference = std::abs(v.normal.y) < 0.999f ? Vector3{ 0.0f, 1.0f, 0.0f } : Vector3{ 1.0f, 0.0f, 0.0f };
+				const Vector3 tangent = Normalize(Cross(reference, v.normal));
+				v.tangent = { tangent.x, tangent.y, tangent.z, 1.0f };
+			}
 		}
 
 		// インデックスを解析
@@ -819,6 +904,16 @@ void Model::DispatchSkinning() {
 
 	// パイプラインとルートシグネチャを設定
 	auto objectCommon = ObjectCommon::GetInstance();
+	if (outputVertexInVertexBufferState_) {
+		D3D12_RESOURCE_BARRIER transition{};
+		transition.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		transition.Transition.pResource = outputVertexResource.Get();
+		transition.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		transition.Transition.StateBefore = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+		transition.Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+		commandList->ResourceBarrier(1, &transition);
+		outputVertexInVertexBufferState_ = false;
+	}
 	commandList->SetComputeRootSignature(objectCommon->GetComputeRootSignature());
 	commandList->SetPipelineState(objectCommon->GetComputePipelineState());
 
@@ -841,4 +936,13 @@ void Model::DispatchSkinning() {
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
 	barrier.UAV.pResource = outputVertexResource.Get();
 	commandList->ResourceBarrier(1, &barrier);
+
+	D3D12_RESOURCE_BARRIER transition{};
+	transition.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	transition.Transition.pResource = outputVertexResource.Get();
+	transition.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	transition.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	transition.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+	commandList->ResourceBarrier(1, &transition);
+	outputVertexInVertexBufferState_ = true;
 }

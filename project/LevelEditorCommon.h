@@ -18,6 +18,11 @@ namespace LevelEditorCommon {
 void DrawToolbar(Level& level, const std::vector<std::unique_ptr<GameObject>>& levelObjects,
 	char* levelFileName, size_t levelFileNameCapacity);
 
+// Draws the city-generation controls and appends the generated buildings to the level.
+// The generated objects use random positions within the user-specified 3D bounds.
+void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& levelObjects,
+	GameObject*& selectedObject);
+
 // Copies runtime editor state to LevelData before serializing it to JSON.
 void SaveLevel(Level& level, const std::vector<std::unique_ptr<GameObject>>& levelObjects,
 	const char* fileName);

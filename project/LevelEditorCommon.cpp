@@ -12,6 +12,8 @@
 
 #include <algorithm>
 #include <array>
+#include <cstring>
+#include <filesystem>
 #include <random>
 
 #ifdef USE_IMGUI
@@ -36,7 +38,9 @@ struct CityGeneratorSettings {
 	int buildingCount = 40;
 	Vector3 minimum = { -50.0f, 0.0f, -50.0f };
 	Vector3 maximum = { 50.0f, 0.0f, 50.0f };
-	float maxDrawDistance = 200.0f;
+	float maxDrawDistance = 900.0f;
+	float mediumLodDistance = 300.0f;
+	float lowLodDistance = 600.0f;
 	bool randomYaw = true;
 	char groupName[64] = "city";
 };
@@ -56,6 +60,18 @@ const std::array<const char*, 24>& GetCityBuildingModels() {
 		"building22.obj", "building23.obj", "building24.obj", "building25.obj"
 	};
 	return cityBuildingModels;
+}
+
+bool IsLegacyCityBuilding(const ObjectData& objectData) {
+	if (objectData.groupName != "city" || objectData.file_name.empty()) {
+		return false;
+	}
+	const std::string fileName = std::filesystem::path(objectData.file_name).filename().string();
+	return fileName.starts_with("building") && std::filesystem::path(fileName).extension() == ".obj";
+}
+
+std::string CityLodPath(const char* qualityDirectory, const std::string& fileName) {
+	return std::string("city/") + qualityDirectory + "/" + fileName;
 }
 
 OBB GetPlayerCollisionOBB(Player& player) {
@@ -135,11 +151,67 @@ void UpdateEnemyCollisions(Player& player,
 	}
 }
 
+void ConfigureBuildingLod(ModelRendererComponent& renderer, ObjectData& objectData) {
+	if (!objectData.lodHighModel.empty()) {
+		renderer.SetLodModels(objectData.lodHighModel, objectData.lodMediumModel, objectData.lodLowModel);
+		renderer.SetLodDistances(objectData.lodMediumDistance, objectData.lodLowDistance);
+		return;
+	}
+
+	// Existing city scenes stored only "buildingXX.obj". Keep those levels working
+	// while upgrading them to the new LOD asset folders without requiring migration.
+	if (IsLegacyCityBuilding(objectData)) {
+		const std::string fileName = std::filesystem::path(objectData.file_name).filename().string();
+		objectData.lodHighModel = CityLodPath("Higth", fileName);
+		objectData.lodMediumModel = CityLodPath("Medium", fileName);
+		objectData.lodLowModel = CityLodPath("Low", fileName);
+		objectData.file_name = objectData.lodHighModel;
+		renderer.SetLodModels(objectData.lodHighModel, objectData.lodMediumModel, objectData.lodLowModel);
+		renderer.SetLodDistances(objectData.lodMediumDistance, objectData.lodLowDistance);
+	}
+}
+
+void DrawBuildingLodInspector(ModelRendererComponent& renderer, ObjectData& objectData) {
+#ifdef USE_IMGUI
+	if (!ImGui::CollapsingHeader("Building LOD", ImGuiTreeNodeFlags_DefaultOpen)) {
+		return;
+	}
+
+	char highModel[260]{};
+	char mediumModel[260]{};
+	char lowModel[260]{};
+	strncpy_s(highModel, objectData.lodHighModel.c_str(), _TRUNCATE);
+	strncpy_s(mediumModel, objectData.lodMediumModel.c_str(), _TRUNCATE);
+	strncpy_s(lowModel, objectData.lodLowModel.c_str(), _TRUNCATE);
+	bool changed = false;
+	changed |= ImGui::InputText("High Model##BuildingLOD", highModel, IM_ARRAYSIZE(highModel));
+	changed |= ImGui::InputText("Medium Model##BuildingLOD", mediumModel, IM_ARRAYSIZE(mediumModel));
+	changed |= ImGui::InputText("Low Model##BuildingLOD", lowModel, IM_ARRAYSIZE(lowModel));
+	changed |= ImGui::DragFloat("Medium Distance##BuildingLOD", &objectData.lodMediumDistance, 1.0f, 0.0f, 10000.0f);
+	changed |= ImGui::DragFloat("Low Distance##BuildingLOD", &objectData.lodLowDistance, 1.0f, 0.0f, 10000.0f);
+	if (changed) {
+		objectData.lodHighModel = highModel;
+		objectData.lodMediumModel = mediumModel;
+		objectData.lodLowModel = lowModel;
+		if (objectData.lodHighModel.empty()) {
+			renderer.SetModel(objectData.file_name);
+		} else {
+			objectData.file_name = objectData.lodHighModel;
+			renderer.SetLodModels(objectData.lodHighModel, objectData.lodMediumModel, objectData.lodLowModel);
+			renderer.SetLodDistances(objectData.lodMediumDistance, objectData.lodLowDistance);
+		}
+	}
+#else
+	(void)renderer;
+	(void)objectData;
+#endif
+}
+
 void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& levelObjects,
 	GameObject*& selectedObject) {
 #ifdef USE_IMGUI
 	CityGeneratorSettings& settings = GetCityGeneratorSettings();
-	ImGui::SetNextWindowSize(ImVec2(360.0f, 260.0f), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(360.0f, 310.0f), ImGuiCond_FirstUseEver);
 	if (!ImGui::Begin("City Generator")) {
 		ImGui::End();
 		return;
@@ -150,6 +222,8 @@ void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& l
 	ImGui::DragFloat3("Minimum XYZ##CityGenerator", &settings.minimum.x, 0.5f, -10000.0f, 10000.0f);
 	ImGui::DragFloat3("Maximum XYZ##CityGenerator", &settings.maximum.x, 0.5f, -10000.0f, 10000.0f);
 	ImGui::DragFloat("Max Draw Distance##CityGenerator", &settings.maxDrawDistance, 1.0f, 0.0f, 10000.0f);
+	ImGui::DragFloat("Medium LOD Distance##CityGenerator", &settings.mediumLodDistance, 1.0f, 0.0f, 10000.0f);
+	ImGui::DragFloat("Low LOD Distance##CityGenerator", &settings.lowLodDistance, 1.0f, 0.0f, 10000.0f);
 	ImGui::Checkbox("Random Y Rotation##CityGenerator", &settings.randomYaw);
 	ImGui::InputText("Group##CityGenerator", settings.groupName, IM_ARRAYSIZE(settings.groupName));
 
@@ -190,6 +264,9 @@ void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& l
 	for (int index = 0; index < settings.buildingCount; ++index) {
 		const std::string objectName = "CityBuilding_" + std::to_string(levelData->objects.size() + 1);
 		const std::string modelName = GetCityBuildingModels()[modelIndex(randomEngine)];
+		const std::string highModel = CityLodPath("Higth", modelName);
+		const std::string mediumModel = CityLodPath("Medium", modelName);
+		const std::string lowModel = CityLodPath("Low", modelName);
 		Transform transform{};
 		transform.scale = { 1.0f, 1.0f, 1.0f };
 		transform.rotate = { 0.0f, settings.randomYaw ? yaw(randomEngine) : 0.0f, 0.0f };
@@ -198,7 +275,8 @@ void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& l
 		auto building = std::make_unique<GameObject>(objectName);
 		building->GetTransform()->transform = transform;
 		auto* renderer = building->AddComponent<ModelRendererComponent>();
-		renderer->SetModel(modelName);
+		renderer->SetLodModels(highModel, mediumModel, lowModel);
+		renderer->SetLodDistances(settings.mediumLodDistance, settings.lowLodDistance);
 		renderer->SetMaxDrawDistance(settings.maxDrawDistance);
 		building->Initialize();
 
@@ -206,8 +284,13 @@ void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& l
 		buildingData.type = "MESH";
 		buildingData.name = objectName;
 		buildingData.groupName = groupName;
-		buildingData.file_name = modelName;
+		buildingData.file_name = highModel;
 		buildingData.maxDrawDistance = settings.maxDrawDistance;
+		buildingData.lodHighModel = highModel;
+		buildingData.lodMediumModel = mediumModel;
+		buildingData.lodLowModel = lowModel;
+		buildingData.lodMediumDistance = settings.mediumLodDistance;
+		buildingData.lodLowDistance = settings.lowLodDistance;
 		buildingData.transform = transform;
 		buildingData.components = { "ModelRenderer" };
 

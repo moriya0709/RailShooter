@@ -1098,7 +1098,11 @@ void GamePlayScene::Update() {
 				if (ImGui::InputText("Model", modelPath, IM_ARRAYSIZE(modelPath))) {
 					renderer->SetModel(modelPath);
 					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
-						level->GetLevelData()->objects[selectedIndex].file_name = modelPath;
+						auto& objectData = level->GetLevelData()->objects[selectedIndex];
+						objectData.file_name = modelPath;
+						objectData.lodHighModel.clear();
+						objectData.lodMediumModel.clear();
+						objectData.lodLowModel.clear();
 					}
 				}
 				if (ImGui::BeginDragDropTarget()) {
@@ -1106,7 +1110,11 @@ void GamePlayScene::Update() {
 						const std::string droppedModel = static_cast<const char*>(payload->Data);
 						renderer->SetModel(droppedModel);
 						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
-							level->GetLevelData()->objects[selectedIndex].file_name = droppedModel;
+							auto& objectData = level->GetLevelData()->objects[selectedIndex];
+							objectData.file_name = droppedModel;
+							objectData.lodHighModel.clear();
+							objectData.lodMediumModel.clear();
+							objectData.lodLowModel.clear();
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -1117,6 +1125,9 @@ void GamePlayScene::Update() {
 					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
 						level->GetLevelData()->objects[selectedIndex].maxDrawDistance = maxDrawDistance;
 					}
+				}
+				if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+					LevelEditorCommon::DrawBuildingLodInspector(*renderer, level->GetLevelData()->objects[selectedIndex]);
 				}
 			}
 		}
@@ -1636,7 +1647,10 @@ void GamePlayScene::CreateLevel() {
 
 			// 3. ModelRendererComponent を追加して 3D モデルをセット
 			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
-			modelRenderer->SetModel(objectData.file_name);
+			LevelEditorCommon::ConfigureBuildingLod(*modelRenderer, objectData);
+			if (!modelRenderer->HasLod()) {
+				modelRenderer->SetModel(objectData.file_name);
+			}
 			modelRenderer->SetMaxDrawDistance(objectData.maxDrawDistance);
 
 			// 4. アタッチされたコンポーネントを一括初期化
@@ -1697,7 +1711,10 @@ void GamePlayScene::CreateLevel() {
 			};
 			if (hasComponent("ModelRenderer")) {
 				auto* renderer = gameObject->AddComponent<ModelRendererComponent>();
-				renderer->SetModel(objectData.file_name.empty() ? "cube.gltf" : objectData.file_name);
+				LevelEditorCommon::ConfigureBuildingLod(*renderer, objectData);
+				if (!renderer->HasLod()) {
+					renderer->SetModel(objectData.file_name.empty() ? "cube.gltf" : objectData.file_name);
+				}
 				renderer->SetMaxDrawDistance(objectData.maxDrawDistance);
 			}
 			if (hasComponent("RectTransform")) {

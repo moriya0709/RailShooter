@@ -38,6 +38,8 @@ public:
 	ModelManager& operator=(ModelManager&) = delete;
 
 private:
+	// cacheKey は Resource からの相対パスを使い、同名の LOD モデルを別モデルとして保持する。
+	void LoadModelFromPath(const std::string& cacheKey, const std::string& modelPath);
 	struct AnimationDefinition {
 		std::string name;
 		std::string directoryPath;

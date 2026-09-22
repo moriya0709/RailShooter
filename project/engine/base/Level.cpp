@@ -68,6 +68,14 @@ void Level::LoadJson(const std::string fileName) {
 				newData.file_name = object["file_name"].get<std::string>();
 			}
 			newData.maxDrawDistance = object.value("max_draw_distance", newData.maxDrawDistance);
+			if (object.contains("lod") && object["lod"].is_object()) {
+				const auto& lod = object["lod"];
+				newData.lodHighModel = lod.value("high_model", std::string{});
+				newData.lodMediumModel = lod.value("medium_model", std::string{});
+				newData.lodLowModel = lod.value("low_model", std::string{});
+				newData.lodMediumDistance = lod.value("medium_distance", newData.lodMediumDistance);
+				newData.lodLowDistance = lod.value("low_distance", newData.lodLowDistance);
+			}
 			if (object.contains("sprite_file_name")) {
 				newData.sprite_file_name = object["sprite_file_name"].get<std::string>();
 			}
@@ -214,6 +222,13 @@ void Level::SaveJson(const std::string fileName) {
 		}
 		if (obj.maxDrawDistance > 0.0f) {
 			newObjJson["max_draw_distance"] = obj.maxDrawDistance;
+		}
+		if (!obj.lodHighModel.empty()) {
+			newObjJson["lod"]["high_model"] = obj.lodHighModel;
+			newObjJson["lod"]["medium_model"] = obj.lodMediumModel;
+			newObjJson["lod"]["low_model"] = obj.lodLowModel;
+			newObjJson["lod"]["medium_distance"] = obj.lodMediumDistance;
+			newObjJson["lod"]["low_distance"] = obj.lodLowDistance;
 		}
 		if (!obj.sprite_file_name.empty()) {
 			newObjJson["sprite_file_name"] = obj.sprite_file_name;

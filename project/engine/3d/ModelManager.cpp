@@ -10,6 +10,21 @@
 
 std::unique_ptr <ModelManager> ModelManager::instance = nullptr;
 
+namespace {
+
+std::string NormalizeModelKey(const std::string& modelPath) {
+	namespace fs = std::filesystem;
+	fs::path normalized(modelPath);
+	if (normalized.is_absolute()) {
+		return normalized.lexically_normal().generic_string();
+	}
+	const std::string key = normalized.lexically_normal().generic_string();
+	constexpr std::string_view kResourcePrefix = "Resource/";
+	return key.starts_with(kResourcePrefix) ? key.substr(kResourcePrefix.size()) : key;
+}
+
+}
+
 void ModelManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager) {
 	dxCommon_ = dxCommon;
 	srvManager_ = srvManager;
@@ -28,8 +43,14 @@ ModelManager* ModelManager::GetInstance() {
 
 // モデルファイルの読み込み
 void ModelManager::LoadModel(const std::string& directoryPath, const std::string& filePath) {
+	namespace fs = std::filesystem;
+	const fs::path fullPath = fs::path(directoryPath) / fs::path(filePath).filename();
+	LoadModelFromPath(NormalizeModelKey(filePath), fullPath.generic_string());
+}
+
+void ModelManager::LoadModelFromPath(const std::string& cacheKey, const std::string& modelPathString) {
 	// 読み込み済みモデルを検索
-	if (models.contains(filePath)) {
+	if (models.contains(cacheKey)) {
 		// 読み込み済みなら早期return
 		return;
 	}
@@ -37,16 +58,17 @@ void ModelManager::LoadModel(const std::string& directoryPath, const std::string
 	const auto loadStart = std::chrono::steady_clock::now();
 
 	// モデルの生成とファイル読み込み、初期化
+	const std::filesystem::path modelPath(modelPathString);
 	std::unique_ptr<Model>model = std::make_unique<Model>();
-	model->Initialize(modelCommon, dxCommon_,srvManager_, directoryPath, filePath);
+	model->Initialize(modelCommon, dxCommon_,srvManager_, modelPath.parent_path().generic_string(), modelPath.filename().string());
 
 	// モデルをmapコンテナに格納する
-	models.insert(std::make_pair(filePath, std::move(model)));
+	models.insert(std::make_pair(cacheKey, std::move(model)));
 
 	// 事前登録されているアニメーションは、モデルの実体生成直後に読み込む。
-	const auto animations = animationDefinitions.find(filePath);
+	const auto animations = animationDefinitions.find(cacheKey);
 	if (animations != animationDefinitions.end()) {
-		Model* loadedModel = models.at(filePath).get();
+		Model* loadedModel = models.at(cacheKey).get();
 		for (const AnimationDefinition& animation : animations->second) {
 			loadedModel->LoadAnimation(animation.name, animation.directoryPath, animation.filePath);
 		}
@@ -54,7 +76,7 @@ void ModelManager::LoadModel(const std::string& directoryPath, const std::string
 
 	const auto elapsedMilliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(
 		std::chrono::steady_clock::now() - loadStart).count();
-	Logger::Log("[ModelManager] Loaded " + filePath + " in " +
+	Logger::Log("[ModelManager] Loaded " + cacheKey + " in " +
 		std::to_string(elapsedMilliseconds) + " ms\n");
 
 }
@@ -100,12 +122,15 @@ void ModelManager::RegisterModelsInResourceDirectory(const std::string& resource
 
 	for (const fs::path& modelPath : modelFiles) {
 		const std::string fileName = modelPath.filename().string();
-		if (registeredModelPaths.contains(fileName)) {
-			Logger::Log("[ModelManager] Skipped duplicate model file name: " + fileName + "\n");
-			continue;
+		const std::string relativePath = fs::relative(modelPath, resourcePath, error).generic_string();
+		if (error) {
+			Logger::Log("[ModelManager] Failed to create relative model path: " + error.message() + "\n");
+			return;
 		}
-
-		registeredModelPaths.insert_or_assign(fileName, modelPath.generic_string());
+		// 相対パスは常に登録する。これにより city/Higth と city/Low の同名モデルを区別できる。
+		registeredModelPaths.insert_or_assign(relativePath, modelPath.generic_string());
+		// 既存レベルとの互換性のため、ファイル名だけの参照は並び順で最初のモデルに解決する。
+		registeredModelPaths.try_emplace(fileName, modelPath.generic_string());
 	}
 
 	Logger::Log("[ModelManager] Registered " + std::to_string(registeredModelPaths.size()) + " model file(s) from " + resourceDirectory + ".\n");
@@ -113,18 +138,18 @@ void ModelManager::RegisterModelsInResourceDirectory(const std::string& resource
 
 // モデルの検索
 Model* ModelManager::FindModel(const std::string& filePath) {
+	const std::string cacheKey = NormalizeModelKey(filePath);
 	// 読み込み済みモデルを検索
-	if (models.contains(filePath)) {
+	if (models.contains(cacheKey)) {
 		// 読み込みモデルを戻り値としてreturn
-		return models.at(filePath).get();
+		return models.at(cacheKey).get();
 	}
 
 	// 登録済みなら、初めて使われるこのタイミングでモデル実体を読み込む。
-	const auto registered = registeredModelPaths.find(filePath);
+	const auto registered = registeredModelPaths.find(cacheKey);
 	if (registered != registeredModelPaths.end()) {
-		const std::filesystem::path modelPath(registered->second);
-		LoadModel(modelPath.parent_path().generic_string(), modelPath.filename().string());
-		return models.at(filePath).get();
+		LoadModelFromPath(cacheKey, registered->second);
+		return models.at(cacheKey).get();
 	}
 
 	// ファイル名一致なし

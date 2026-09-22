@@ -8,6 +8,8 @@
 #include "Camera.h"
 #include "LightManager.h"
 
+#include <algorithm>
+
 void ModelRendererComponent::Initialize() {
 	// 引数で受け取ってメンバ変数に記録する
 	dxCommon_ = DirectXCommon::GetInstance();
@@ -64,6 +66,7 @@ void ModelRendererComponent::Update() {
 		// 現在のWVP行列を計算
 		currentWVP_ = Multiply(worldMatrix, camera_->GetViewProjectionMatrix());
 		transformationMatrixData->WVP = currentWVP_;
+		UpdateLodModel();
 	}
 }
 
@@ -123,4 +126,59 @@ void ModelRendererComponent::SetModel(const std::string& filePath) {
 	// モデルを検索してセットする
 	modelPath_ = filePath;
 	model_ = ModelManager::GetInstance()->FindModel(filePath);
+	highLodModel_ = nullptr;
+	mediumLodModel_ = nullptr;
+	lowLodModel_ = nullptr;
+	lodHighModelPath_.clear();
+	lodMediumModelPath_.clear();
+	lodLowModelPath_.clear();
+}
+
+void ModelRendererComponent::SetLodModels(const std::string& highModelPath, const std::string& mediumModelPath,
+	const std::string& lowModelPath) {
+	if (highModelPath.empty()) {
+		SetModel(mediumModelPath.empty() ? lowModelPath : mediumModelPath);
+		return;
+	}
+
+	lodHighModelPath_ = highModelPath;
+	lodMediumModelPath_ = mediumModelPath;
+	lodLowModelPath_ = lowModelPath;
+	modelPath_ = highModelPath;
+	highLodModel_ = ModelManager::GetInstance()->FindModel(highModelPath);
+	mediumLodModel_ = mediumModelPath.empty() ? nullptr : ModelManager::GetInstance()->FindModel(mediumModelPath);
+	lowLodModel_ = lowModelPath.empty() ? nullptr : ModelManager::GetInstance()->FindModel(lowModelPath);
+	// Initialize 前は camera_ が未設定なので、少なくとも High（なければ次の品質）を描画可能にしておく。
+	model_ = highLodModel_ ? highLodModel_ : (mediumLodModel_ ? mediumLodModel_ : lowLodModel_);
+	UpdateLodModel();
+}
+
+void ModelRendererComponent::SetLodDistances(float mediumDistance, float lowDistance) {
+	lodMediumDistance_ = (std::max)(0.0f, mediumDistance);
+	lodLowDistance_ = (std::max)(lodMediumDistance_, lowDistance);
+	UpdateLodModel();
+}
+
+void ModelRendererComponent::UpdateLodModel() {
+	if (lodHighModelPath_.empty() || !camera_ || !owner_) {
+		return;
+	}
+
+	const auto* transform = owner_->GetComponent<TransformComponent>();
+	if (!transform) {
+		return;
+	}
+	const Vector3 cameraPosition = camera_->GetTranslate();
+	const float deltaX = transform->transform.translate.x - cameraPosition.x;
+	const float deltaY = transform->transform.translate.y - cameraPosition.y;
+	const float deltaZ = transform->transform.translate.z - cameraPosition.z;
+	const float distanceSquared = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+
+	Model* selectedModel = highLodModel_;
+	if (distanceSquared >= lodLowDistance_ * lodLowDistance_) {
+		selectedModel = lowLodModel_ ? lowLodModel_ : (mediumLodModel_ ? mediumLodModel_ : highLodModel_);
+	} else if (distanceSquared >= lodMediumDistance_ * lodMediumDistance_) {
+		selectedModel = mediumLodModel_ ? mediumLodModel_ : highLodModel_;
+	}
+	model_ = selectedModel;
 }

@@ -251,6 +251,12 @@ struct ObjectData {
 	Vector3 colliderCenterOffset = { 0.0f, 0.0f, 0.0f };
 	// 0 は無制限。正の値の場合、カメラからこの距離より遠いモデルは描画しない。
 	float maxDrawDistance = 0.0f;
+	// LOD を有効にする場合のモデルと切り替え距離。high が空なら通常の単一モデル描画。
+	std::string lodHighModel;
+	std::string lodMediumModel;
+	std::string lodLowModel;
+	float lodMediumDistance = 300.0f;
+	float lodLowDistance = 600.0f;
 	// Unity のように複数の機能を 1 つの GameObject に追加するための型一覧。
 	std::vector<std::string> components;
 

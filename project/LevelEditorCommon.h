@@ -10,6 +10,7 @@ class GameObject;
 class Level;
 class Player;
 class ColliderComponent;
+class ModelRendererComponent;
 struct OBB;
 
 namespace LevelEditorCommon {
@@ -22,6 +23,12 @@ void DrawToolbar(Level& level, const std::vector<std::unique_ptr<GameObject>>& l
 // The generated objects use random positions within the user-specified 3D bounds.
 void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& levelObjects,
 	GameObject*& selectedObject);
+
+// Applies saved LOD settings. Legacy objects in the city group also receive the
+// conventional city/Higth, city/Medium and city/Low variants automatically.
+void ConfigureBuildingLod(ModelRendererComponent& renderer, ObjectData& objectData);
+// Draws and persists the per-object LOD controls in the shared inspector.
+void DrawBuildingLodInspector(ModelRendererComponent& renderer, ObjectData& objectData);
 
 // Copies runtime editor state to LevelData before serializing it to JSON.
 void SaveLevel(Level& level, const std::vector<std::unique_ptr<GameObject>>& levelObjects,

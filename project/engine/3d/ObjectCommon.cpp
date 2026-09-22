@@ -74,7 +74,7 @@ void ObjectCommon::CreateRootSignature() {
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	// RootParameter作成
-	D3D12_ROOT_PARAMETER rootParameters[11] = {};
+	D3D12_ROOT_PARAMETER rootParameters[15] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
 	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号０とバインド
@@ -118,6 +118,18 @@ void ObjectCommon::CreateRootSignature() {
 	rootParameters[10].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[10].DescriptorTable.pDescriptorRanges = envMapRange;
 	rootParameters[10].DescriptorTable.NumDescriptorRanges = _countof(envMapRange);
+	// PBR テクスチャ（t2-t5）
+	D3D12_DESCRIPTOR_RANGE pbrRanges[4] = {};
+	for (UINT i = 0; i < _countof(pbrRanges); ++i) {
+		pbrRanges[i].BaseShaderRegister = 2 + i;
+		pbrRanges[i].NumDescriptors = 1;
+		pbrRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		pbrRanges[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+		rootParameters[11 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameters[11 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		rootParameters[11 + i].DescriptorTable.pDescriptorRanges = &pbrRanges[i];
+		rootParameters[11 + i].DescriptorTable.NumDescriptorRanges = 1;
+	}
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーター配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
@@ -170,6 +182,12 @@ void ObjectCommon::CreateRootSignature() {
 	inputElementDescs[3].SemanticName = "NORMAL";
 	inputElementDescs[3].SemanticIndex = 1;
 	inputElementDescs[3].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	inputElementDescs[3].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	inputElementDescs[4].SemanticName = "TANGENT";
+	inputElementDescs[4].SemanticIndex = 0;
+	inputElementDescs[4].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	inputElementDescs[4].InputSlot = 0;
+	inputElementDescs[4].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 }
 
 void ObjectCommon::CreateAnimationRootSignature() {
@@ -192,7 +210,7 @@ void ObjectCommon::CreateAnimationRootSignature() {
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	// RootParameter作成
-	D3D12_ROOT_PARAMETER rootParameters[12] = {};
+	D3D12_ROOT_PARAMETER rootParameters[16] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号０とバインド
@@ -236,10 +254,22 @@ void ObjectCommon::CreateAnimationRootSignature() {
 	rootParameters[10].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[10].DescriptorTable.pDescriptorRanges = envMapRange;
 	rootParameters[10].DescriptorTable.NumDescriptorRanges = _countof(envMapRange);
+	// PBR テクスチャ（t2-t5）
+	D3D12_DESCRIPTOR_RANGE pbrRanges[4] = {};
+	for (UINT i = 0; i < _countof(pbrRanges); ++i) {
+		pbrRanges[i].BaseShaderRegister = 2 + i;
+		pbrRanges[i].NumDescriptors = 1;
+		pbrRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		pbrRanges[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+		rootParameters[11 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameters[11 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		rootParameters[11 + i].DescriptorTable.pDescriptorRanges = &pbrRanges[i];
+		rootParameters[11 + i].DescriptorTable.NumDescriptorRanges = 1;
+	}
 	// スキニング
-	rootParameters[11].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	rootParameters[11].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[11].Descriptor.ShaderRegister = 2;
+	rootParameters[15].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	rootParameters[15].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	rootParameters[15].Descriptor.ShaderRegister = 2;
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーター配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
@@ -274,42 +304,47 @@ void ObjectCommon::CreateAnimationRootSignature() {
 
 	// InputLayout
 	// POSITION
-	inputElementDescs[0].SemanticName = "POSITION";
-	inputElementDescs[0].SemanticIndex = 0;
-	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	animationInputElementDescs[0].SemanticName = "POSITION";
+	animationInputElementDescs[0].SemanticIndex = 0;
+	animationInputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	animationInputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
 	// TEXCOORD
-	inputElementDescs[1].SemanticName = "TEXCOORD";
-	inputElementDescs[1].SemanticIndex = 0;
-	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	animationInputElementDescs[1].SemanticName = "TEXCOORD";
+	animationInputElementDescs[1].SemanticIndex = 0;
+	animationInputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+	animationInputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
 	// NORMAL0
-	inputElementDescs[2].SemanticName = "NORMAL";
-	inputElementDescs[2].SemanticIndex = 0;
-	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	animationInputElementDescs[2].SemanticName = "NORMAL";
+	animationInputElementDescs[2].SemanticIndex = 0;
+	animationInputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	animationInputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
 	// NORMAL1（第二法線）
-	inputElementDescs[3].SemanticName = "NORMAL";
-	inputElementDescs[3].SemanticIndex = 1;
-	inputElementDescs[3].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDescs[3].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	animationInputElementDescs[3].SemanticName = "NORMAL";
+	animationInputElementDescs[3].SemanticIndex = 1;
+	animationInputElementDescs[3].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	animationInputElementDescs[4].SemanticName = "TANGENT";
+	animationInputElementDescs[4].SemanticIndex = 0;
+	animationInputElementDescs[4].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	animationInputElementDescs[4].InputSlot = 0;
+	animationInputElementDescs[4].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	animationInputElementDescs[3].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
 	// WEIGHT
-	inputElementDescs[4].SemanticName = "WEIGHT";
-	inputElementDescs[4].SemanticIndex = 0;
-	inputElementDescs[4].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	inputElementDescs[4].InputSlot = 1;
-	inputElementDescs[4].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	animationInputElementDescs[5].SemanticName = "WEIGHT";
+	animationInputElementDescs[5].SemanticIndex = 0;
+	animationInputElementDescs[5].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	animationInputElementDescs[5].InputSlot = 1;
+	animationInputElementDescs[5].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
 	// INDEX
-	inputElementDescs[5].SemanticName = "INDEX";
-	inputElementDescs[5].SemanticIndex = 0;
-	inputElementDescs[5].Format = DXGI_FORMAT_R32G32B32A32_SINT;
-	inputElementDescs[5].InputSlot = 1;
-	inputElementDescs[5].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	animationInputElementDescs[6].SemanticName = "INDEX";
+	animationInputElementDescs[6].SemanticIndex = 0;
+	animationInputElementDescs[6].Format = DXGI_FORMAT_R32G32B32A32_SINT;
+	animationInputElementDescs[6].InputSlot = 1;
+	animationInputElementDescs[6].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 }
 
 void ObjectCommon::CreateComputeRootSignature() {
@@ -450,8 +485,8 @@ void ObjectCommon::CreateGraphicsPipeline() {
 }
 
 void ObjectCommon::CreateGraphicsAnimationPipeline() {
-	inputLayoutDesc.pInputElementDescs = inputElementDescs;
-	inputLayoutDesc.NumElements = _countof(inputElementDescs);
+	inputLayoutDesc.pInputElementDescs = animationInputElementDescs;
+	inputLayoutDesc.NumElements = _countof(animationInputElementDescs);
 
 	// BlendStateの設定
 	// 全ての色要素を書き込む

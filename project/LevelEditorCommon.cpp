@@ -3,11 +3,16 @@
 #include "GameObject.h"
 #include "Level.h"
 #include "ColliderComponent.h"
+#include "ModelRendererComponent.h"
 #include "Enemy.h"
 #include "Player.h"
 #include "RectTransformComponent.h"
 #include "SceneManager.h"
 #include "CollisionManager.h"
+
+#include <algorithm>
+#include <array>
+#include <random>
 
 #ifdef USE_IMGUI
 #include <externals/imgui/imgui.h>
@@ -26,6 +31,32 @@ OBB GetColliderOBB(const GameObject* object, const OBB& fallback) {
 }
 
 namespace {
+
+struct CityGeneratorSettings {
+	int buildingCount = 40;
+	Vector3 minimum = { -50.0f, 0.0f, -50.0f };
+	Vector3 maximum = { 50.0f, 0.0f, 50.0f };
+	float maxDrawDistance = 200.0f;
+	bool randomYaw = true;
+	char groupName[64] = "city";
+};
+
+CityGeneratorSettings& GetCityGeneratorSettings() {
+	static CityGeneratorSettings settings;
+	return settings;
+}
+
+const std::array<const char*, 24>& GetCityBuildingModels() {
+	static const std::array<const char*, 24> cityBuildingModels = {
+		"building.obj", "building01.obj", "building02.obj", "building03.obj",
+		"building04.obj", "building05.obj", "building06.obj", "building07.obj",
+		"building09.obj", "building10.obj", "building11.obj", "building12.obj",
+		"building13.obj", "building14.obj", "building15.obj", "building16.obj",
+		"building18.obj", "building19.obj", "building20.obj", "building21.obj",
+		"building22.obj", "building23.obj", "building24.obj", "building25.obj"
+	};
+	return cityBuildingModels;
+}
 
 OBB GetPlayerCollisionOBB(Player& player) {
 	return GetColliderOBB(player.GetGameObject(), player.GetOBB());
@@ -102,6 +133,94 @@ void UpdateEnemyCollisions(Player& player,
 			}
 		}
 	}
+}
+
+void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& levelObjects,
+	GameObject*& selectedObject) {
+#ifdef USE_IMGUI
+	CityGeneratorSettings& settings = GetCityGeneratorSettings();
+	ImGui::SetNextWindowSize(ImVec2(360.0f, 260.0f), ImGuiCond_FirstUseEver);
+	if (!ImGui::Begin("City Generator")) {
+		ImGui::End();
+		return;
+	}
+
+	ImGui::TextWrapped("Place city buildings at random coordinates inside the specified bounds.");
+	ImGui::DragInt("Building Count##CityGenerator", &settings.buildingCount, 1.0f, 1, 500);
+	ImGui::DragFloat3("Minimum XYZ##CityGenerator", &settings.minimum.x, 0.5f, -10000.0f, 10000.0f);
+	ImGui::DragFloat3("Maximum XYZ##CityGenerator", &settings.maximum.x, 0.5f, -10000.0f, 10000.0f);
+	ImGui::DragFloat("Max Draw Distance##CityGenerator", &settings.maxDrawDistance, 1.0f, 0.0f, 10000.0f);
+	ImGui::Checkbox("Random Y Rotation##CityGenerator", &settings.randomYaw);
+	ImGui::InputText("Group##CityGenerator", settings.groupName, IM_ARRAYSIZE(settings.groupName));
+
+	if (!ImGui::Button("Generate City Buildings")) {
+		ImGui::End();
+		return;
+	}
+
+	const Vector3 minimum = {
+		(std::min)(settings.minimum.x, settings.maximum.x),
+		(std::min)(settings.minimum.y, settings.maximum.y),
+		(std::min)(settings.minimum.z, settings.maximum.z)
+	};
+	const Vector3 maximum = {
+		(std::max)(settings.minimum.x, settings.maximum.x),
+		(std::max)(settings.minimum.y, settings.maximum.y),
+		(std::max)(settings.minimum.z, settings.maximum.z)
+	};
+
+	LevelData* const levelData = level.GetLevelData();
+	if (!levelData) {
+		ImGui::End();
+		return;
+	}
+	const std::string groupName = settings.groupName;
+	if (!groupName.empty() && std::find(levelData->groups.begin(), levelData->groups.end(), groupName) == levelData->groups.end()) {
+		levelData->groups.push_back(groupName);
+	}
+
+	std::random_device randomDevice;
+	std::mt19937 randomEngine(randomDevice());
+	std::uniform_real_distribution<float> positionX(minimum.x, maximum.x);
+	std::uniform_real_distribution<float> positionY(minimum.y, maximum.y);
+	std::uniform_real_distribution<float> positionZ(minimum.z, maximum.z);
+	std::uniform_real_distribution<float> yaw(0.0f, PI * 2.0f);
+	std::uniform_int_distribution<size_t> modelIndex(0, GetCityBuildingModels().size() - 1);
+
+	for (int index = 0; index < settings.buildingCount; ++index) {
+		const std::string objectName = "CityBuilding_" + std::to_string(levelData->objects.size() + 1);
+		const std::string modelName = GetCityBuildingModels()[modelIndex(randomEngine)];
+		Transform transform{};
+		transform.scale = { 1.0f, 1.0f, 1.0f };
+		transform.rotate = { 0.0f, settings.randomYaw ? yaw(randomEngine) : 0.0f, 0.0f };
+		transform.translate = { positionX(randomEngine), positionY(randomEngine), positionZ(randomEngine) };
+
+		auto building = std::make_unique<GameObject>(objectName);
+		building->GetTransform()->transform = transform;
+		auto* renderer = building->AddComponent<ModelRendererComponent>();
+		renderer->SetModel(modelName);
+		renderer->SetMaxDrawDistance(settings.maxDrawDistance);
+		building->Initialize();
+
+		ObjectData buildingData{};
+		buildingData.type = "MESH";
+		buildingData.name = objectName;
+		buildingData.groupName = groupName;
+		buildingData.file_name = modelName;
+		buildingData.maxDrawDistance = settings.maxDrawDistance;
+		buildingData.transform = transform;
+		buildingData.components = { "ModelRenderer" };
+
+		selectedObject = building.get();
+		levelObjects.push_back(std::move(building));
+		levelData->objects.push_back(std::move(buildingData));
+	}
+	ImGui::End();
+#else
+	(void)level;
+	(void)levelObjects;
+	(void)selectedObject;
+#endif
 }
 
 void DrawColliderInspector(ColliderComponent& collider, ObjectData& objectData) {

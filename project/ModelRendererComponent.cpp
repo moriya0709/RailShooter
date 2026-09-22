@@ -71,6 +71,17 @@ void ModelRendererComponent::Draw() {
 	if (!model_) {
 		return;
 	}
+	if (maxDrawDistance_ > 0.0f) {
+		const auto* transform = owner_->GetComponent<TransformComponent>();
+		const Vector3 cameraPosition = camera_->GetTranslate();
+		const float deltaX = transform->transform.translate.x - cameraPosition.x;
+		const float deltaY = transform->transform.translate.y - cameraPosition.y;
+		const float deltaZ = transform->transform.translate.z - cameraPosition.z;
+		const float distanceSquared = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+		if (distanceSquared > maxDrawDistance_ * maxDrawDistance_) {
+			return;
+		}
+	}
 
 	if (model_->IsSkinning()) {
 		// アニメーション
@@ -96,7 +107,7 @@ void ModelRendererComponent::Draw() {
 
 	if (model_->IsSkinning()) {
 		dxCommon_->GetCommandList()->SetGraphicsRootShaderResourceView(
-			11,
+			15,
 			model_->GetSkinCluster().paletteResource->GetGPUVirtualAddress()
 		);
 	}

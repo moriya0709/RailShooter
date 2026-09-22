@@ -106,7 +106,7 @@ void Object::Draw() {
 
 	if (model_->IsSkinning()) {
 		dxCommon_->GetCommandList()->SetGraphicsRootShaderResourceView(
-			11, // ★スキニング用ルートシグネチャでの MatrixPalette のプロパティ番号
+			15, // スキニング用ルートシグネチャでの MatrixPalette のプロパティ番号
 			model_->GetSkinCluster().paletteResource->GetGPUVirtualAddress()
 		);
 	}

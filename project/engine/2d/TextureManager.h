@@ -32,10 +32,11 @@ public:
 	static TextureManager* GetInstance();
 
 	// テクスチャファイルの読み込み
-	void LoadTexture(const std::string& filePath);
+	// カラーテクスチャは sRGB、法線・粗さ・メタリックなどのデータテクスチャはリニアで読む。
+	void LoadTexture(const std::string& filePath, bool isSRGB = true);
 	// CPUで生成したRGBA8画像を登録する。既存キーの場合はSRVを再利用する。
 	void LoadTextureFromRGBA8(const std::string& key, uint32_t width, uint32_t height,
-		const std::vector<uint8_t>& pixels);
+		const std::vector<uint8_t>& pixels, bool isSRGB = true);
 	// SRVインデックスの取得
 	uint32_t GetSrvIndex(const std::string& filePath);
 	// テクスチャ番号からGPUハンドルを取得
@@ -59,5 +60,5 @@ private:
 	// SrvManagerのポインタ
 	SrvManager* srvManager_ = nullptr;
 
-	void CreateTextureData(const std::string& key, DirectX::ScratchImage& image);
+	void CreateTextureData(const std::string& key, DirectX::ScratchImage& image, bool isSRGB);
 };

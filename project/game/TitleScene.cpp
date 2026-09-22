@@ -859,6 +859,7 @@ void TitleScene::Update() {
 
 		ImGui::End();
 	}
+	LevelEditorCommon::DrawCityGenerator(*level, levelObjects, selectedObject);
 	// ★ ドラッグ操作中（マウスで何かを掴んでいる時）だけドロップ処理を有効化する
 	if (ImGui::GetDragDropPayload() != nullptr) {
 
@@ -1038,6 +1039,13 @@ void TitleScene::Update() {
 							}
 						}
 						ImGui::EndDragDropTarget();
+					}
+					float maxDrawDistance = renderer->GetMaxDrawDistance();
+					if (ImGui::DragFloat("Max Draw Distance", &maxDrawDistance, 1.0f, 0.0f, 10000.0f)) {
+						renderer->SetMaxDrawDistance(maxDrawDistance);
+						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+							level->GetLevelData()->objects[selectedIndex].maxDrawDistance = maxDrawDistance;
+						}
 					}
 				}
 			}
@@ -1541,6 +1549,7 @@ void TitleScene::CreateLevel() {
 			// 3. ModelRendererComponent を追加して 3D モデルをセット
 			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
 			modelRenderer->SetModel(objectData.file_name);
+			modelRenderer->SetMaxDrawDistance(objectData.maxDrawDistance);
 
 			// 4. アタッチされたコンポーネントを一括初期化
 			gameObject->Initialize();
@@ -1601,6 +1610,7 @@ void TitleScene::CreateLevel() {
 			if (hasComponent("ModelRenderer")) {
 				auto* renderer = gameObject->AddComponent<ModelRendererComponent>();
 				renderer->SetModel(objectData.file_name.empty() ? "cube.gltf" : objectData.file_name);
+				renderer->SetMaxDrawDistance(objectData.maxDrawDistance);
 			}
 			if (hasComponent("RectTransform")) {
 				auto* rectTransform = gameObject->AddComponent<RectTransformComponent>();

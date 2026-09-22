@@ -16,6 +16,7 @@ struct Vertex
     float32_t2 texcoord;
     float32_t3 normal;
     float32_t3 outlineNormal;
+    float32_t4 tangent;
 };
 
 struct VertexInfluence
@@ -68,6 +69,13 @@ void main(uint32_t3 DTid : SV_DispatchThreadID)
         skinned.normal += mul(input.normal, (float32_t3x3) gMatrixPalette[influence.index.z].skeletonSpaceInverseTransposeMatrix) * influence.weight.z;
         skinned.normal += mul(input.normal, (float32_t3x3) gMatrixPalette[influence.index.w].skeletonSpaceInverseTransposeMatrix) * influence.weight.w;
         skinned.normal = normalize(skinned.normal);
+
+        // ノーマルマップ用の接線も法線と同じ逆転置行列でスキニングする。
+        skinned.tangent.xyz = mul(input.tangent.xyz, (float32_t3x3) gMatrixPalette[influence.index.x].skeletonSpaceInverseTransposeMatrix) * influence.weight.x;
+        skinned.tangent.xyz += mul(input.tangent.xyz, (float32_t3x3) gMatrixPalette[influence.index.y].skeletonSpaceInverseTransposeMatrix) * influence.weight.y;
+        skinned.tangent.xyz += mul(input.tangent.xyz, (float32_t3x3) gMatrixPalette[influence.index.z].skeletonSpaceInverseTransposeMatrix) * influence.weight.z;
+        skinned.tangent.xyz += mul(input.tangent.xyz, (float32_t3x3) gMatrixPalette[influence.index.w].skeletonSpaceInverseTransposeMatrix) * influence.weight.w;
+        skinned.tangent.xyz = normalize(skinned.tangent.xyz);
       
         // outlineNormal と texcoord は最初の丸ごとコピーで既に安全な値が入っているのでノータッチでOK！
 

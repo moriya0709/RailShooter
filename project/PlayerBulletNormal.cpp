@@ -1,20 +1,24 @@
 ﻿#include "PlayerBulletNormal.h"
 #include "Camera.h"
+#include "CameraManager.h"
 #include "TrailEffectManager.h"
 #include "Enemy.h"
 #include "GameObject.h"
 
-void PlayerBulletNormal::Initialize(const Vector3 position, Enemy* target) {
+void PlayerBulletNormal::Initialize(const Vector3 position, Enemy* target, const Vector3& inheritedVelocity) {
 	// 代入
 	transform.translate = position;
+	previousTranslate_ = position;
 	if (GetGameObject()) {
 		GetGameObject()->GetTransform()->transform = transform;
 	}
 	target_ = target;
+	inheritedVelocity_ = inheritedVelocity;
 
-	// カメラの情報を取得して弾の進行方向を設定する
-	Camera* camera = Camera::GetInstance(); // シングルトンインスタンスの取得[cite: 4]
-	Matrix4x4 cameraWorld = camera->GetWorldMatrix(); // カメラのワールド行列を取得[cite: 4]
+	// 実際に描画・操作に使われているカメラを使う。
+	// デフォルトカメラではなく、レールカメラのピッチを反映する。
+	Camera* camera = CameraManager::GetInstance()->GetActiveCamera();
+	Matrix4x4 cameraWorld = camera->GetWorldMatrix();
 
 	// worldMatrix からカメラの「前方向(Z軸)」ベクトルを抽出[cite: 3]
 	Vector3 forward = {
@@ -23,10 +27,16 @@ void PlayerBulletNormal::Initialize(const Vector3 position, Enemy* target) {
 		cameraWorld.m[2][2]
 	};
 
-	// 前方向ベクトルにスピードを掛けて、1フレームあたりの速度(移動量)を算出
-	velocity.x = forward.x * speed;
-	velocity.y = forward.y * speed;
-	velocity.z = forward.z * speed;
+	// スケールの影響を受けないよう正規化して、速度を掛ける。
+	const float forwardLength = std::sqrt(forward.x * forward.x + forward.y * forward.y + forward.z * forward.z);
+	if (forwardLength > 0.001f) {
+		projectileVelocity_.x = (forward.x / forwardLength) * speed;
+		projectileVelocity_.y = (forward.y / forwardLength) * speed;
+		projectileVelocity_.z = (forward.z / forwardLength) * speed;
+	}
+	velocity.x = projectileVelocity_.x + inheritedVelocity_.x;
+	velocity.y = projectileVelocity_.y + inheritedVelocity_.y;
+	velocity.z = projectileVelocity_.z + inheritedVelocity_.z;
 
 	// トレイルエフェクトの初期化
 	trailEffect = std::make_shared<TrailEffect>();
@@ -37,6 +47,7 @@ void PlayerBulletNormal::Initialize(const Vector3 position, Enemy* target) {
 }
 
 void PlayerBulletNormal::Update() {
+	previousTranslate_ = transform.translate;
 	// 寿命タイマーを進める
 	deathTimer += 1.0f / 60.0f;
 	if (deathTimer >= kLifeTime) {
@@ -56,22 +67,25 @@ void PlayerBulletNormal::Update() {
 			float homingPower = 0.05f;
 
 			// 3. 現在の速度にターゲット方向の力を加算
-			velocity.x += dir.x * homingPower;
-			velocity.y += dir.y * homingPower;
-			velocity.z += dir.z * homingPower;
+			projectileVelocity_.x += dir.x * homingPower;
+			projectileVelocity_.y += dir.y * homingPower;
+			projectileVelocity_.z += dir.z * homingPower;
 
 			// 4. 加算後の速度ベクトルを再度正規化し、元の speed を掛けて速さを一定に保つ
-			float vLen = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+			float vLen = std::sqrt(projectileVelocity_.x * projectileVelocity_.x + projectileVelocity_.y * projectileVelocity_.y + projectileVelocity_.z * projectileVelocity_.z);
 			if (vLen > 0.001f) {
-				velocity.x = (velocity.x / vLen) * speed;
-				velocity.y = (velocity.y / vLen) * speed;
-				velocity.z = (velocity.z / vLen) * speed;
+				projectileVelocity_.x = (projectileVelocity_.x / vLen) * speed;
+				projectileVelocity_.y = (projectileVelocity_.y / vLen) * speed;
+				projectileVelocity_.z = (projectileVelocity_.z / vLen) * speed;
 			}
 		}
 	} else {
 		// 敵が死んだ場合はターゲットを外して直進させる
 		target_ = nullptr;
 	}
+	velocity.x = projectileVelocity_.x + inheritedVelocity_.x;
+	velocity.y = projectileVelocity_.y + inheritedVelocity_.y;
+	velocity.z = projectileVelocity_.z + inheritedVelocity_.z;
 
 	// 計算しておいた速度ベクトルを現在位置に加算して弾を移動させる
 	transform.translate.x += velocity.x;

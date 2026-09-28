@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <DirectXMath.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include "Camera.h"
@@ -159,9 +160,12 @@ private:
 
 	// カメラモード
 	bool isDebugCamera = true;
+	uint64_t lastRailStartRevision_ = 0;
 
 	// ギズモの操作モード
+	#ifdef USE_IMGUI
 	ImGuizmo::OPERATION currentGizmoOperation = ImGuizmo::TRANSLATE;
+	#endif
 	// 現在選択されているオブジェクト（とりあえず0番目のオブジェクト用）
 	GameObject* selectedObject = nullptr;
 	// Game ウィンドウの現在位置。ImGui の移動・リサイズに合わせて毎フレーム更新する。
@@ -204,6 +208,7 @@ private:
 
 	// レベルデータからオブジェクト生成、配置
 	void CreateLevel();
+	void ResetEnemySpawning();
 	// Gizmo
 	void GizmoUpdate(bool showEditorControls);
 

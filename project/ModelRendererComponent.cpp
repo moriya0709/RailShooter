@@ -28,8 +28,8 @@ void ModelRendererComponent::Initialize() {
 	// アウトライン
 	outlineResource = dxCommon_->CreateBufferResource(sizeof(Outline));
 	outlineResource->Map(0, nullptr, reinterpret_cast<void**>(&outlineData));
-	outlineData->thickness = 0.01f;
-	outlineData->color = { 1,0,0,0 };
+	outlineData->thickness = outlineThickness_;
+	outlineData->color = outlineColor_;
 
 	// カメラ
 	viewResource = dxCommon_->CreateBufferResource(sizeof(ViewData));
@@ -71,19 +71,8 @@ void ModelRendererComponent::Update() {
 }
 
 void ModelRendererComponent::Draw() {
-	if (!model_) {
+	if (!model_ || IsCulledByDistance()) {
 		return;
-	}
-	if (maxDrawDistance_ > 0.0f) {
-		const auto* transform = owner_->GetComponent<TransformComponent>();
-		const Vector3 cameraPosition = camera_->GetTranslate();
-		const float deltaX = transform->transform.translate.x - cameraPosition.x;
-		const float deltaY = transform->transform.translate.y - cameraPosition.y;
-		const float deltaZ = transform->transform.translate.z - cameraPosition.z;
-		const float distanceSquared = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
-		if (distanceSquared > maxDrawDistance_ * maxDrawDistance_) {
-			return;
-		}
 	}
 
 	if (model_->IsSkinning()) {
@@ -120,6 +109,49 @@ void ModelRendererComponent::Draw() {
 		model_->Draw();
 	}
 
+}
+
+void ModelRendererComponent::DrawOutline() {
+	if (!IsEnabled() || !outlineEnabled_ || !model_ || IsCulledByDistance()) {
+		return;
+	}
+
+	// SetOutlinePipelineState() はシーン側で一度だけ設定済み。
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(3, outlineResource->GetGPUVirtualAddress());
+	model_->Draw();
+}
+
+void ModelRendererComponent::SetOutlineThickness(float thickness) {
+	outlineThickness_ = (std::max)(0.0f, thickness);
+	if (outlineData) {
+		outlineData->thickness = outlineThickness_;
+	}
+}
+
+void ModelRendererComponent::SetOutlineColor(const Vector4& color) {
+	outlineColor_ = color;
+	if (outlineData) {
+		outlineData->color = outlineColor_;
+	}
+}
+
+bool ModelRendererComponent::IsCulledByDistance() const {
+	if (maxDrawDistance_ <= 0.0f || !owner_ || !camera_) {
+		return false;
+	}
+
+	const auto* transform = owner_->GetComponent<TransformComponent>();
+	if (!transform) {
+		return false;
+	}
+
+	const Vector3 cameraPosition = camera_->GetTranslate();
+	const float deltaX = transform->transform.translate.x - cameraPosition.x;
+	const float deltaY = transform->transform.translate.y - cameraPosition.y;
+	const float deltaZ = transform->transform.translate.z - cameraPosition.z;
+	const float distanceSquared = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+	return distanceSquared > maxDrawDistance_ * maxDrawDistance_;
 }
 
 void ModelRendererComponent::SetModel(const std::string& filePath) {

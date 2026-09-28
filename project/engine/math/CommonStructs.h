@@ -203,8 +203,8 @@ struct Emitter {
 // アウトラインデータ
 struct Outline {
     float thickness; // 太さ
+    float padding[3];   // color を次の 16 バイト境界へ合わせる
     Vector4 color; // 色
-    float padding[3];   // 16バイト合わせ（重要）
 };
 
 struct MotionBlur {
@@ -257,6 +257,10 @@ struct ObjectData {
 	std::string lodLowModel;
 	float lodMediumDistance = 300.0f;
 	float lodLowDistance = 600.0f;
+	// ModelRenderer のモデル輪郭を描画するかどうか。
+	bool modelOutlineEnabled = false;
+	float modelOutlineThickness = 0.01f;
+	Vector4 modelOutlineColor = { 1.0f, 0.0f, 0.0f, 1.0f };
 	// Unity のように複数の機能を 1 つの GameObject に追加するための型一覧。
 	std::vector<std::string> components;
 

@@ -4,6 +4,27 @@
 #include "GameObject.h"
 #include "ModelRendererComponent.h"
 
+namespace {
+
+// RailCamera::Evaluate と同じ区間定義で Catmull-Rom を評価する。
+// レールカメラは t=0 で points[1] にいるため、通常のパス補間
+// （t=0 で points[0]）を使うと敵がカメラの後方へずれてしまう。
+Vector3 EvaluateRailPath(const std::vector<Vector3>& points, float railT) {
+	if (points.size() < 4) {
+		return { 0.0f, 0.0f, 0.0f };
+	}
+
+	const float maxT = static_cast<float>(points.size() - 3);
+	railT = std::clamp(railT, 0.0f, maxT - 0.001f);
+	const size_t index = static_cast<size_t>(railT);
+	const float localT = railT - static_cast<float>(index);
+
+	return CatmullRomSpline(
+		points[index], points[index + 1], points[index + 2], points[index + 3], localT);
+}
+
+} // namespace
+
 void EnemyNormal::Initialize() {
 	// 描画・Transform は同じ GameObject のコンポーネントに委譲する。
 	if (GetGameObject()) {
@@ -101,8 +122,8 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 			// 更に、敵自身をXやYに揺らしたい場合は、ここでオフセットを加算することも可能です
 			// float waveOffset = std::sin(aliveTime * 3.0f) * 2.0f;
 
-			// レール上の座標を取得してセット
-			Vector3 basePos = GetSplinePosition(railPoints, enemyProgress);
+			// RailCamera と同じ区間計算で座標を取得してセットする。
+			Vector3 basePos = EvaluateRailPath(railPoints, enemyProgress);
 
 			transform.translate.x = basePos.x;
 			transform.translate.y = basePos.y; // ＋ waveOffset (揺らす場合)

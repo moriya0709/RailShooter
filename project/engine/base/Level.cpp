@@ -68,6 +68,15 @@ void Level::LoadJson(const std::string fileName) {
 				newData.file_name = object["file_name"].get<std::string>();
 			}
 			newData.maxDrawDistance = object.value("max_draw_distance", newData.maxDrawDistance);
+			if (object.contains("model_renderer")) {
+				newData.modelOutlineEnabled = object["model_renderer"].value("outline_enabled", newData.modelOutlineEnabled);
+				newData.modelOutlineThickness = object["model_renderer"].value("outline_thickness", newData.modelOutlineThickness);
+				const auto& modelRenderer = object["model_renderer"];
+				if (modelRenderer.contains("outline_color") && modelRenderer["outline_color"].is_array() && modelRenderer["outline_color"].size() == 4) {
+					newData.modelOutlineColor = { modelRenderer["outline_color"][0].get<float>(), modelRenderer["outline_color"][1].get<float>(),
+						modelRenderer["outline_color"][2].get<float>(), modelRenderer["outline_color"][3].get<float>() };
+				}
+			}
 			if (object.contains("lod") && object["lod"].is_object()) {
 				const auto& lod = object["lod"];
 				newData.lodHighModel = lod.value("high_model", std::string{});
@@ -222,6 +231,11 @@ void Level::SaveJson(const std::string fileName) {
 		}
 		if (obj.maxDrawDistance > 0.0f) {
 			newObjJson["max_draw_distance"] = obj.maxDrawDistance;
+		}
+		if (std::find(obj.components.begin(), obj.components.end(), "ModelRenderer") != obj.components.end()) {
+			newObjJson["model_renderer"]["outline_enabled"] = obj.modelOutlineEnabled;
+			newObjJson["model_renderer"]["outline_thickness"] = obj.modelOutlineThickness;
+			newObjJson["model_renderer"]["outline_color"] = { obj.modelOutlineColor.x, obj.modelOutlineColor.y, obj.modelOutlineColor.z, obj.modelOutlineColor.w };
 		}
 		if (!obj.lodHighModel.empty()) {
 			newObjJson["lod"]["high_model"] = obj.lodHighModel;

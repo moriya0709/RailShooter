@@ -68,6 +68,48 @@ bool CheckOBBToOBB(const OBB& a, const OBB& b) {
     return true;
 }
 
+bool CheckSweptOBBToOBB(const Vector3& startCenter, const OBB& movingObb, const OBB& target) {
+    const Vector3 movement = movingObb.center - startCenter;
+    const Vector3 fromTarget = startCenter - target.center;
+    float enterTime = 0.0f;
+    float exitTime = 1.0f;
+    constexpr float kEpsilon = 1e-6f;
+
+    for (int axisIndex = 0; axisIndex < 3; ++axisIndex) {
+        const Vector3& axis = target.axes[axisIndex];
+        const float start = Dot(fromTarget, axis);
+        const float delta = Dot(movement, axis);
+        const float targetExtent = axisIndex == 0 ? target.halfExtents.x : axisIndex == 1 ? target.halfExtents.y : target.halfExtents.z;
+
+        // target の各軸上へ、移動する弾の OBB 半径を投影して箱を拡張する。
+        const float movingExtent =
+            std::abs(Dot(axis, movingObb.axes[0])) * movingObb.halfExtents.x +
+            std::abs(Dot(axis, movingObb.axes[1])) * movingObb.halfExtents.y +
+            std::abs(Dot(axis, movingObb.axes[2])) * movingObb.halfExtents.z;
+        const float extent = targetExtent + movingExtent;
+
+        if (std::abs(delta) < kEpsilon) {
+            if (start < -extent || start > extent) {
+                return false;
+            }
+            continue;
+        }
+
+        float axisEnter = (-extent - start) / delta;
+        float axisExit = (extent - start) / delta;
+        if (axisEnter > axisExit) {
+            std::swap(axisEnter, axisExit);
+        }
+        enterTime = (std::max)(enterTime, axisEnter);
+        exitTime = (std::min)(exitTime, axisExit);
+        if (enterTime > exitTime) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void DrawOBB(Line* lineDrawer, const OBB& obb) {
     if (!lineDrawer) return;
 

@@ -268,7 +268,7 @@ void Player::Move() {
 		// 1発目：右の弾を生成
 		auto bulletRightObject = std::make_unique<GameObject>("PlayerBullet");
 		auto* bulletRight = bulletRightObject->AddComponent<PlayerBulletNormal>();
-		bulletRight->Initialize(rightPos, lockedTarget);
+		bulletRight->Initialize(rightPos, lockedTarget, launchVelocity_);
 		bulletRightObject->Initialize();
 		bullets_.push_back(bulletRight);
 		bulletObjects_.push_back(std::move(bulletRightObject));
@@ -276,7 +276,7 @@ void Player::Move() {
 		// 2発目：左の弾を生成
 		auto bulletLeftObject = std::make_unique<GameObject>("PlayerBullet");
 		auto* bulletLeft = bulletLeftObject->AddComponent<PlayerBulletNormal>();
-		bulletLeft->Initialize(leftPos, lockedTarget);
+		bulletLeft->Initialize(leftPos, lockedTarget, launchVelocity_);
 		bulletLeftObject->Initialize();
 		bullets_.push_back(bulletLeft);
 		bulletObjects_.push_back(std::move(bulletLeftObject));
@@ -300,6 +300,7 @@ void Player::Move() {
 }
 
 void Player::UpdateNormal(float deltaTime) {
+	const Vector3 previousTranslate = translate_;
 	// タイマーの減算処理と isHit フラグの設定
 	if (hitTimer_ > 0.0f) {
 		hitTimer_ -= deltaTime;
@@ -330,7 +331,7 @@ void Player::UpdateNormal(float deltaTime) {
 			// 自機中央座標(translate_)で初期化
 			auto missileObject = std::make_unique<GameObject>("PlayerMissile");
 			auto* missile = missileObject->AddComponent<PlayerBulletMissile>();
-			missile->Initialize(translate_, burstTarget);
+			missile->Initialize(translate_, burstTarget, launchVelocity_);
 
 			// 左右フラグを渡して初期角度をセット
 			missile->SetInitAngle(isNextRight);
@@ -346,17 +347,6 @@ void Player::UpdateNormal(float deltaTime) {
 			missileBurstTimer = missileInterval;
 		}
 	}
-
-	// ▼▼▼ 追加: 全ての弾を更新 ▼▼▼
-	for (auto& bulletObject : bulletObjects_) {
-		bulletObject->Update();
-	}
-
-	bullets_.remove_if([](const PlayerBullet* bullet) { return bullet->IsDead(); });
-	bulletObjects_.remove_if([](const std::unique_ptr<GameObject>& bulletObject) {
-		auto* bullet = bulletObject->GetComponent<PlayerBullet>();
-		return bullet && bullet->IsDead();
-	});
 
 	// 1. 傾きなどの目標値算出
 	float targetRoll = -playerInput.axisX * maxRollAngle;
@@ -403,6 +393,23 @@ void Player::UpdateNormal(float deltaTime) {
 	translate_.x = basePos.x + worldOffset.x;
 	translate_.y = basePos.y + worldOffset.y;
 	translate_.z = basePos.z + worldOffset.z;
+	// 弾の更新単位（1フレーム）と合わせた移動量として保持する。
+	launchVelocity_ = translate_ - previousTranslate;
+
+	// 現在フレームの自機移動量を各弾へ渡してから更新する。
+	// これによりレールのカーブや速度変化にも弾が追従し、相対速度が保たれる。
+	for (auto& bulletObject : bulletObjects_) {
+		if (auto* bullet = bulletObject->GetComponent<PlayerBullet>()) {
+			bullet->SetInheritedVelocity(launchVelocity_);
+		}
+		bulletObject->Update();
+	}
+
+	bullets_.remove_if([](const PlayerBullet* bullet) { return bullet->IsDead(); });
+	bulletObjects_.remove_if([](const std::unique_ptr<GameObject>& bulletObject) {
+		auto* bullet = bulletObject->GetComponent<PlayerBullet>();
+		return bullet && bullet->IsDead();
+	});
 	if (GetGameObject()) {
 		GetGameObject()->GetTransform()->transform.translate = translate_;
 		GetGameObject()->GetTransform()->transform.rotate = rotate_;

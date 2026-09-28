@@ -62,6 +62,7 @@ void RailCamera::StartRail() {
 
 	railT = 0.0f;
 	isRail = true;
+	++startRevision_;
 }
 
 void RailCamera::EditorUpdate() { 

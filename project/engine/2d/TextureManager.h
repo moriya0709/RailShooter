@@ -43,6 +43,8 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(const std::string& filePath);
 	// メタデータ取得
 	const DirectX::TexMetadata& GetMetaData(const std::string& filePath);
+	// GPU が完了するまで保持していた、差し替え前テクスチャを解放する。
+	void ReleaseDeferredResources();
 	
 	TextureManager() = default;
 	~TextureManager() = default;
@@ -54,6 +56,9 @@ private:
 	static std::unique_ptr <TextureManager> instance;
 	// SRVインデックスの開始番号
 	static uint32_t kSRVIndexTop;
+	// コマンドリストに記録済みのコピー／描画が参照する旧リソース。
+	// フェンス完了前に破棄すると D3D12 のリソース寿命違反になる。
+	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> deferredReleaseResources_;
 
 	// DirectXCommonのポインタ
 	DirectXCommon* dxCommon_ = nullptr;

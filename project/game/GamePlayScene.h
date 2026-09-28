@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <DirectXMath.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include "Camera.h"
@@ -83,6 +84,8 @@ private:
 	Vector3 SpotLightDirection = { 0.0f, 0.0f, 0.0f };
 	float SpotLightRange = 10.0f;
 	float SpotLightIntensity = 1.0f;
+	// 太陽のライティング
+	bool isSunLight = true;
 
 	// *ポストエフェクト* //
 
@@ -159,9 +162,14 @@ private:
 
 	// カメラモード
 	bool isDebugCamera = true;
+	// 直前フレームのレール再生状態。停止遷移の検出に使う。
+	bool wasRailCameraActive = false;
+	uint64_t lastRailStartRevision_ = 0;
 
 	// ギズモの操作モード
+	#ifdef USE_IMGUI
 	ImGuizmo::OPERATION currentGizmoOperation = ImGuizmo::TRANSLATE;
+	#endif
 	// 現在選択されているオブジェクト（とりあえず0番目のオブジェクト用）
 	GameObject* selectedObject = nullptr;
 	// Game ウィンドウの現在位置。ImGui の移動・リサイズに合わせて毎フレーム更新する。
@@ -208,6 +216,7 @@ private:
 
 	// レベルデータからオブジェクト生成、配置
 	void CreateLevel();
+	void ResetEnemySpawning();
 	// Gizmo
 	void GizmoUpdate(bool showEditorControls);
 

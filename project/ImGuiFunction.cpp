@@ -64,6 +64,8 @@ void ImGuiFunction::SaveDockLayout() const {
 	output << '\n';
 }
 
+#ifdef USE_IMGUI
+
 void ImGuiFunction::TrackDockableWindow(const char* windowName) {
 	EnsureDockLayoutLoaded();
 	const ImVec2 windowPosition = ImGui::GetWindowPos();
@@ -327,6 +329,29 @@ void ImGuiFunction::SnapWindowToDockTarget(const char* windowName, DockGuideTarg
 	ImGui::SetWindowPos(windowName, position, ImGuiCond_Always);
 	ImGui::SetWindowSize(windowName, size, ImGuiCond_Always);
 }
+
+#else
+
+// Release builds do not link Dear ImGui.  Keep the editor helper callable so
+// gameplay code can be shared across configurations, while making every UI
+// operation a harmless no-op.
+void ImGuiFunction::TrackDockableWindow([[maybe_unused]] const char* windowName) {}
+
+bool ImGuiFunction::ShouldDrawDockableWindow([[maybe_unused]] const char* windowName) {
+	return true;
+}
+
+void ImGuiFunction::DrawMergedWindowTabs([[maybe_unused]] const char* windowName) {}
+
+void ImGuiFunction::MergeDockableWindows([[maybe_unused]] const char* targetWindow,
+	[[maybe_unused]] const char* sourceWindow) {}
+
+void ImGuiFunction::UpdateDockingGuide() {}
+
+void ImGuiFunction::SnapWindowToDockTarget([[maybe_unused]] const char* windowName,
+	[[maybe_unused]] DockGuideTarget target) {}
+
+#endif
 
 ImGuiFunction* ImGuiFunction::GetInstance() {
 	if (instance == nullptr) {

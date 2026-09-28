@@ -82,6 +82,16 @@ OBB GetEnemyCollisionOBB(const GameObject& object, Enemy& enemy) {
 	return GetColliderOBB(&object, enemy.GetOBB());
 }
 
+bool DidPlayerBulletHitEnemy(const OBB& enemyObb, PlayerBullet& bullet) {
+	if (bullet.IsDead()) {
+		return false;
+	}
+
+	const OBB bulletObb = bullet.GetOBB();
+	return CheckOBBToOBB(enemyObb, bulletObb) ||
+		CheckSweptOBBToOBB(bullet.GetPreviousTranslate(), bulletObb, enemyObb);
+}
+
 }
 
 void SaveLevel(Level& level, const std::vector<std::unique_ptr<GameObject>>& levelObjects,
@@ -116,7 +126,7 @@ void UpdateEnemyCollisions(Player& player,
 		if (!enemy) continue;
 		const OBB enemyObb = GetEnemyCollisionOBB(*enemyObject, *enemy);
 		for (const auto& bullet : playerBullets) {
-			if (CheckOBBToOBB(enemyObb, bullet->GetOBB())) {
+			if (DidPlayerBulletHitEnemy(enemyObb, *bullet)) {
 				enemy->OnCollisionBullet(bullet->GetDamage());
 				bullet->OnCollision();
 			}
@@ -136,7 +146,7 @@ void UpdateEnemyCollisions(Player& player,
 		if (!enemy || !enemyObject->IsActive()) continue;
 		const OBB enemyObb = GetEnemyCollisionOBB(*enemyObject, *enemy);
 		for (const auto& bullet : playerBullets) {
-			if (CheckOBBToOBB(enemyObb, bullet->GetOBB())) {
+			if (DidPlayerBulletHitEnemy(enemyObb, *bullet)) {
 				enemy->OnCollisionBullet(bullet->GetDamage());
 				bullet->OnCollision();
 			}

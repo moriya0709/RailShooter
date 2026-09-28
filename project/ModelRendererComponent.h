@@ -12,6 +12,8 @@ public:
 	void Initialize() override;
 	void Update() override;
 	void Draw() override;
+	// 通常描画の後に呼び出す、モデル輪郭専用の描画パス。
+	void DrawOutline();
 
 	void SetModel(const std::string& filePath);
 	Model* GetModel() const { return model_; }
@@ -30,6 +32,12 @@ public:
 	// A value of 0 disables distance culling. Objects beyond this distance issue no draw calls.
 	void SetMaxDrawDistance(float distance) { maxDrawDistance_ = distance; }
 	float GetMaxDrawDistance() const { return maxDrawDistance_; }
+	void SetOutlineEnabled(bool enabled) { outlineEnabled_ = enabled; }
+	bool IsOutlineEnabled() const { return outlineEnabled_; }
+	void SetOutlineThickness(float thickness);
+	float GetOutlineThickness() const { return outlineThickness_; }
+	void SetOutlineColor(const Vector4& color);
+	const Vector4& GetOutlineColor() const { return outlineColor_; }
 
 private:
 	// バッファリソース
@@ -66,4 +74,8 @@ private:
 	// DirectXCommonのポインタ
 	DirectXCommon* dxCommon_ = nullptr;
 	float maxDrawDistance_ = 0.0f;
+	bool outlineEnabled_ = false;
+	float outlineThickness_ = 0.01f;
+	Vector4 outlineColor_ = { 1.0f, 0.0f, 0.0f, 1.0f };
+	bool IsCulledByDistance() const;
 };

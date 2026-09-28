@@ -69,19 +69,20 @@ public:
 	float pathProgress = 0.0f;          // 現在の進行度 (0.0 ～ ポイント数-1)
 	// レール追従(RAIL_FORWARD)用の変数
 	std::vector<Vector3> railPoints;    // レールカメラの制御点リスト
-	float railOffsetProgress = 2.0f;    // プレイヤーよりどれくらい先を走るか（例：2.0なら2区間先）
+	// 既存の短い先行距離を維持し、視野内でレール追従させる。
+	float railOffsetProgress = 0.05f;
 
 	// 弾
 	std::list<std::unique_ptr<GameObject>> bulletObjects_;
 	std::list<EnemyBullet*> bullets_;
-	float shotCoolTime = 0.5f; // 射撃のクールタイム
+	float shotCoolTime = 2.0f; // 射撃のクールタイム
 
 	// 当たったか
 	bool isHit = false;
 	float hitTimer_ = 0.0f;
 
 	// HP
-	int hp = 20;
+	int hp = 1;
 
 };
 

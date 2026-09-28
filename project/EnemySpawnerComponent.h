@@ -31,6 +31,8 @@ public:
 		spawnList_ = spawnList;
 		Reinitialize();
 	}
+	// レールを最初から再生する時に、出現済み状態と待機タイマーを初期状態へ戻す。
+	void ResetSpawnState() { Reinitialize(); }
 
 private:
 	void Reinitialize() {

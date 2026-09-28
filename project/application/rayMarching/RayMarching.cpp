@@ -3,6 +3,8 @@
 #include "SrvManager.h"
 #include "Camera.h"
 
+#include <algorithm>
+
 std::unique_ptr <RayMarching> RayMarching::instance = nullptr;
 
 void RayMarching::Initialize(SrvManager* srvManager, WindowAPI* windowAPI) {
@@ -197,9 +199,11 @@ void RayMarching::ComputeCloud(uint32_t depthSrvIndex) {
 	commandList->SetComputeRootDescriptorTable(2, handleAt(depthSrvIndex));    // t1: 深度
 	commandList->SetComputeRootDescriptorTable(3, handleAt(outputUavIndex_));  // u0,u1
 
-	// numthreads(8,8,1) のフルスクリーンパスなので、画面解像度に合わせる
-	UINT width = windowAPI_->kClientWidth;
-	UINT height = windowAPI_->kClientHeight;
+	// 雲・空のレイマーチングは半解像度で実行し、合成時の線形補間で
+	// フル解像度へ拡大する。最も高コストな計算量を約 1/4 に抑える。
+	const D3D12_RESOURCE_DESC outputDesc = cloudColorTexture->GetDesc();
+	const UINT width = static_cast<UINT>(outputDesc.Width);
+	const UINT height = outputDesc.Height;
 	commandList->Dispatch((width + 7) / 8, (height + 7) / 8, 1);
 
 	// 出力テクスチャをPSで読める状態へ戻す
@@ -517,9 +521,11 @@ void RayMarching::Create3DTextureResource() {
 void RayMarching::CreateOutputTextureResources() {
 	auto device = dxCommon_->GetDevice();
 
-	// ※ プロジェクトの画面解像度取得手段に置き換えてください
-	UINT width = windowAPI_->kClientWidth;
-	UINT height = windowAPI_->kClientHeight;
+	// レイマーチングはフルスクリーンで多数のサンプルを取るため、
+	// 出力を半解像度にして合成時に線形補間する。
+	constexpr UINT kRayMarchResolutionDivisor = 2;
+	const UINT width = (std::max)(1u, windowAPI_->kClientWidth / kRayMarchResolutionDivisor);
+	const UINT height = (std::max)(1u, windowAPI_->kClientHeight / kRayMarchResolutionDivisor);
 
 	D3D12_HEAP_PROPERTIES heapProps{};
 	heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;

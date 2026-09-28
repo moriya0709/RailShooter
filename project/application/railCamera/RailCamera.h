@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <cstdint>
 #include <memory>
 
 #include "Object.h"
@@ -43,6 +44,8 @@ public:
 	const std::vector<RailPoint>& GetPoints() const { return points; }
 	bool IsRailActive() const { return isRail; }
 	bool CanStartRail() const { return points.size() >= 4; }
+	// StartRail が成功した回数。再スタートも含めて外部イベントを検出するために使う。
+	uint64_t GetStartRevision() const { return startRevision_; }
 	// 先頭からレール移動を開始する。Catmull-Rom のため制御点は 4 個以上必要。
 	void StartRail();
 	void StopRail() { isRail = false; }
@@ -61,7 +64,7 @@ private:
 		Target,
         Specified
 	};
-	CameraMode cameraMode = CameraMode::Specified;
+	CameraMode cameraMode = CameraMode::Direction;
 
     Transform cameraTransform
     {
@@ -73,6 +76,7 @@ private:
 	float t = 1.0f; // レール上の位置
     // RailCamera.h
     bool isRail = false;
+	uint64_t startRevision_ = 0;
     float railT = 0.0f;    // 現在位置
     float railSpeed = 1.0f;    // 速度
     float deltaTime = 1 / 60.0f; // フレーム時間

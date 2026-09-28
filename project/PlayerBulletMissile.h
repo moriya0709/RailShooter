@@ -17,10 +17,12 @@ enum LaunchDirection {
 
 class PlayerBulletMissile : public PlayerBullet {
 public:
-	void Initialize(const Vector3 position, Enemy* target) override;
+	void Initialize(const Vector3 position, Enemy* target, const Vector3& inheritedVelocity) override;
 	void Update() override;
 
 	Vector3 GetTranslate() const override { return transform.translate; }
+	void SetInheritedVelocity(const Vector3& inheritedVelocity) override { inheritedVelocity_ = inheritedVelocity; }
+	Vector3 GetPreviousTranslate() const override { return previousTranslate_; }
 
 	// OBBを取得
 	OBB GetOBB() override;
@@ -43,17 +45,20 @@ private:
 	{ 0.0f, 0.0f, 0.0f }, // rotate
 	{ 1.0f, 1.0f, 1.0f }  // scale
 	};
+	Vector3 previousTranslate_ = { 0.0f, 0.0f, 0.0f };
 
 	LaunchDirection launchDirection = LaunchDirection::Right; // 発射方向
 
 	float width = 0.05f; // 弾の幅
 	float trailMaxLifeTime = 1.0f; // トレイルの寿命
 	Vector3 velocity = { 0.0f, 0.0f, 30.0f }; // 弾の速度
-	float speed = 0.5f; // 弾の移動速度
+	Vector3 projectileVelocity_ = { 0.0f, 0.0f, 0.5f };
+	Vector3 inheritedVelocity_ = { 0.0f, 0.0f, 0.0f };
+	float speed = 2.0f; // 弾の移動速度
 	float deathTimer = 0.0f; // 消滅までの時間
 	static constexpr float kLifeTime = 5.0f; // 弾の寿命（秒）
 	Enemy* target_ = nullptr;	// ロックオン対象の敵
-	int damage = 0; // 弾のダメージ量
+	int damage = 1; // 弾のダメージ量
 
 	// ホーミングを開始する敵との距離
 	float homingPower = 2.0f; // ホーミングの強さ

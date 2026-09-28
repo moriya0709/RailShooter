@@ -10,7 +10,8 @@ class PlayerBullet : public Component {
 public:
 	virtual ~PlayerBullet() = default;
 
-	virtual void Initialize(Vector3 position, Enemy* target) = 0;
+	// inheritedVelocity は発射元の1フレームあたりのワールド移動量。
+	virtual void Initialize(Vector3 position, Enemy* target, const Vector3& inheritedVelocity) = 0;
 	virtual void Update() override = 0;
 
 	// 消滅しているか
@@ -22,6 +23,10 @@ public:
 	virtual void RemoveTarget(const Enemy* enemy) = 0;
 
 	virtual Vector3 GetTranslate() const = 0;
+	// レール移動を含む発射元の現在速度を毎フレーム反映する。
+	virtual void SetInheritedVelocity(const Vector3& inheritedVelocity) = 0;
+	// 高速移動の連続衝突判定に使う、更新前の位置。
+	virtual Vector3 GetPreviousTranslate() const { return GetTranslate(); }
 	virtual void OnCollision() { isDead_ = true; }
 
 	// OBBを取得

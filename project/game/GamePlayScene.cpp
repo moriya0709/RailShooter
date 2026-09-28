@@ -108,10 +108,20 @@ void GamePlayScene::Update() {
 	// 3. その後、RailCamera自身の更新処理を呼ぶ
 	if (railCamera) {
 		railCamera->EditorUpdate();
-		// レール開始時はデバッグカメラよりレールカメラを優先する。
-		if (railCamera->IsRailActive()) {
-			isDebugCamera = false;
+		if (railCamera->GetStartRevision() != lastRailStartRevision_) {
+			ResetEnemySpawning();
+			lastRailStartRevision_ = railCamera->GetStartRevision();
 		}
+		const bool isRailActive = railCamera->IsRailActive();
+
+		// レール開始時はデバッグカメラよりレールカメラを優先する。
+		if (isRailActive) {
+			isDebugCamera = false;
+		// Stop Rail Camera で停止した瞬間は、操作可能なデバッグカメラへ戻す。
+		} else if (wasRailCameraActive) {
+			isDebugCamera = true;
+		}
+		wasRailCameraActive = isRailActive;
 		railCamera->Update();
 	}
 
@@ -318,8 +328,11 @@ void GamePlayScene::Update() {
 	lightManager->SetSpotLightDirection(SpotLightDirection);
 	lightManager->SetSpotLightRange(SpotLightRange);
 	lightManager->SetSpotLightIntensity(SpotLightIntensity);
+	// 太陽のライティング
+	lightManager->SetUseSunLight(isSunLight);
 
 	lightManager->Update();
+	lightManager->UpdateSunLight();
 #pragma endregion
 
 #pragma region ポストエフェクト
@@ -681,8 +694,8 @@ void GamePlayScene::Update() {
 
 	ImGui::Separator();
 	std::string groupToDelete;
-	int emptyToDuplicate = -1;
-	int emptyToDelete = -1;
+	int objectToDuplicate = -1;
+	int objectToDelete = -1;
 	bool playerIsInHierarchy = false;
 	for (const auto& object : levelObjects) {
 		if (object.get() == playerObject) {
@@ -711,18 +724,21 @@ void GamePlayScene::Update() {
 		if (ImGui::Selectable(label.c_str(), selectedObject == object)) {
 			selectedObject = object;
 		}
-		if (isEmpty && ImGui::BeginDragDropSource()) {
-			ImGui::SetDragDropPayload("DND_EMPTY_TO_GROUP", &index, sizeof(index));
+		if (ImGui::BeginDragDropSource()) {
+			ImGui::SetDragDropPayload("DND_OBJECT_TO_GROUP", &index, sizeof(index));
 			ImGui::Text("Move %s", object->GetName().c_str());
 			ImGui::EndDragDropSource();
 		}
-		if (isEmpty && ImGui::BeginPopupContextItem()) {
-			if (ImGui::MenuItem("Duplicate Empty")) {
-				emptyToDuplicate = static_cast<int>(index);
+		const bool isPlayerObject = object->GetComponent<Player>() != nullptr;
+		// 右クリックでオブジェクト操作メニューを開く。
+		if (ImGui::BeginPopupContextItem()) {
+			if (ImGui::MenuItem("Duplicate Object", nullptr, false, !isPlayerObject)) {
+				objectToDuplicate = static_cast<int>(index);
 			}
-			if (ImGui::MenuItem("Delete Empty")) {
-				emptyToDelete = static_cast<int>(index);
+			if (ImGui::MenuItem("Delete Object", nullptr, false, !isPlayerObject)) {
+				objectToDelete = static_cast<int>(index);
 			}
+			if (isPlayerObject) ImGui::TextDisabled("The active player cannot be duplicated or deleted here.");
 			ImGui::EndPopup();
 		}
 	};
@@ -730,7 +746,7 @@ void GamePlayScene::Update() {
 		const bool groupOpen = ImGui::TreeNodeEx(
 			groupName.c_str(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth);
 		if (ImGui::BeginDragDropTarget()) {
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_EMPTY_TO_GROUP")) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_OBJECT_TO_GROUP")) {
 				const size_t index = *static_cast<const size_t*>(payload->Data);
 				if (index < level->GetLevelData()->objects.size()) {
 					level->GetLevelData()->objects[index].groupName = groupName;
@@ -768,8 +784,8 @@ void GamePlayScene::Update() {
 		auto& groups = level->GetLevelData()->groups;
 		groups.erase(std::remove(groups.begin(), groups.end(), groupToDelete), groups.end());
 	}
-	if (emptyToDuplicate >= 0) {
-		ObjectData copyData = level->GetLevelData()->objects[emptyToDuplicate];
+	if (objectToDuplicate >= 0) {
+		ObjectData copyData = level->GetLevelData()->objects[objectToDuplicate];
 		const std::string sourceName = copyData.name;
 		copyData.name = sourceName + " Copy";
 		int suffix = 2;
@@ -780,17 +796,72 @@ void GamePlayScene::Update() {
 		copyData.transform.translate.x += 1.0f;
 		auto copyObject = std::make_unique<GameObject>(copyData.name);
 		copyObject->GetTransform()->transform = copyData.transform;
+		const auto* sourceObject = levelObjects[objectToDuplicate].get();
+		if (sourceObject->GetComponent<ModelRendererComponent>()) {
+			auto* renderer = copyObject->AddComponent<ModelRendererComponent>();
+			LevelEditorCommon::ConfigureBuildingLod(*renderer, copyData);
+			if (!renderer->HasLod()) {
+				const bool isRail = copyData.type == "RAIL" || copyData.type == "rail";
+				const bool isSpawner = copyData.type == "SPAWNER" || copyData.type == "spawner";
+				renderer->SetModel(isRail ? "rail.obj" : (isSpawner ? "cube.gltf" : (copyData.file_name.empty() ? "cube.gltf" : copyData.file_name)));
+			}
+			renderer->SetMaxDrawDistance(copyData.maxDrawDistance);
+			renderer->SetOutlineEnabled(copyData.modelOutlineEnabled);
+			renderer->SetOutlineThickness(copyData.modelOutlineThickness);
+			renderer->SetOutlineColor(copyData.modelOutlineColor);
+		}
+		if (sourceObject->GetComponent<RectTransformComponent>()) {
+			auto* rectTransform = copyObject->AddComponent<RectTransformComponent>();
+			rectTransform->position = copyData.rectPosition;
+			rectTransform->rotation = copyData.rectRotation;
+			rectTransform->scale = copyData.rectScale;
+		}
+		if (sourceObject->GetComponent<ColliderComponent>()) {
+			auto* collider = copyObject->AddComponent<ColliderComponent>();
+			collider->size = copyData.colliderSize;
+			collider->centerOffset = copyData.colliderCenterOffset;
+		}
+		if (sourceObject->GetComponent<SpriteRendererComponent>()) {
+			if (!copyObject->GetComponent<RectTransformComponent>()) copyObject->AddComponent<RectTransformComponent>();
+			auto* spriteRenderer = copyObject->AddComponent<SpriteRendererComponent>();
+			spriteRenderer->SetTexture(copyData.sprite_file_name.empty() ? "Resource/title/title.png" : copyData.sprite_file_name);
+			spriteRenderer->SetEmissive(copyData.spriteEmissiveColor, copyData.spriteEmissiveIntensity);
+		}
+		if (sourceObject->GetComponent<TextRendererComponent>()) {
+			if (!copyObject->GetComponent<RectTransformComponent>()) copyObject->AddComponent<RectTransformComponent>();
+			auto* textRenderer = copyObject->AddComponent<TextRendererComponent>();
+			textRenderer->SetText(copyData.text);
+			textRenderer->SetFontFamilyUtf8(copyData.textFontFamily);
+			textRenderer->SetFontSize(copyData.textFontSize);
+			textRenderer->SetColor(copyData.textColor);
+			textRenderer->SetMaxWidth(copyData.textMaxWidth);
+			textRenderer->SetBold(copyData.textBold);
+			textRenderer->SetOutlineEnabled(copyData.textOutlineEnabled);
+			textRenderer->SetOutlineThickness(copyData.textOutlineThickness);
+			textRenderer->SetOutlineColor(copyData.textOutlineColor);
+			textRenderer->SetEmissive(copyData.textEmissiveColor, copyData.textEmissiveIntensity);
+			textRenderer->SetCharacterSpacing(copyData.textCharacterSpacing);
+		}
+		if (sourceObject->GetComponent<RailPointComponent>()) copyObject->AddComponent<RailPointComponent>();
+		if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
+			auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
+			spawner->Configure(copyData.spawnDataList, spawnDistance, railCamera.get());
+		}
+		if (sourceObject->GetComponent<Enemy>()) {
+			auto* enemy = copyObject->AddComponent<EnemyNormal>();
+			enemy->SetTransform(copyData.transform);
+		}
 		copyObject->Initialize();
 		selectedObject = copyObject.get();
 		levelObjects.push_back(std::move(copyObject));
 		level->GetLevelData()->objects.push_back(std::move(copyData));
 	}
-	if (emptyToDelete >= 0) {
-		if (selectedObject == levelObjects[emptyToDelete].get()) {
+	if (objectToDelete >= 0) {
+		if (selectedObject == levelObjects[objectToDelete].get()) {
 			selectedObject = nullptr;
 		}
-		levelObjects.erase(levelObjects.begin() + emptyToDelete);
-		level->GetLevelData()->objects.erase(level->GetLevelData()->objects.begin() + emptyToDelete);
+		levelObjects.erase(levelObjects.begin() + objectToDelete);
+		level->GetLevelData()->objects.erase(level->GetLevelData()->objects.begin() + objectToDelete);
 	}
 	ImGui::End();
 	}
@@ -1092,6 +1163,29 @@ void GamePlayScene::Update() {
 				if (ImGui::Checkbox("Enabled##ModelRenderer", &enabled)) {
 					renderer->SetEnabled(enabled);
 				}
+				bool outlineEnabled = renderer->IsOutlineEnabled();
+				if (ImGui::Checkbox("Outline OnOff##ModelRenderer", &outlineEnabled)) {
+					renderer->SetOutlineEnabled(outlineEnabled);
+					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+						level->GetLevelData()->objects[selectedIndex].modelOutlineEnabled = outlineEnabled;
+					}
+				}
+				ImGui::BeginDisabled(!outlineEnabled);
+				float outlineThickness = renderer->GetOutlineThickness();
+				if (ImGui::DragFloat("Outline Thickness##ModelRenderer", &outlineThickness, 0.001f, 0.0f, 1.0f)) {
+					renderer->SetOutlineThickness(outlineThickness);
+					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+						level->GetLevelData()->objects[selectedIndex].modelOutlineThickness = renderer->GetOutlineThickness();
+					}
+				}
+				Vector4 outlineColor = renderer->GetOutlineColor();
+				if (ImGui::ColorEdit4("Outline Color##ModelRenderer", &outlineColor.x)) {
+					renderer->SetOutlineColor(outlineColor);
+					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+						level->GetLevelData()->objects[selectedIndex].modelOutlineColor = outlineColor;
+					}
+				}
+				ImGui::EndDisabled();
 
 				char modelPath[260]{};
 				strncpy_s(modelPath, renderer->GetModelPath().c_str(), _TRUNCATE);
@@ -1622,15 +1716,33 @@ void GamePlayScene::Draw3D() {
 	// アウトライン描画準備
 	ObjectCommon::GetInstance()->SetOutlinePipelineState();
 
-	// アウトライン描画
-	//for (int i = 0; i < 2; i++) {
-	//	object[i]->Draw();
-	//}
+	// アウトラインを有効化したレベルオブジェクトのみを描画する。
+	for (const auto& object : levelObjects) {
+		if (auto* renderer = object->GetComponent<ModelRendererComponent>()) {
+			renderer->DrawOutline();
+		}
+	}
 
 }
 
 void GamePlayScene::Finalize() {
 	CameraManager::GetInstance()->RemoveCamera("main");
+}
+
+void GamePlayScene::ResetEnemySpawning() {
+	for (const auto& levelObject : levelObjects) {
+		if (auto* spawner = levelObject->GetComponent<EnemySpawnerComponent>()) {
+			spawner->ResetSpawnState();
+		}
+	}
+
+	// 既存の敵を破棄する前に、プレイヤーが保持するロックオン参照を解除する。
+	for (const auto& enemyObject : enemies) {
+		if (player) {
+			player->RemoveBulletTarget(enemyObject->GetComponent<Enemy>());
+		}
+	}
+	enemies.clear();
 }
 
 void GamePlayScene::CreateLevel() {
@@ -1652,6 +1764,9 @@ void GamePlayScene::CreateLevel() {
 				modelRenderer->SetModel(objectData.file_name);
 			}
 			modelRenderer->SetMaxDrawDistance(objectData.maxDrawDistance);
+			modelRenderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
+			modelRenderer->SetOutlineThickness(objectData.modelOutlineThickness);
+			modelRenderer->SetOutlineColor(objectData.modelOutlineColor);
 
 			// 4. アタッチされたコンポーネントを一括初期化
 			gameObject->Initialize();
@@ -1677,6 +1792,9 @@ void GamePlayScene::CreateLevel() {
 			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
 			std::string modelName = objectData.file_name.empty() ? "rail.obj" : objectData.file_name;
 			modelRenderer->SetModel(modelName);
+			modelRenderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
+			modelRenderer->SetOutlineThickness(objectData.modelOutlineThickness);
+			modelRenderer->SetOutlineColor(objectData.modelOutlineColor);
 			gameObject->AddComponent<RailPointComponent>();
 
 			gameObject->Initialize();
@@ -1694,6 +1812,9 @@ void GamePlayScene::CreateLevel() {
 			// エディタ表示用のモデルをアタッチ
 			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
 			modelRenderer->SetModel("cube.gltf");
+			modelRenderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
+			modelRenderer->SetOutlineThickness(objectData.modelOutlineThickness);
+			modelRenderer->SetOutlineColor(objectData.modelOutlineColor);
 
 			// ゲームロジック用のスポナーも同じ GameObject にアタッチする。
 			auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
@@ -1716,6 +1837,9 @@ void GamePlayScene::CreateLevel() {
 					renderer->SetModel(objectData.file_name.empty() ? "cube.gltf" : objectData.file_name);
 				}
 				renderer->SetMaxDrawDistance(objectData.maxDrawDistance);
+				renderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
+				renderer->SetOutlineThickness(objectData.modelOutlineThickness);
+				renderer->SetOutlineColor(objectData.modelOutlineColor);
 			}
 			if (hasComponent("RectTransform")) {
 				auto* rectTransform = gameObject->AddComponent<RectTransformComponent>();
@@ -1776,6 +1900,8 @@ void GamePlayScene::CreateLevel() {
 	}
 
 }
+
+#ifdef USE_IMGUI
 
 void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 	auto input = Input::GetInstance();
@@ -2052,4 +2178,10 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 		pathPreviewObjects.clear();
 	}
 }
+
+#else
+
+void GamePlayScene::GizmoUpdate([[maybe_unused]] bool showEditorControls) {}
+
+#endif
 

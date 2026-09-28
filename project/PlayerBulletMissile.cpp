@@ -1,21 +1,24 @@
 ﻿#include "PlayerBulletMissile.h"
 #include "Camera.h"
+#include "CameraManager.h"
 #include "TrailEffectManager.h"
 #include "Enemy.h"
 #include "GameObject.h"
 
 
-void PlayerBulletMissile::Initialize(const Vector3 position, Enemy* target) {
+void PlayerBulletMissile::Initialize(const Vector3 position, Enemy* target, const Vector3& inheritedVelocity) {
 	// 代入
 	transform.translate = position;
+	previousTranslate_ = position;
 	if (GetGameObject()) {
 		GetGameObject()->GetTransform()->transform = transform;
 	}
 	centerPos = position; // 中心軸の初期位置
 	target_ = target;
+	inheritedVelocity_ = inheritedVelocity;
 
-	// カメラの情報を取得して弾の進行方向を設定する
-	Camera* camera = Camera::GetInstance();
+	// 通常弾と同様に、レール移動とピッチを反映したアクティブカメラを使う。
+	Camera* camera = CameraManager::GetInstance()->GetActiveCamera();
 	Matrix4x4 cameraWorld = camera->GetWorldMatrix();
 
 	// カメラの前方向(Z軸)を抽出
@@ -24,10 +27,13 @@ void PlayerBulletMissile::Initialize(const Vector3 position, Enemy* target) {
 	// 前方向ベクトルを正規化してスピードを掛け、まっすぐ飛ばす
 	float fLen = std::sqrt(forward.x * forward.x + forward.y * forward.y + forward.z * forward.z);
 	if (fLen > 0.001f) {
-		velocity.x = (forward.x / fLen) * speed;
-		velocity.y = (forward.y / fLen) * speed;
-		velocity.z = (forward.z / fLen) * speed;
+		projectileVelocity_.x = (forward.x / fLen) * speed;
+		projectileVelocity_.y = (forward.y / fLen) * speed;
+		projectileVelocity_.z = (forward.z / fLen) * speed;
 	}
+	velocity.x = projectileVelocity_.x + inheritedVelocity_.x;
+	velocity.y = projectileVelocity_.y + inheritedVelocity_.y;
+	velocity.z = projectileVelocity_.z + inheritedVelocity_.z;
 
 	// パーティクルの初期化
 	particle = std::make_unique<ParticleEmitter>();
@@ -37,6 +43,7 @@ void PlayerBulletMissile::Initialize(const Vector3 position, Enemy* target) {
 }
 
 void PlayerBulletMissile::Update() {
+	previousTranslate_ = transform.translate;
 	// 寿命タイマーを進める
 	deathTimer += 1.0f / 60.0f;
 	if (deathTimer >= kLifeTime) {
@@ -59,7 +66,7 @@ void PlayerBulletMissile::Update() {
 
 			dir.x /= length; dir.y /= length; dir.z /= length;
 
-			Vector3 currentDir = { velocity.x / speed, velocity.y / speed, velocity.z / speed };
+			Vector3 currentDir = { projectileVelocity_.x / speed, projectileVelocity_.y / speed, projectileVelocity_.z / speed };
 
 			float dot = currentDir.x * dir.x + currentDir.y * dir.y + currentDir.z * dir.z;
 
@@ -77,15 +84,18 @@ void PlayerBulletMissile::Update() {
 
 				float newLen = std::sqrt(newDir.x * newDir.x + newDir.y * newDir.y + newDir.z * newDir.z);
 				if (newLen > 0.001f) {
-					velocity.x = (newDir.x / newLen) * speed;
-					velocity.y = (newDir.y / newLen) * speed;
-					velocity.z = (newDir.z / newLen) * speed;
+					projectileVelocity_.x = (newDir.x / newLen) * speed;
+					projectileVelocity_.y = (newDir.y / newLen) * speed;
+					projectileVelocity_.z = (newDir.z / newLen) * speed;
 				}
 			}
 		}
 	} else {
 		target_ = nullptr;
 	}
+	velocity.x = projectileVelocity_.x + inheritedVelocity_.x;
+	velocity.y = projectileVelocity_.y + inheritedVelocity_.y;
+	velocity.z = projectileVelocity_.z + inheritedVelocity_.z;
 
 	// 2. 中心軸を速度に従って移動
 	centerPos.x += velocity.x;
@@ -94,7 +104,10 @@ void PlayerBulletMissile::Update() {
 
 	// 3. 進行方向（velocity）から垂直な右軸(Right)と上軸(Up)を算出
 	// ... (この部分は変更なしのため省略) ...
-	Vector3 forward = { velocity.x / speed, velocity.y / speed, velocity.z / speed };
+	const float velocityLength = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+	Vector3 forward = velocityLength > 0.001f
+		? Vector3{ velocity.x / velocityLength, velocity.y / velocityLength, velocity.z / velocityLength }
+		: Vector3{ 0.0f, 0.0f, 1.0f };
 	Vector3 worldUp = { 0.0f, 1.0f, 0.0f };
 	if (std::abs(forward.y) > 0.99f) { worldUp = { 1.0f, 0.0f, 0.0f }; }
 

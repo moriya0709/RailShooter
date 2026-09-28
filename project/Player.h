@@ -85,7 +85,9 @@ private:
 
     // ▼▼▼ 追加：画面内のローカル移動（慣性）パラメーター ▼▼▼
     Vector3 playerPositionOffset = { 0.0f, 0.0f, 0.0f }; // レールからの相対位置
-    Vector2 velocity = { 0.0f, 0.0f };                   // 現在の移動速度
+	Vector2 velocity = { 0.0f, 0.0f };                   // 現在の移動速度
+	// 発射時に弾へ渡す、前フレームにおける自機のワールド移動量。
+	Vector3 launchVelocity_ = { 0.0f, 0.0f, 0.0f };
     float moveSpeed = 5.0f;                             // 最大速度
     float inertiaSpeed = 10.0f;                           // 慣性の強さ（値が小さいほど氷の上のように滑る）
     float moveLimitX = 10.0f;                            // 左右の移動限界

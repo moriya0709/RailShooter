@@ -1,16 +1,726 @@
 {
     "groups": [
         "city",
-        "RailPoint"
+        "RailPoint",
+        "Enemies"
     ],
     "name": "scene",
     "objects": [
         {
             "components": [
+                "EnemySpawner",
                 "ModelRenderer"
             ],
-            "file_name": "building22.obj",
+            "file_name": "cube.gltf",
+            "group": "Enemies",
+            "name": "EnemyWave_01_Entry",
+            "spawnDataList": [
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        -18.0,
+                        0.0,
+                        14.0
+                    ],
+                    "spawnTime": 0.0,
+                    "type": "NORMAL"
+                },
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        0.0,
+                        10.0,
+                        20.0
+                    ],
+                    "spawnTime": 0.3499999940395355,
+                    "type": "NORMAL"
+                },
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        18.0,
+                        0.0,
+                        14.0
+                    ],
+                    "spawnTime": 0.699999988079071,
+                    "type": "NORMAL"
+                }
+            ],
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -250.0,
+                    -215.0,
+                    270.0
+                ]
+            },
+            "type": "SPAWNER"
+        },
+        {
+            "components": [
+                "EnemySpawner",
+                "ModelRenderer"
+            ],
+            "file_name": "cube.gltf",
+            "group": "Enemies",
+            "name": "EnemyWave_02_Crossing",
+            "spawnDataList": [
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        -22.0,
+                        0.0,
+                        15.0
+                    ],
+                    "spawnTime": 0.0,
+                    "type": "NORMAL"
+                },
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        0.0,
+                        14.0,
+                        20.0
+                    ],
+                    "spawnTime": 0.4000000059604645,
+                    "type": "NORMAL"
+                },
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        22.0,
+                        0.0,
+                        15.0
+                    ],
+                    "spawnTime": 0.800000011920929,
+                    "type": "NORMAL"
+                }
+            ],
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    130.0,
+                    75.0,
+                    200.0
+                ]
+            },
+            "type": "SPAWNER"
+        },
+        {
+            "components": [
+                "EnemySpawner",
+                "ModelRenderer"
+            ],
+            "file_name": "cube.gltf",
+            "group": "Enemies",
+            "name": "EnemyWave_03_NorthArc",
+            "spawnDataList": [
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        -24.0,
+                        0.0,
+                        16.0
+                    ],
+                    "spawnTime": 0.0,
+                    "type": "NORMAL"
+                },
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        0.0,
+                        16.0,
+                        24.0
+                    ],
+                    "spawnTime": 0.44999998807907104,
+                    "type": "NORMAL"
+                },
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        24.0,
+                        0.0,
+                        16.0
+                    ],
+                    "spawnTime": 0.8999999761581421,
+                    "type": "NORMAL"
+                }
+            ],
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    360.0,
+                    405.0,
+                    190.0
+                ]
+            },
+            "type": "SPAWNER"
+        },
+        {
+            "components": [
+                "EnemySpawner",
+                "ModelRenderer"
+            ],
+            "file_name": "cube.gltf",
+            "group": "Enemies",
+            "name": "EnemyWave_04_Return",
+            "spawnDataList": [
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        -20.0,
+                        6.0,
+                        16.0
+                    ],
+                    "spawnTime": 0.0,
+                    "type": "NORMAL"
+                },
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        0.0,
+                        18.0,
+                        22.0
+                    ],
+                    "spawnTime": 0.4000000059604645,
+                    "type": "NORMAL"
+                },
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        20.0,
+                        6.0,
+                        16.0
+                    ],
+                    "spawnTime": 0.800000011920929,
+                    "type": "NORMAL"
+                }
+            ],
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -220.0,
+                    185.0,
+                    210.0
+                ]
+            },
+            "type": "SPAWNER"
+        },
+        {
+            "components": [
+                "EnemySpawner",
+                "ModelRenderer"
+            ],
+            "file_name": "cube.gltf",
+            "group": "Enemies",
+            "name": "EnemyWave_05_FinalApproach",
+            "spawnDataList": [
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        -18.0,
+                        0.0,
+                        14.0
+                    ],
+                    "spawnTime": 0.0,
+                    "type": "NORMAL"
+                },
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        0.0,
+                        16.0,
+                        22.0
+                    ],
+                    "spawnTime": 0.4000000059604645,
+                    "type": "NORMAL"
+                },
+                {
+                    "controlPoints": [],
+                    "movePattern": "RAIL_FORWARD",
+                    "offset": [
+                        18.0,
+                        0.0,
+                        14.0
+                    ],
+                    "spawnTime": 0.800000011920929,
+                    "type": "NORMAL"
+                }
+            ],
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -220.0,
+                    -295.0,
+                    275.0
+                ]
+            },
+            "type": "SPAWNER"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_01_Approach",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -500.0,
+                    -450.0,
+                    450.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_02_Entry",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -420.0,
+                    -360.0,
+                    380.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_03_Descent",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -280.0,
+                    -220.0,
+                    290.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_04_CityGate",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -80.0,
+                    -80.0,
+                    235.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_05_Crossing",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    140.0,
+                    80.0,
+                    210.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_06_EastArc",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    340.0,
+                    240.0,
+                    195.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_07_TurnNorth",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    430.0,
+                    410.0,
+                    190.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_08_NorthSweep",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    230.0,
+                    470.0,
+                    185.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_09_WestPass",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -40.0,
+                    360.0,
+                    190.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_10_WestArc",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -260.0,
+                    180.0,
+                    205.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_11_SouthTurn",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -370.0,
+                    -80.0,
+                    230.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_12_ExitLine",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -220.0,
+                    -300.0,
+                    280.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_13_Climb",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    40.0,
+                    -420.0,
+                    340.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail/rail.obj",
+            "group": "RailPoint",
+            "max_draw_distance": 900.0,
+            "name": "RailRoute_14_Departure",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    330.0,
+                    -310.0,
+                    400.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "components": [
+                "ModelRenderer"
+            ],
+            "file_name": "city/Higth/building22.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building22.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building22.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building22.obj"
+            },
             "name": "CityBuilding_2",
             "transform": {
                 "rotation": [
@@ -35,8 +745,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building04.obj",
+            "file_name": "city/Higth/building04.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building04.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building04.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building04.obj"
+            },
             "name": "CityBuilding_3",
             "transform": {
                 "rotation": [
@@ -61,8 +778,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building12.obj",
+            "file_name": "city/Higth/building12.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building12.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building12.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building12.obj"
+            },
             "name": "CityBuilding_4",
             "transform": {
                 "rotation": [
@@ -87,8 +811,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building11.obj",
+            "file_name": "city/Higth/building11.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building11.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building11.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building11.obj"
+            },
             "name": "CityBuilding_5",
             "transform": {
                 "rotation": [
@@ -113,8 +844,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building14.obj",
+            "file_name": "city/Higth/building14.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building14.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building14.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building14.obj"
+            },
             "name": "CityBuilding_6",
             "transform": {
                 "rotation": [
@@ -139,8 +877,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building10.obj",
+            "file_name": "city/Higth/building10.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building10.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building10.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building10.obj"
+            },
             "name": "CityBuilding_7",
             "transform": {
                 "rotation": [
@@ -165,8 +910,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building13.obj",
+            "file_name": "city/Higth/building13.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building13.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building13.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building13.obj"
+            },
             "name": "CityBuilding_8",
             "transform": {
                 "rotation": [
@@ -191,8 +943,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building23.obj",
+            "file_name": "city/Higth/building23.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building23.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building23.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building23.obj"
+            },
             "name": "CityBuilding_9",
             "transform": {
                 "rotation": [
@@ -217,8 +976,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building21.obj",
+            "file_name": "city/Higth/building21.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building21.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building21.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building21.obj"
+            },
             "name": "CityBuilding_10",
             "transform": {
                 "rotation": [
@@ -243,8 +1009,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building07.obj",
+            "file_name": "city/Higth/building07.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building07.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building07.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building07.obj"
+            },
             "name": "CityBuilding_11",
             "transform": {
                 "rotation": [
@@ -269,8 +1042,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building05.obj",
+            "file_name": "city/Higth/building05.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building05.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building05.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building05.obj"
+            },
             "name": "CityBuilding_12",
             "transform": {
                 "rotation": [
@@ -295,8 +1075,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building.obj",
+            "file_name": "city/Higth/building.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building.obj"
+            },
             "name": "CityBuilding_13",
             "transform": {
                 "rotation": [
@@ -321,8 +1108,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building19.obj",
+            "file_name": "city/Higth/building19.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building19.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building19.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building19.obj"
+            },
             "name": "CityBuilding_14",
             "transform": {
                 "rotation": [
@@ -347,8 +1141,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building22.obj",
+            "file_name": "city/Higth/building22.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building22.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building22.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building22.obj"
+            },
             "name": "CityBuilding_15",
             "transform": {
                 "rotation": [
@@ -373,8 +1174,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building01.obj",
+            "file_name": "city/Higth/building01.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building01.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building01.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building01.obj"
+            },
             "name": "CityBuilding_16",
             "transform": {
                 "rotation": [
@@ -399,8 +1207,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building06.obj",
+            "file_name": "city/Higth/building06.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building06.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building06.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building06.obj"
+            },
             "name": "CityBuilding_17",
             "transform": {
                 "rotation": [
@@ -425,8 +1240,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building22.obj",
+            "file_name": "city/Higth/building22.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building22.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building22.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building22.obj"
+            },
             "name": "CityBuilding_18",
             "transform": {
                 "rotation": [
@@ -451,8 +1273,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building22.obj",
+            "file_name": "city/Higth/building22.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building22.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building22.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building22.obj"
+            },
             "name": "CityBuilding_19",
             "transform": {
                 "rotation": [
@@ -477,8 +1306,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building06.obj",
+            "file_name": "city/Higth/building06.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building06.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building06.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building06.obj"
+            },
             "name": "CityBuilding_20",
             "transform": {
                 "rotation": [
@@ -503,8 +1339,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building24.obj",
+            "file_name": "city/Higth/building24.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building24.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building24.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building24.obj"
+            },
             "name": "CityBuilding_21",
             "transform": {
                 "rotation": [
@@ -529,8 +1372,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building11.obj",
+            "file_name": "city/Higth/building11.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building11.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building11.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building11.obj"
+            },
             "name": "CityBuilding_22",
             "transform": {
                 "rotation": [
@@ -555,8 +1405,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building09.obj",
+            "file_name": "city/Higth/building09.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building09.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building09.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building09.obj"
+            },
             "name": "CityBuilding_23",
             "transform": {
                 "rotation": [
@@ -581,8 +1438,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building24.obj",
+            "file_name": "city/Higth/building24.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building24.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building24.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building24.obj"
+            },
             "name": "CityBuilding_24",
             "transform": {
                 "rotation": [
@@ -607,8 +1471,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building22.obj",
+            "file_name": "city/Higth/building22.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building22.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building22.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building22.obj"
+            },
             "name": "CityBuilding_25",
             "transform": {
                 "rotation": [
@@ -633,8 +1504,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building.obj",
+            "file_name": "city/Higth/building.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building.obj"
+            },
             "name": "CityBuilding_26",
             "transform": {
                 "rotation": [
@@ -659,8 +1537,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building13.obj",
+            "file_name": "city/Higth/building13.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building13.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building13.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building13.obj"
+            },
             "name": "CityBuilding_27",
             "transform": {
                 "rotation": [
@@ -685,8 +1570,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building06.obj",
+            "file_name": "city/Higth/building06.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building06.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building06.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building06.obj"
+            },
             "name": "CityBuilding_28",
             "transform": {
                 "rotation": [
@@ -711,8 +1603,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building19.obj",
+            "file_name": "city/Higth/building19.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building19.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building19.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building19.obj"
+            },
             "name": "CityBuilding_29",
             "transform": {
                 "rotation": [
@@ -737,8 +1636,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building01.obj",
+            "file_name": "city/Higth/building01.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building01.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building01.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building01.obj"
+            },
             "name": "CityBuilding_30",
             "transform": {
                 "rotation": [
@@ -763,8 +1669,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building20.obj",
+            "file_name": "city/Higth/building20.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building20.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building20.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building20.obj"
+            },
             "name": "CityBuilding_31",
             "transform": {
                 "rotation": [
@@ -789,8 +1702,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building23.obj",
+            "file_name": "city/Higth/building23.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building23.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building23.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building23.obj"
+            },
             "name": "CityBuilding_32",
             "transform": {
                 "rotation": [
@@ -815,8 +1735,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building05.obj",
+            "file_name": "city/Higth/building05.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building05.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building05.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building05.obj"
+            },
             "name": "CityBuilding_33",
             "transform": {
                 "rotation": [
@@ -841,8 +1768,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building03.obj",
+            "file_name": "city/Higth/building03.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building03.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building03.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building03.obj"
+            },
             "name": "CityBuilding_34",
             "transform": {
                 "rotation": [
@@ -867,8 +1801,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building06.obj",
+            "file_name": "city/Higth/building06.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building06.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building06.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building06.obj"
+            },
             "name": "CityBuilding_35",
             "transform": {
                 "rotation": [
@@ -893,8 +1834,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building22.obj",
+            "file_name": "city/Higth/building22.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building22.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building22.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building22.obj"
+            },
             "name": "CityBuilding_36",
             "transform": {
                 "rotation": [
@@ -919,8 +1867,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building16.obj",
+            "file_name": "city/Higth/building16.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building16.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building16.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building16.obj"
+            },
             "name": "CityBuilding_37",
             "transform": {
                 "rotation": [
@@ -945,8 +1900,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building02.obj",
+            "file_name": "city/Higth/building02.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building02.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building02.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building02.obj"
+            },
             "name": "CityBuilding_38",
             "transform": {
                 "rotation": [
@@ -971,8 +1933,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building21.obj",
+            "file_name": "city/Higth/building21.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building21.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building21.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building21.obj"
+            },
             "name": "CityBuilding_39",
             "transform": {
                 "rotation": [
@@ -997,8 +1966,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building06.obj",
+            "file_name": "city/Higth/building06.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building06.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building06.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building06.obj"
+            },
             "name": "CityBuilding_40",
             "transform": {
                 "rotation": [
@@ -1023,8 +1999,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building07.obj",
+            "file_name": "city/Higth/building07.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building07.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building07.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building07.obj"
+            },
             "name": "CityBuilding_41",
             "transform": {
                 "rotation": [
@@ -1049,8 +2032,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building21.obj",
+            "file_name": "city/Higth/building21.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building21.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building21.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building21.obj"
+            },
             "name": "CityBuilding_42",
             "transform": {
                 "rotation": [
@@ -1075,8 +2065,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building18.obj",
+            "file_name": "city/Higth/building18.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building18.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building18.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building18.obj"
+            },
             "name": "CityBuilding_43",
             "transform": {
                 "rotation": [
@@ -1101,8 +2098,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building15.obj",
+            "file_name": "city/Higth/building15.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building15.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building15.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building15.obj"
+            },
             "name": "CityBuilding_44",
             "transform": {
                 "rotation": [
@@ -1127,8 +2131,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building21.obj",
+            "file_name": "city/Higth/building21.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building21.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building21.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building21.obj"
+            },
             "name": "CityBuilding_45",
             "transform": {
                 "rotation": [
@@ -1153,8 +2164,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building01.obj",
+            "file_name": "city/Higth/building01.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building01.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building01.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building01.obj"
+            },
             "name": "CityBuilding_46",
             "transform": {
                 "rotation": [
@@ -1179,8 +2197,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building01.obj",
+            "file_name": "city/Higth/building01.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building01.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building01.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building01.obj"
+            },
             "name": "CityBuilding_47",
             "transform": {
                 "rotation": [
@@ -1205,8 +2230,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building12.obj",
+            "file_name": "city/Higth/building12.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building12.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building12.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building12.obj"
+            },
             "name": "CityBuilding_48",
             "transform": {
                 "rotation": [
@@ -1231,8 +2263,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building25.obj",
+            "file_name": "city/Higth/building25.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building25.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building25.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building25.obj"
+            },
             "name": "CityBuilding_49",
             "transform": {
                 "rotation": [
@@ -1257,8 +2296,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building13.obj",
+            "file_name": "city/Higth/building13.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building13.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building13.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building13.obj"
+            },
             "name": "CityBuilding_50",
             "transform": {
                 "rotation": [
@@ -1283,8 +2329,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building04.obj",
+            "file_name": "city/Higth/building04.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building04.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building04.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building04.obj"
+            },
             "name": "CityBuilding_51",
             "transform": {
                 "rotation": [
@@ -1309,8 +2362,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building14.obj",
+            "file_name": "city/Higth/building14.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building14.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building14.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building14.obj"
+            },
             "name": "CityBuilding_52",
             "transform": {
                 "rotation": [
@@ -1335,8 +2395,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building03.obj",
+            "file_name": "city/Higth/building03.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building03.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building03.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building03.obj"
+            },
             "name": "CityBuilding_53",
             "transform": {
                 "rotation": [
@@ -1361,8 +2428,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building23.obj",
+            "file_name": "city/Higth/building23.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building23.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building23.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building23.obj"
+            },
             "name": "CityBuilding_54",
             "transform": {
                 "rotation": [
@@ -1387,8 +2461,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building01.obj",
+            "file_name": "city/Higth/building01.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building01.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building01.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building01.obj"
+            },
             "name": "CityBuilding_55",
             "transform": {
                 "rotation": [
@@ -1413,8 +2494,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building19.obj",
+            "file_name": "city/Higth/building19.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building19.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building19.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building19.obj"
+            },
             "name": "CityBuilding_56",
             "transform": {
                 "rotation": [
@@ -1439,8 +2527,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building18.obj",
+            "file_name": "city/Higth/building18.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building18.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building18.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building18.obj"
+            },
             "name": "CityBuilding_57",
             "transform": {
                 "rotation": [
@@ -1465,8 +2560,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building.obj",
+            "file_name": "city/Higth/building.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building.obj"
+            },
             "name": "CityBuilding_58",
             "transform": {
                 "rotation": [
@@ -1491,8 +2593,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building12.obj",
+            "file_name": "city/Higth/building12.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building12.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building12.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building12.obj"
+            },
             "name": "CityBuilding_59",
             "transform": {
                 "rotation": [
@@ -1517,8 +2626,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building05.obj",
+            "file_name": "city/Higth/building05.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building05.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building05.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building05.obj"
+            },
             "name": "CityBuilding_60",
             "transform": {
                 "rotation": [
@@ -1543,8 +2659,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building.obj",
+            "file_name": "city/Higth/building.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building.obj"
+            },
             "name": "CityBuilding_61",
             "transform": {
                 "rotation": [
@@ -1569,8 +2692,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building10.obj",
+            "file_name": "city/Higth/building10.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building10.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building10.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building10.obj"
+            },
             "name": "CityBuilding_62",
             "transform": {
                 "rotation": [
@@ -1595,8 +2725,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building25.obj",
+            "file_name": "city/Higth/building25.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building25.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building25.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building25.obj"
+            },
             "name": "CityBuilding_63",
             "transform": {
                 "rotation": [
@@ -1621,8 +2758,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building15.obj",
+            "file_name": "city/Higth/building15.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building15.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building15.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building15.obj"
+            },
             "name": "CityBuilding_64",
             "transform": {
                 "rotation": [
@@ -1647,8 +2791,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building03.obj",
+            "file_name": "city/Higth/building03.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building03.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building03.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building03.obj"
+            },
             "name": "CityBuilding_65",
             "transform": {
                 "rotation": [
@@ -1673,8 +2824,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building23.obj",
+            "file_name": "city/Higth/building23.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building23.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building23.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building23.obj"
+            },
             "name": "CityBuilding_66",
             "transform": {
                 "rotation": [
@@ -1699,8 +2857,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building05.obj",
+            "file_name": "city/Higth/building05.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building05.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building05.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building05.obj"
+            },
             "name": "CityBuilding_67",
             "transform": {
                 "rotation": [
@@ -1725,8 +2890,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building05.obj",
+            "file_name": "city/Higth/building05.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building05.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building05.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building05.obj"
+            },
             "name": "CityBuilding_68",
             "transform": {
                 "rotation": [
@@ -1751,8 +2923,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building25.obj",
+            "file_name": "city/Higth/building25.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building25.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building25.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building25.obj"
+            },
             "name": "CityBuilding_69",
             "transform": {
                 "rotation": [
@@ -1777,8 +2956,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building15.obj",
+            "file_name": "city/Higth/building15.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building15.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building15.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building15.obj"
+            },
             "name": "CityBuilding_70",
             "transform": {
                 "rotation": [
@@ -1803,8 +2989,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building18.obj",
+            "file_name": "city/Higth/building18.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building18.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building18.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building18.obj"
+            },
             "name": "CityBuilding_71",
             "transform": {
                 "rotation": [
@@ -1829,8 +3022,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building09.obj",
+            "file_name": "city/Higth/building09.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building09.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building09.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building09.obj"
+            },
             "name": "CityBuilding_72",
             "transform": {
                 "rotation": [
@@ -1855,8 +3055,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building12.obj",
+            "file_name": "city/Higth/building12.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building12.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building12.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building12.obj"
+            },
             "name": "CityBuilding_73",
             "transform": {
                 "rotation": [
@@ -1881,8 +3088,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building21.obj",
+            "file_name": "city/Higth/building21.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building21.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building21.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building21.obj"
+            },
             "name": "CityBuilding_74",
             "transform": {
                 "rotation": [
@@ -1907,8 +3121,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building04.obj",
+            "file_name": "city/Higth/building04.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building04.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building04.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building04.obj"
+            },
             "name": "CityBuilding_75",
             "transform": {
                 "rotation": [
@@ -1933,8 +3154,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building23.obj",
+            "file_name": "city/Higth/building23.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building23.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building23.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building23.obj"
+            },
             "name": "CityBuilding_76",
             "transform": {
                 "rotation": [
@@ -1959,8 +3187,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building14.obj",
+            "file_name": "city/Higth/building14.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building14.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building14.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building14.obj"
+            },
             "name": "CityBuilding_77",
             "transform": {
                 "rotation": [
@@ -1985,8 +3220,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building06.obj",
+            "file_name": "city/Higth/building06.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building06.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building06.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building06.obj"
+            },
             "name": "CityBuilding_78",
             "transform": {
                 "rotation": [
@@ -2011,8 +3253,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building03.obj",
+            "file_name": "city/Higth/building03.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building03.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building03.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building03.obj"
+            },
             "name": "CityBuilding_79",
             "transform": {
                 "rotation": [
@@ -2037,8 +3286,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building20.obj",
+            "file_name": "city/Higth/building20.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building20.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building20.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building20.obj"
+            },
             "name": "CityBuilding_80",
             "transform": {
                 "rotation": [
@@ -2063,8 +3319,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building16.obj",
+            "file_name": "city/Higth/building16.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building16.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building16.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building16.obj"
+            },
             "name": "CityBuilding_81",
             "transform": {
                 "rotation": [
@@ -2089,8 +3352,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building07.obj",
+            "file_name": "city/Higth/building07.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building07.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building07.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building07.obj"
+            },
             "name": "CityBuilding_82",
             "transform": {
                 "rotation": [
@@ -2115,8 +3385,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building25.obj",
+            "file_name": "city/Higth/building25.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building25.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building25.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building25.obj"
+            },
             "name": "CityBuilding_83",
             "transform": {
                 "rotation": [
@@ -2141,8 +3418,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building04.obj",
+            "file_name": "city/Higth/building04.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building04.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building04.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building04.obj"
+            },
             "name": "CityBuilding_84",
             "transform": {
                 "rotation": [
@@ -2167,8 +3451,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building25.obj",
+            "file_name": "city/Higth/building25.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building25.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building25.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building25.obj"
+            },
             "name": "CityBuilding_85",
             "transform": {
                 "rotation": [
@@ -2193,8 +3484,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building10.obj",
+            "file_name": "city/Higth/building10.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building10.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building10.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building10.obj"
+            },
             "name": "CityBuilding_86",
             "transform": {
                 "rotation": [
@@ -2219,8 +3517,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building09.obj",
+            "file_name": "city/Higth/building09.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building09.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building09.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building09.obj"
+            },
             "name": "CityBuilding_87",
             "transform": {
                 "rotation": [
@@ -2245,8 +3550,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building21.obj",
+            "file_name": "city/Higth/building21.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building21.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building21.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building21.obj"
+            },
             "name": "CityBuilding_88",
             "transform": {
                 "rotation": [
@@ -2271,8 +3583,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building02.obj",
+            "file_name": "city/Higth/building02.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building02.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building02.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building02.obj"
+            },
             "name": "CityBuilding_89",
             "transform": {
                 "rotation": [
@@ -2297,8 +3616,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building03.obj",
+            "file_name": "city/Higth/building03.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building03.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building03.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building03.obj"
+            },
             "name": "CityBuilding_90",
             "transform": {
                 "rotation": [
@@ -2323,8 +3649,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building22.obj",
+            "file_name": "city/Higth/building22.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building22.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building22.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building22.obj"
+            },
             "name": "CityBuilding_91",
             "transform": {
                 "rotation": [
@@ -2349,8 +3682,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building09.obj",
+            "file_name": "city/Higth/building09.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building09.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building09.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building09.obj"
+            },
             "name": "CityBuilding_92",
             "transform": {
                 "rotation": [
@@ -2375,8 +3715,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building24.obj",
+            "file_name": "city/Higth/building24.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building24.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building24.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building24.obj"
+            },
             "name": "CityBuilding_93",
             "transform": {
                 "rotation": [
@@ -2401,8 +3748,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building21.obj",
+            "file_name": "city/Higth/building21.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building21.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building21.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building21.obj"
+            },
             "name": "CityBuilding_94",
             "transform": {
                 "rotation": [
@@ -2427,8 +3781,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building04.obj",
+            "file_name": "city/Higth/building04.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building04.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building04.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building04.obj"
+            },
             "name": "CityBuilding_95",
             "transform": {
                 "rotation": [
@@ -2453,8 +3814,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building14.obj",
+            "file_name": "city/Higth/building14.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building14.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building14.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building14.obj"
+            },
             "name": "CityBuilding_96",
             "transform": {
                 "rotation": [
@@ -2479,8 +3847,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building25.obj",
+            "file_name": "city/Higth/building25.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building25.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building25.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building25.obj"
+            },
             "name": "CityBuilding_97",
             "transform": {
                 "rotation": [
@@ -2505,8 +3880,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building07.obj",
+            "file_name": "city/Higth/building07.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building07.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building07.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building07.obj"
+            },
             "name": "CityBuilding_98",
             "transform": {
                 "rotation": [
@@ -2531,8 +3913,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building18.obj",
+            "file_name": "city/Higth/building18.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building18.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building18.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building18.obj"
+            },
             "name": "CityBuilding_99",
             "transform": {
                 "rotation": [
@@ -2557,8 +3946,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building19.obj",
+            "file_name": "city/Higth/building19.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building19.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building19.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building19.obj"
+            },
             "name": "CityBuilding_100",
             "transform": {
                 "rotation": [
@@ -2583,8 +3979,15 @@
             "components": [
                 "ModelRenderer"
             ],
-            "file_name": "building21.obj",
+            "file_name": "city/Higth/building21.obj",
             "group": "city",
+            "lod": {
+                "high_model": "city/Higth/building21.obj",
+                "low_distance": 600.0,
+                "low_model": "city/Low/building21.obj",
+                "medium_distance": 300.0,
+                "medium_model": "city/Medium/building21.obj"
+            },
             "name": "CityBuilding_101",
             "transform": {
                 "rotation": [

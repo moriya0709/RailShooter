@@ -2,6 +2,15 @@
 #include "DirectXCommon.h"
 #include "SrvManager.h"
 #include <cstring>
+#include <filesystem>
+
+namespace {
+std::string NormalizeTextureKey(const std::string& key) {
+	// LOD ごとに "Higth/../Textures" のような異なる表記になる同一ファイルを
+	// 1 枚のテクスチャとして共有する。仮想キー（__pbr_* 等）もそのまま扱える。
+	return std::filesystem::path(key).lexically_normal().generic_string();
+}
+}
 
 std::unique_ptr <TextureManager> TextureManager::instance = nullptr;
 // ImGuiで0番を使用するため、1番から使用
@@ -24,18 +33,19 @@ TextureManager* TextureManager::GetInstance() {
 }
 
 void TextureManager::LoadTexture(const std::string& filePath, bool isSRGB) {
+	const std::string key = NormalizeTextureKey(filePath);
 	// 読み込み済みテクスチャを検索
-	if (textureDatas.contains(filePath)) {
-		OutputDebugStringA(("LoadTexture SKIP: [" + filePath + "]\n").c_str());
+	if (textureDatas.contains(key)) {
+		OutputDebugStringA(("LoadTexture SKIP: [" + key + "]\n").c_str());
 		return;
 	}
 	// テクスチャ枚数上限チェック
 	assert(srvManager_->CanAllocate());
-	OutputDebugStringA(("LoadTexture NEW: [" + filePath + "]\n").c_str());
+	OutputDebugStringA(("LoadTexture NEW: [" + key + "]\n").c_str());
 
 	// ファイル読み込み
 	DirectX::ScratchImage image{};
-	std::wstring filePathW = ConvertString(filePath);
+	std::wstring filePathW = ConvertString(key);
 	HRESULT hr;
 
 	if (filePathW.ends_with(L".dds")) {
@@ -50,12 +60,13 @@ void TextureManager::LoadTexture(const std::string& filePath, bool isSRGB) {
 	}
 
 	assert(SUCCEEDED(hr));
-	CreateTextureData(filePath, image, isSRGB);
+	CreateTextureData(key, image, isSRGB);
 
 }
 
 void TextureManager::LoadTextureFromRGBA8(const std::string& key, uint32_t width, uint32_t height,
 	const std::vector<uint8_t>& pixels, bool isSRGB) {
+	const std::string normalizedKey = NormalizeTextureKey(key);
 	assert(width > 0 && height > 0);
 	assert(pixels.size() == static_cast<size_t>(width) * height * 4);
 
@@ -66,7 +77,11 @@ void TextureManager::LoadTextureFromRGBA8(const std::string& key, uint32_t width
 	const DirectX::Image* destination = image.GetImage(0, 0, 0);
 	assert(destination != nullptr);
 	std::memcpy(destination->pixels, pixels.data(), pixels.size());
-	CreateTextureData(key, image, isSRGB);
+	CreateTextureData(normalizedKey, image, isSRGB);
+}
+
+void TextureManager::ReleaseDeferredResources() {
+	deferredReleaseResources_.clear();
 }
 
 void TextureManager::CreateTextureData(const std::string& key, DirectX::ScratchImage& image, bool isSRGB) {
@@ -86,6 +101,10 @@ void TextureManager::CreateTextureData(const std::string& key, DirectX::ScratchI
 	TextureData textureData{};
 	const auto existing = textureDatas.find(key);
 	if (existing != textureDatas.end()) {
+		// 同一フレーム内の差し替えでは、旧リソースを使うコピー／描画コマンドが
+		// すでに commandList に積まれている可能性がある。フェンス完了まで保持する。
+		deferredReleaseResources_.push_back(existing->second.resource);
+		deferredReleaseResources_.push_back(existing->second.intermediateResource);
 		// 動的テキストを更新してもディスクリプタを増やさない。
 		textureData.srvIndex = existing->second.srvIndex;
 		textureData.srvHandleCPU = existing->second.srvHandleCPU;
@@ -118,21 +137,21 @@ void TextureManager::CreateTextureData(const std::string& key, DirectX::ScratchI
 
 // SRVインデックスの開始番号
 uint32_t TextureManager::GetSrvIndex(const std::string& filePath) {
-	auto it = textureDatas.find(filePath);
+	auto it = textureDatas.find(NormalizeTextureKey(filePath));
 	assert(it != textureDatas.end()); // LoadTexture済み前提
 	return it->second.srvIndex;
 }
 
 // テクスチャ番号からGPUハンドルを取得
 D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(const std::string& filePath) {
-	auto it = textureDatas.find(filePath);
+	auto it = textureDatas.find(NormalizeTextureKey(filePath));
 	assert(it != textureDatas.end());
 	return it->second.srvHandleGPU;
 }
 
 // メタデータ取得
 const DirectX::TexMetadata& TextureManager::GetMetaData(const std::string& filePath) {
-	auto it = textureDatas.find(filePath);
+	auto it = textureDatas.find(NormalizeTextureKey(filePath));
 	assert(it != textureDatas.end());
 	return it->second.metadata;
 }

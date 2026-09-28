@@ -1,5 +1,7 @@
 ﻿#include "DirectXCommon.h"
 
+#include "TextureManager.h"
+
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 
@@ -183,8 +185,12 @@ void DirectXCommon::CreateDevice() {
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
 		// デバックレイヤーを有効化する
 		debugController->EnableDebugLayer();
-		// さらにGPU側でもチェックを行うようにする
+		// GPU-Based Validation はシェーダーを検証用に差し替えるため非常に重い。
+		// 通常の Debug 実行では CPU 側 Debug Layer のみを使い、必要な調査時だけ
+		// プロジェクトのプリプロセッサ定義に ENABLE_GPU_BASED_VALIDATION を追加する。
+		#ifdef ENABLE_GPU_BASED_VALIDATION
 		debugController->SetEnableGPUBasedValidation(TRUE);
+		#endif
 	}
 #endif
 
@@ -421,6 +427,9 @@ void DirectXCommon::PostDraw() {
 		fence->SetEventOnCompletion(fenceValue, fenceEvent);
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
+	// このフレームで記録した GPU コマンドが完了したため、差し替え前の
+	// テクスチャ／アップロードバッファを安全に破棄できる。
+	TextureManager::GetInstance()->ReleaseDeferredResources();
 
 	hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));

@@ -462,7 +462,9 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 	bool isGLTF = (ext == "gltf" || ext == "glb");
 
 	// Assimp読み込みフラグの決定
-	unsigned int pFlags = aiProcess_FlipWindingOrder | aiProcess_CalcTangentSpace;
+	// 描画パイプラインは三角形リストを前提とする。OBJ には四角形／多角形の面も
+	// 含まれ得るため、インデックスを読む前に Assimp 側で必ず三角形化する。
+	unsigned int pFlags = aiProcess_FlipWindingOrder | aiProcess_CalcTangentSpace | aiProcess_Triangulate;
 	if (isOBJ) {
 		pFlags |= aiProcess_FlipUVs; // OBJの時だけUVを上下反転
 	}
@@ -541,9 +543,17 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 		const uint32_t indexOffset = static_cast<uint32_t>(modelData.indices.size());
 		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
 			aiFace& face = mesh->mFaces[faceIndex];
-			assert(face.mNumIndices == 3);
-			for (uint32_t element = 0; element < face.mNumIndices; ++element) {
-				modelData.indices.push_back(baseVertex + face.mIndices[element]); // オフセットを足す
+			// Assimp の Triangulate 後でも、OBJ に含まれる線／点などは 1～2 頂点の
+			// face として残る場合がある。三角形リストでは描画できないため無視する。
+			if (face.mNumIndices < 3) {
+				continue;
+			}
+			// 通常は Triangulate 済みで 3 頂点。保険として多角形が来た場合も
+			// 三角形ファンへ分割し、インデックスバッファを常に三角形リストに保つ。
+			for (uint32_t element = 1; element + 1 < face.mNumIndices; ++element) {
+				modelData.indices.push_back(baseVertex + face.mIndices[0]);
+				modelData.indices.push_back(baseVertex + face.mIndices[element]);
+				modelData.indices.push_back(baseVertex + face.mIndices[element + 1]);
 			}
 		}
 		modelData.materialRanges.push_back({

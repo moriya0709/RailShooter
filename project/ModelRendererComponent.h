@@ -38,6 +38,12 @@ public:
 	float GetOutlineThickness() const { return outlineThickness_; }
 	void SetOutlineColor(const Vector4& color);
 	const Vector4& GetOutlineColor() const { return outlineColor_; }
+	void SetColorOverrideEnabled(bool enabled);
+	bool IsColorOverrideEnabled() const { return colorOverrideEnabled_; }
+	void SetColorOverride(const Vector4& color);
+	const Vector4& GetColorOverride() const { return colorOverride_; }
+	void SetColorOverrideUnlit(bool unlit);
+	bool IsColorOverrideUnlit() const { return colorOverrideUnlit_; }
 
 private:
 	// バッファリソース
@@ -45,12 +51,14 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> outlineResource;
 	Microsoft::WRL::ComPtr<ID3D12Resource> viewResource;
 	Microsoft::WRL::ComPtr<ID3D12Resource> motionBlurResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> colorOverrideResource;
 
 	// バッファリソース内のデータを指すポインタ
 	TransformationMatrix* transformationMatrixData = nullptr;
 	Outline* outlineData = nullptr;
 	ViewData* viewData = nullptr;
 	MotionBlur* motionBlurData = nullptr;
+	ModelColorOverride* colorOverrideData = nullptr;
 
 	// Transform
 	Transform cameraTransform;
@@ -77,5 +85,9 @@ private:
 	bool outlineEnabled_ = false;
 	float outlineThickness_ = 0.01f;
 	Vector4 outlineColor_ = { 1.0f, 0.0f, 0.0f, 1.0f };
+	bool colorOverrideEnabled_ = false;
+	Vector4 colorOverride_ = { 1.0f, 1.0f, 1.0f, 1.0f };
+	bool colorOverrideUnlit_ = false;
 	bool IsCulledByDistance() const;
+	void UpdateColorOverrideData();
 };

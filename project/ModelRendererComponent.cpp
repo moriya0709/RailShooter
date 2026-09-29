@@ -40,6 +40,11 @@ void ModelRendererComponent::Initialize() {
 	motionBlurResource->Map(0, nullptr, reinterpret_cast<void**>(&motionBlurData));
 	motionBlurData->isMotionBlur = false;
 
+	// Per-renderer data keeps color changes isolated from other instances of the same Model.
+	colorOverrideResource = dxCommon_->CreateBufferResource(sizeof(ModelColorOverride));
+	colorOverrideResource->Map(0, nullptr, reinterpret_cast<void**>(&colorOverrideData));
+	UpdateColorOverrideData();
+
 	// *Transform* //
 	cameraTransform = {
 		{1.0f,1.0f,1.0f},
@@ -96,6 +101,10 @@ void ModelRendererComponent::Draw() {
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(8, viewResource->GetGPUVirtualAddress());
 	// モーションブラー
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(9, motionBlurResource->GetGPUVirtualAddress());
+	// Pixel shader b8. The animated root signature reserves 15 for its palette SRV.
+	const UINT colorOverrideRootParameter = model_->IsSkinning() ? 16u : 15u;
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(
+		colorOverrideRootParameter, colorOverrideResource->GetGPUVirtualAddress());
 
 	if (model_->IsSkinning()) {
 		dxCommon_->GetCommandList()->SetGraphicsRootShaderResourceView(
@@ -134,6 +143,30 @@ void ModelRendererComponent::SetOutlineColor(const Vector4& color) {
 	if (outlineData) {
 		outlineData->color = outlineColor_;
 	}
+}
+
+void ModelRendererComponent::SetColorOverrideEnabled(bool enabled) {
+	colorOverrideEnabled_ = enabled;
+	UpdateColorOverrideData();
+}
+
+void ModelRendererComponent::SetColorOverride(const Vector4& color) {
+	colorOverride_ = color;
+	UpdateColorOverrideData();
+}
+
+void ModelRendererComponent::SetColorOverrideUnlit(bool unlit) {
+	colorOverrideUnlit_ = unlit;
+	UpdateColorOverrideData();
+}
+
+void ModelRendererComponent::UpdateColorOverrideData() {
+	if (!colorOverrideData) {
+		return;
+	}
+	colorOverrideData->color = colorOverride_;
+	colorOverrideData->enabled = colorOverrideEnabled_ ? 1 : 0;
+	colorOverrideData->unlit = colorOverrideUnlit_ ? 1 : 0;
 }
 
 bool ModelRendererComponent::IsCulledByDistance() const {

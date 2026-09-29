@@ -189,6 +189,7 @@
     <ClCompile Include="SpriteRendererComponent.cpp" />
     <ClCompile Include="TextRendererComponent.cpp" />
 	<ClCompile Include="ColliderComponent.cpp" />
+	<ClCompile Include="ObjectRailMovementComponent.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp">
       <Filter>ソース ファイル\engine\2d</Filter>
     </ClCompile>
@@ -434,6 +435,7 @@
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="ModelRendererComponent.h" />
     <ClInclude Include="RailPointComponent.h" />
+	<ClInclude Include="ObjectRailMovementComponent.h" />
     <ClInclude Include="RectTransformComponent.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="engine\3d\Object.h" />

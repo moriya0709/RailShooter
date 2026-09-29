@@ -83,6 +83,15 @@ ConstantBuffer<SpotLight> gSpotLight : register(b5);
 ConstantBuffer<ViewData> gView : register(b6); // ★追加: ビュー情報
 ConstantBuffer<MotionBlur> gMotionBlur : register(b7);
 
+struct ObjectColorOverride
+{
+    float4 color;
+    int enabled;
+    int unlit;
+    float2 padding;
+};
+ConstantBuffer<ObjectColorOverride> gObjectColorOverride : register(b8);
+
 Texture2D<float32_t4> gTexture : register(t0);
 TextureCube<float32_t4> gEnviromentTexture : register(t1);
 Texture2D<float32_t4> gNormalTexture : register(t2);
@@ -96,7 +105,24 @@ PixelShaderOutput main(VertexShaderOutput input)
     PixelShaderOutput output;
     float4 transformedUV = mul(float32_t4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float32_t4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
+    // A flat override is intentionally evaluated before all lighting, reflections and
+    // emissions so black can be used as a true silhouette color.
+    if (gObjectColorOverride.enabled != 0 && gObjectColorOverride.unlit != 0)
+    {
+        output.color = float4(gObjectColorOverride.color.rgb,
+            gObjectColorOverride.color.a * textureColor.a);
+        if (output.color.a == 0.0f)
+        {
+            discard;
+        }
+        output.velocity = float2(0.0f, 0.0f);
+        return output;
+    }
     float3 baseColor = (gMaterial.color * textureColor).rgb;
+    if (gObjectColorOverride.enabled != 0)
+    {
+        baseColor = (gObjectColorOverride.color * textureColor).rgb;
+    }
     float roughness = saturate(gRoughnessTexture.Sample(gSampler, transformedUV.xy).r);
     float metallic = saturate(gMetallicTexture.Sample(gSampler, transformedUV.xy).r);
     float3 emission = gMaterial.emissive + gEmissionTexture.Sample(gSampler, transformedUV.xy).rgb;
@@ -277,11 +303,12 @@ PixelShaderOutput main(VertexShaderOutput input)
         output.color.rgb = (baseColor * lighting.rgb) + reflection + emission;
         
         // アルファ値（透明度）はベースカラーのものをそのまま使う
-        output.color.a = gMaterial.color.a * textureColor.a;
+		output.color.a = (gObjectColorOverride.enabled != 0 ? gObjectColorOverride.color.a : gMaterial.color.a) * textureColor.a;
     }
     else
     {
-        output.color = float4(baseColor + emission, gMaterial.color.a * textureColor.a);
+		output.color = float4(baseColor + emission,
+			(gObjectColorOverride.enabled != 0 ? gObjectColorOverride.color.a : gMaterial.color.a) * textureColor.a);
     }
     
     if (output.color.a == 0.0f)

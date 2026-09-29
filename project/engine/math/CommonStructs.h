@@ -109,6 +109,13 @@ struct Material {
     float pad5;
 
 };
+// ModelRenderer ごとの色上書き。共有 Model のマテリアルには書き込まない。
+struct ModelColorOverride {
+	Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	int32_t enabled = 0;
+	int32_t unlit = 0;
+	Vector2 padding = { 0.0f, 0.0f };
+};
 // カメラデータ
 struct ViewData {
     Vector3 cameraPos;
@@ -261,8 +268,20 @@ struct ObjectData {
 	bool modelOutlineEnabled = false;
 	float modelOutlineThickness = 0.01f;
 	Vector4 modelOutlineColor = { 1.0f, 0.0f, 0.0f, 1.0f };
+	// Shared model data is never modified: this is a per-GameObject render override.
+	bool modelColorOverrideEnabled = false;
+	Vector4 modelColorOverride = { 1.0f, 1.0f, 1.0f, 1.0f };
+	bool modelColorOverrideUnlit = false;
 	// Unity のように複数の機能を 1 つの GameObject に追加するための型一覧。
 	std::vector<std::string> components;
+	// ObjectRailMovement 専用。RailCamera / RailPoint のデータとは完全に独立する。
+	std::vector<Vector3> objectRailPoints;
+	std::vector<Vector3> objectRailPointRotations;
+	float objectRailSpeed = 1.0f;
+	bool objectRailLoop = true;
+	bool objectRailOrientToPath = true;
+	bool objectRailUsePointRotations = false;
+	bool objectRailPlayOnStart = true;
 
     // スポナー専用の敵配置データリスト
     std::vector<SpawnData> spawnDataList;

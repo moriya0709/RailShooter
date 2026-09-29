@@ -7,6 +7,7 @@
 #include "ModelRendererComponent.h"
 #include "AnimatorComponent.h"
 #include "RailPointComponent.h"
+#include "ObjectRailMovementComponent.h"
 #include "EnemySpawnerComponent.h"
 #include "EnemyNormal.h"
 #include "SpriteRendererComponent.h"
@@ -23,29 +24,32 @@
 
 void GamePlayScene::Initialize() {
 
-	// カメラ初期化
-	camera = std::make_unique<Camera>();
-	camera->SetRotate({ cameraTransform.rotate });
-	camera->SetTranslate({ cameraTransform.translate });
-
 	railCamera = std::make_unique<RailCamera>();
 	railCamera->Initialize();
-
-
-	// カメラマネージャ登録
-	CameraManager::GetInstance()->AddCamera("main", camera.get());
-	CameraManager::GetInstance()->SetActiveCamera("main");
 
 	// レベル
 	level = std::make_unique<Level>();
 	level->LoadJson("gamePlayScene");
 	CreateLevel();
+	// Use an EMPTY + CameraComponent from the level. Keep the previous behavior
+	// as a fallback for old levels without a Camera component.
+	if (!camera) {
+		fallbackCameraObject = std::make_unique<GameObject>("MainCamera");
+		fallbackCameraObject->GetTransform()->transform = cameraTransform;
+		camera = fallbackCameraObject->AddComponent<CameraComponent>();
+		fallbackCameraObject->Initialize();
+		cameraObject = fallbackCameraObject.get();
+	}
+
+	// カメラマネージャ登録
+	CameraManager::GetInstance()->AddCamera("main", camera->GetCamera());
+	CameraManager::GetInstance()->SetActiveCamera("main");
 
 
 	// 3Dオブジェクト
 	for (int i = 0; i < 2; i++) {
 		object[i] = std::make_unique <Object>();
-		object[i]->Initialize(camera.get());
+		object[i]->Initialize(camera->GetCamera());
 	}
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
@@ -66,11 +70,11 @@ void GamePlayScene::Initialize() {
 
 	// 当たり判定の線
 	debugLineNormal = std::make_unique<Line>();
-	debugLineNormal->Initialize(camera.get());
+	debugLineNormal->Initialize(camera->GetCamera());
 	debugLineNormal->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f }); // 緑色を固定セット
 
 	debugLineHit = std::make_unique<Line>();
-	debugLineHit->Initialize(camera.get());
+	debugLineHit->Initialize(camera->GetCamera());
 	debugLineHit->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f }); // 赤色を固定セット
 
 	// トレイルエフェクト
@@ -167,6 +171,8 @@ void GamePlayScene::Update() {
 		camera->SetRotate(player->GetRotate());
 		camera->Update();
 	}
+	// DebugCameraUpdate で変更された Transform も含め、コンポーネントを更新する。
+	cameraObject->Update();
 
 	// *スポナーの距離判定と敵の更新* //
 	
@@ -201,8 +207,14 @@ void GamePlayScene::Update() {
 
 	// レベルオブジェクト
 	for (auto& object : levelObjects) {
+		if (auto* railMovement = object->GetComponent<ObjectRailMovementComponent>()) {
+			railMovement->SetDeltaTime(deltaTime);
+		}
 		if (object.get() == playerObject) {
 			continue; // 操作対象プレイヤーは上で一度だけ更新する。
+		}
+		if (object.get() == cameraObject) {
+			continue; // 通常カメラは入力反映直後に一度だけ更新する。
 		}
 		if (auto* enemy = object->GetComponent<Enemy>()) {
 			enemy->SetUpdateContext(player->GetTranslate(), cameraProgress);
@@ -337,7 +349,7 @@ void GamePlayScene::Update() {
 
 #pragma region ポストエフェクト
 	// *ポストエフェクト* //
-	PostEffect::GetInstance()->Update(camera.get());
+	PostEffect::GetInstance()->Update(camera->GetCamera());
 
 	// 反転
 	PostEffect::GetInstance()->SetInversion(isInversion);
@@ -359,7 +371,7 @@ void GamePlayScene::Update() {
 	PostEffect::GetInstance()->SetHeightFogTop(heightFogTop);
 	PostEffect::GetInstance()->SetHeightFogBottom(heightFogBottom);
 	PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
-	PostEffect::GetInstance()->HightFogUpdate(camera.get());
+	PostEffect::GetInstance()->HightFogUpdate(camera->GetCamera());
 	// DOF
 	PostEffect::GetInstance()->SetDOF(isDOF);
 	PostEffect::GetInstance()->SetFocusDistance(focusDistance);
@@ -384,7 +396,7 @@ void GamePlayScene::Update() {
 
 #pragma region レイマーチング
 	// レイマーチング
-	RayMarching::GetInstance()->Update(camera.get());
+	RayMarching::GetInstance()->Update(camera->GetCamera());
 	//rayMarching->SetTime(rayMarchingTime);
 	RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
 	RayMarching::GetInstance()->SetCloudCoverage(rayMarchingCloudCoverage);
@@ -473,6 +485,7 @@ void GamePlayScene::Update() {
 	float fps = ImGui::GetIO().Framerate;
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", fps > 0.0f ? 1000.0f / fps : 0.0f, fps);
 
+	Transform& cameraTransform = cameraObject->GetTransform()->transform;
 	ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.1f, -500.0f, 500.0f);
 	ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -10.0f, 10.0f);
 
@@ -809,6 +822,9 @@ void GamePlayScene::Update() {
 			renderer->SetOutlineEnabled(copyData.modelOutlineEnabled);
 			renderer->SetOutlineThickness(copyData.modelOutlineThickness);
 			renderer->SetOutlineColor(copyData.modelOutlineColor);
+			renderer->SetColorOverrideEnabled(copyData.modelColorOverrideEnabled);
+			renderer->SetColorOverride(copyData.modelColorOverride);
+			renderer->SetColorOverrideUnlit(copyData.modelColorOverrideUnlit);
 		}
 		if (sourceObject->GetComponent<RectTransformComponent>()) {
 			auto* rectTransform = copyObject->AddComponent<RectTransformComponent>();
@@ -843,6 +859,12 @@ void GamePlayScene::Update() {
 			textRenderer->SetCharacterSpacing(copyData.textCharacterSpacing);
 		}
 		if (sourceObject->GetComponent<RailPointComponent>()) copyObject->AddComponent<RailPointComponent>();
+		if (sourceObject->GetComponent<ObjectRailMovementComponent>()) {
+			auto* railMovement = copyObject->AddComponent<ObjectRailMovementComponent>();
+			railMovement->Configure(copyData.objectRailPoints, copyData.objectRailSpeed,
+				copyData.objectRailLoop, copyData.objectRailOrientToPath, copyData.objectRailPlayOnStart,
+				copyData.objectRailPointRotations, copyData.objectRailUsePointRotations);
+		}
 		if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
 			auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
 			spawner->Configure(copyData.spawnDataList, spawnDistance, railCamera.get());
@@ -855,6 +877,10 @@ void GamePlayScene::Update() {
 		selectedObject = copyObject.get();
 		levelObjects.push_back(std::move(copyObject));
 		level->GetLevelData()->objects.push_back(std::move(copyData));
+	}
+	if (objectToDelete >= 0 && levelObjects[objectToDelete].get() == cameraObject) {
+		OutputDebugStringA("The active camera Empty cannot be deleted.\n");
+		objectToDelete = -1;
 	}
 	if (objectToDelete >= 0) {
 		if (selectedObject == levelObjects[objectToDelete].get()) {
@@ -1030,7 +1056,7 @@ void GamePlayScene::Update() {
 
 				// 2. TransformComponent の追加と配置設定
 				auto transformComp = newObject->AddComponent<TransformComponent>();
-				Vector3 spawnPos = cameraTransform.translate;
+				Vector3 spawnPos = camera->GetTranslate();
 				transformComp->transform.translate = { spawnPos.x, spawnPos.y, spawnPos.z + 10.0f };
 				transformComp->transform.rotate = { 0.0f, 0.0f, 0.0f };
 				transformComp->transform.scale = { 1.0f, 1.0f, 1.0f };
@@ -1184,6 +1210,23 @@ void GamePlayScene::Update() {
 					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
 						level->GetLevelData()->objects[selectedIndex].modelOutlineColor = outlineColor;
 					}
+				}
+				ImGui::EndDisabled();
+				bool colorOverrideEnabled = renderer->IsColorOverrideEnabled();
+				if (ImGui::Checkbox("Color Override##ModelRenderer", &colorOverrideEnabled)) {
+					renderer->SetColorOverrideEnabled(colorOverrideEnabled);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].modelColorOverrideEnabled = colorOverrideEnabled;
+				}
+				ImGui::BeginDisabled(!colorOverrideEnabled);
+				Vector4 colorOverride = renderer->GetColorOverride();
+				if (ImGui::ColorEdit4("Override Color##ModelRenderer", &colorOverride.x)) {
+					renderer->SetColorOverride(colorOverride);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].modelColorOverride = colorOverride;
+				}
+				bool colorOverrideUnlit = renderer->IsColorOverrideUnlit();
+				if (ImGui::Checkbox("Flat / Silhouette##ModelRenderer", &colorOverrideUnlit)) {
+					renderer->SetColorOverrideUnlit(colorOverrideUnlit);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].modelColorOverrideUnlit = colorOverrideUnlit;
 				}
 				ImGui::EndDisabled();
 
@@ -1383,6 +1426,82 @@ void GamePlayScene::Update() {
 				}
 			}
 		}
+		if (auto* railMovement = selectedObject->GetComponent<ObjectRailMovementComponent>()) {
+			if (ImGui::CollapsingHeader("Object Rail Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
+				bool enabled = railMovement->IsEnabled();
+				if (ImGui::Checkbox("Enabled##ObjectRailMovement", &enabled)) railMovement->SetEnabled(enabled);
+				bool playing = railMovement->IsPlaying();
+				if (ImGui::Checkbox("Playing##ObjectRailMovement", &playing)) railMovement->SetPlaying(playing);
+				ImGui::SameLine();
+				if (ImGui::Button("Restart##ObjectRailMovement")) railMovement->Restart();
+				float speed = railMovement->GetSpeed();
+				if (ImGui::DragFloat("Speed (segments/sec)##ObjectRailMovement", &speed, 0.01f, 0.0f, 100.0f)) {
+					railMovement->SetSpeed(speed);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].objectRailSpeed = railMovement->GetSpeed();
+				}
+				bool loop = railMovement->IsLooping();
+				if (ImGui::Checkbox("Loop##ObjectRailMovement", &loop)) {
+					railMovement->SetLooping(loop);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].objectRailLoop = loop;
+				}
+				bool orient = railMovement->IsOrientToPath();
+				if (ImGui::Checkbox("Orient To Path##ObjectRailMovement", &orient)) {
+					railMovement->SetOrientToPath(orient);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].objectRailOrientToPath = orient;
+				}
+				bool usePointRotations = railMovement->UsesPointRotations();
+				if (ImGui::Checkbox("Use Point Rotations##ObjectRailMovement", &usePointRotations)) {
+					railMovement->SetUsePointRotations(usePointRotations);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].objectRailUsePointRotations = usePointRotations;
+				}
+				auto& points = railMovement->GetPoints();
+				auto& rotations = railMovement->GetPointRotations();
+				ImGui::Text("Control Points: %d", static_cast<int>(points.size()));
+				for (size_t pointIndex = 0; pointIndex < points.size(); ++pointIndex) {
+					ImGui::PushID(static_cast<int>(pointIndex));
+					if (ImGui::DragFloat3("Point", &points[pointIndex].x, 0.1f) && selectedIndex != -1) {
+						level->GetLevelData()->objects[selectedIndex].objectRailPoints = points;
+					}
+					if (ImGui::DragFloat3("Rotation", &rotations[pointIndex].x, 0.01f) && selectedIndex != -1) {
+						level->GetLevelData()->objects[selectedIndex].objectRailPointRotations = rotations;
+					}
+					ImGui::SameLine();
+					if (ImGui::SmallButton("Remove") && points.size() > 2) {
+						points.erase(points.begin() + pointIndex);
+						rotations.erase(rotations.begin() + pointIndex);
+						if (selectedIndex != -1) {
+							level->GetLevelData()->objects[selectedIndex].objectRailPoints = points;
+							level->GetLevelData()->objects[selectedIndex].objectRailPointRotations = rotations;
+						}
+						ImGui::PopID();
+						break;
+					}
+					ImGui::PopID();
+				}
+				if (ImGui::Button("Add Point At Object")) {
+					points.push_back(selectedObject->GetTransform()->GetTranslate());
+					rotations.push_back(selectedObject->GetTransform()->GetRotate());
+					if (selectedIndex != -1) {
+						level->GetLevelData()->objects[selectedIndex].objectRailPoints = points;
+						level->GetLevelData()->objects[selectedIndex].objectRailPointRotations = rotations;
+					}
+				}
+			}
+		}
+		if (auto* cameraComponent = selectedObject->GetComponent<CameraComponent>()) {
+			if (ImGui::CollapsingHeader("Camera")) {
+				bool enabled = cameraComponent->IsEnabled();
+				if (ImGui::Checkbox("Enabled##Camera", &enabled)) {
+					cameraComponent->SetEnabled(enabled);
+				}
+				if (ImGui::Button("Set as Main Camera")) {
+					camera = cameraComponent;
+					cameraObject = selectedObject;
+					CameraManager::GetInstance()->AddCamera("main", camera->GetCamera());
+					CameraManager::GetInstance()->SetActiveCamera("main");
+				}
+			}
+		}
 
 		if (auto* spawner = selectedObject->GetComponent<EnemySpawnerComponent>()) {
 			if (ImGui::CollapsingHeader("Enemy Spawner")) {
@@ -1458,6 +1577,27 @@ void GamePlayScene::Update() {
 			if (!selectedObject->GetComponent<RailPointComponent>() && ImGui::Button("Rail Camera Point")) {
 				selectedObject->AddComponent<RailPointComponent>();
 				addSerializedComponent("RailPoint");
+			}
+			if (!selectedObject->GetComponent<ObjectRailMovementComponent>() && ImGui::Button("Object Rail Movement")) {
+				auto* railMovement = selectedObject->AddComponent<ObjectRailMovementComponent>();
+				const Vector3 start = selectedObject->GetTransform()->GetTranslate();
+				const std::vector<Vector3> points = { start, start + Vector3{ 0.0f, 0.0f, 5.0f } };
+				const Vector3 rotation = selectedObject->GetTransform()->GetRotate();
+				const std::vector<Vector3> rotations = { rotation, rotation };
+				railMovement->Configure(points, 1.0f, true, true, true, rotations, false);
+				objectData.objectRailPoints = points;
+				objectData.objectRailPointRotations = rotations;
+				objectData.objectRailSpeed = 1.0f;
+				objectData.objectRailLoop = true;
+				objectData.objectRailOrientToPath = true;
+				objectData.objectRailUsePointRotations = false;
+				objectData.objectRailPlayOnStart = true;
+				addSerializedComponent("ObjectRailMovement");
+			}
+			if ((objectData.type == "EMPTY" || objectData.type == "empty") &&
+				!selectedObject->GetComponent<CameraComponent>() && ImGui::Button("Camera")) {
+				selectedObject->AddComponent<CameraComponent>();
+				addSerializedComponent("Camera");
 			}
 			if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
 				auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();
@@ -1767,6 +1907,15 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
 			modelRenderer->SetOutlineThickness(objectData.modelOutlineThickness);
 			modelRenderer->SetOutlineColor(objectData.modelOutlineColor);
+			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
+			modelRenderer->SetColorOverride(objectData.modelColorOverride);
+			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
+				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
+				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
+					objectData.objectRailLoop, objectData.objectRailOrientToPath, objectData.objectRailPlayOnStart,
+					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
+			}
 
 			// 4. アタッチされたコンポーネントを一括初期化
 			gameObject->Initialize();
@@ -1795,7 +1944,16 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
 			modelRenderer->SetOutlineThickness(objectData.modelOutlineThickness);
 			modelRenderer->SetOutlineColor(objectData.modelOutlineColor);
+			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
+			modelRenderer->SetColorOverride(objectData.modelColorOverride);
+			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
 			gameObject->AddComponent<RailPointComponent>();
+			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
+				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
+				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
+					objectData.objectRailLoop, objectData.objectRailOrientToPath, objectData.objectRailPlayOnStart,
+					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
+			}
 
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
@@ -1815,10 +1973,19 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
 			modelRenderer->SetOutlineThickness(objectData.modelOutlineThickness);
 			modelRenderer->SetOutlineColor(objectData.modelOutlineColor);
+			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
+			modelRenderer->SetColorOverride(objectData.modelColorOverride);
+			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
 
 			// ゲームロジック用のスポナーも同じ GameObject にアタッチする。
 			auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
 			spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
+				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
+				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
+					objectData.objectRailLoop, objectData.objectRailOrientToPath, objectData.objectRailPlayOnStart,
+					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
+			}
 
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
@@ -1840,6 +2007,9 @@ void GamePlayScene::CreateLevel() {
 				renderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
 				renderer->SetOutlineThickness(objectData.modelOutlineThickness);
 				renderer->SetOutlineColor(objectData.modelOutlineColor);
+				renderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
+				renderer->SetColorOverride(objectData.modelColorOverride);
+				renderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
 			}
 			if (hasComponent("RectTransform")) {
 				auto* rectTransform = gameObject->AddComponent<RectTransformComponent>();
@@ -1879,6 +2049,20 @@ void GamePlayScene::CreateLevel() {
 			}
 			if (hasComponent("RailPoint")) {
 				gameObject->AddComponent<RailPointComponent>();
+			}
+			if (hasComponent("ObjectRailMovement")) {
+				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
+				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
+					objectData.objectRailLoop, objectData.objectRailOrientToPath, objectData.objectRailPlayOnStart,
+					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
+			}
+			if (hasComponent("Camera")) {
+				auto* cameraComponent = gameObject->AddComponent<CameraComponent>();
+				// The first Camera component in the level is the default main camera.
+				if (!camera) {
+					camera = cameraComponent;
+					cameraObject = gameObject.get();
+				}
 			}
 			if (hasComponent("EnemySpawner")) {
 				auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();

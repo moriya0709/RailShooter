@@ -71,10 +71,16 @@ void Level::LoadJson(const std::string fileName) {
 			if (object.contains("model_renderer")) {
 				newData.modelOutlineEnabled = object["model_renderer"].value("outline_enabled", newData.modelOutlineEnabled);
 				newData.modelOutlineThickness = object["model_renderer"].value("outline_thickness", newData.modelOutlineThickness);
+				newData.modelColorOverrideEnabled = object["model_renderer"].value("color_override_enabled", newData.modelColorOverrideEnabled);
+				newData.modelColorOverrideUnlit = object["model_renderer"].value("color_override_unlit", newData.modelColorOverrideUnlit);
 				const auto& modelRenderer = object["model_renderer"];
 				if (modelRenderer.contains("outline_color") && modelRenderer["outline_color"].is_array() && modelRenderer["outline_color"].size() == 4) {
 					newData.modelOutlineColor = { modelRenderer["outline_color"][0].get<float>(), modelRenderer["outline_color"][1].get<float>(),
 						modelRenderer["outline_color"][2].get<float>(), modelRenderer["outline_color"][3].get<float>() };
+				}
+				if (modelRenderer.contains("color_override") && modelRenderer["color_override"].is_array() && modelRenderer["color_override"].size() == 4) {
+					newData.modelColorOverride = { modelRenderer["color_override"][0].get<float>(), modelRenderer["color_override"][1].get<float>(),
+						modelRenderer["color_override"][2].get<float>(), modelRenderer["color_override"][3].get<float>() };
 				}
 			}
 			if (object.contains("lod") && object["lod"].is_object()) {
@@ -134,6 +140,28 @@ void Level::LoadJson(const std::string fileName) {
 				}
 				if (collider.contains("center_offset") && collider["center_offset"].is_array() && collider["center_offset"].size() == 3) {
 					newData.colliderCenterOffset = { collider["center_offset"][0].get<float>(), collider["center_offset"][1].get<float>(), collider["center_offset"][2].get<float>() };
+				}
+			}
+			if (object.contains("object_rail_movement") && object["object_rail_movement"].is_object()) {
+				const auto& railMovement = object["object_rail_movement"];
+				newData.objectRailSpeed = railMovement.value("speed", newData.objectRailSpeed);
+				newData.objectRailLoop = railMovement.value("loop", newData.objectRailLoop);
+				newData.objectRailOrientToPath = railMovement.value("orient_to_path", newData.objectRailOrientToPath);
+				newData.objectRailUsePointRotations = railMovement.value("use_point_rotations", newData.objectRailUsePointRotations);
+				newData.objectRailPlayOnStart = railMovement.value("play_on_start", newData.objectRailPlayOnStart);
+				if (railMovement.contains("points") && railMovement["points"].is_array()) {
+					for (const auto& point : railMovement["points"]) {
+						if (point.is_array() && point.size() == 3) {
+							newData.objectRailPoints.push_back({ point[0].get<float>(), point[1].get<float>(), point[2].get<float>() });
+						}
+					}
+				}
+				if (railMovement.contains("point_rotations") && railMovement["point_rotations"].is_array()) {
+					for (const auto& rotation : railMovement["point_rotations"]) {
+						if (rotation.is_array() && rotation.size() == 3) {
+							newData.objectRailPointRotations.push_back({ rotation[0].get<float>(), rotation[1].get<float>(), rotation[2].get<float>() });
+						}
+					}
 				}
 			}
 
@@ -236,6 +264,9 @@ void Level::SaveJson(const std::string fileName) {
 			newObjJson["model_renderer"]["outline_enabled"] = obj.modelOutlineEnabled;
 			newObjJson["model_renderer"]["outline_thickness"] = obj.modelOutlineThickness;
 			newObjJson["model_renderer"]["outline_color"] = { obj.modelOutlineColor.x, obj.modelOutlineColor.y, obj.modelOutlineColor.z, obj.modelOutlineColor.w };
+			newObjJson["model_renderer"]["color_override_enabled"] = obj.modelColorOverrideEnabled;
+			newObjJson["model_renderer"]["color_override"] = { obj.modelColorOverride.x, obj.modelColorOverride.y, obj.modelColorOverride.z, obj.modelColorOverride.w };
+			newObjJson["model_renderer"]["color_override_unlit"] = obj.modelColorOverrideUnlit;
 		}
 		if (!obj.lodHighModel.empty()) {
 			newObjJson["lod"]["high_model"] = obj.lodHighModel;
@@ -274,6 +305,22 @@ void Level::SaveJson(const std::string fileName) {
 			newObjJson["text_renderer"]["emissive_color"] = { obj.textEmissiveColor.x, obj.textEmissiveColor.y, obj.textEmissiveColor.z };
 			newObjJson["text_renderer"]["emissive_intensity"] = obj.textEmissiveIntensity;
 			newObjJson["text_renderer"]["character_spacing"] = obj.textCharacterSpacing;
+		}
+		if (std::find(obj.components.begin(), obj.components.end(), "ObjectRailMovement") != obj.components.end()) {
+			auto& railMovement = newObjJson["object_rail_movement"];
+			railMovement["speed"] = obj.objectRailSpeed;
+			railMovement["loop"] = obj.objectRailLoop;
+			railMovement["orient_to_path"] = obj.objectRailOrientToPath;
+			railMovement["use_point_rotations"] = obj.objectRailUsePointRotations;
+			railMovement["play_on_start"] = obj.objectRailPlayOnStart;
+			railMovement["points"] = nlohmann::json::array();
+			for (const Vector3& point : obj.objectRailPoints) {
+				railMovement["points"].push_back({ point.x, point.y, point.z });
+			}
+			railMovement["point_rotations"] = nlohmann::json::array();
+			for (const Vector3& rotation : obj.objectRailPointRotations) {
+				railMovement["point_rotations"].push_back({ rotation.x, rotation.y, rotation.z });
+			}
 		}
 		if (!obj.components.empty()) {
 			newObjJson["components"] = obj.components;

@@ -6,6 +6,7 @@
 #include <typeindex>
 #include <type_traits>
 #include <utility>
+#include <algorithm>
 #include "Component.h"
 #include "TransformComponent.h"
 
@@ -51,13 +52,20 @@ public:
 			return;
 		}
 		Initialize();
+		std::vector<Component*> updateComponents;
+		updateComponents.reserve(components_.size());
 		for (size_t index = 0; index < components_.size(); ++index) {
 			if (components_[index]->IsEnabled()) {
 				components_[index]->StartIfNeeded();
+				updateComponents.push_back(components_[index].get());
 			}
-			if (components_[index]->IsEnabled()) {
-				components_[index]->Update();
-			}
+		}
+		std::stable_sort(updateComponents.begin(), updateComponents.end(),
+			[](const Component* lhs, const Component* rhs) {
+				return lhs->GetUpdateOrder() < rhs->GetUpdateOrder();
+			});
+		for (Component* component : updateComponents) {
+			component->Update();
 		}
 	}
 

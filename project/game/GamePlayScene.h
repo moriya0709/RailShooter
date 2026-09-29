@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "Camera.h"
+#include "CameraComponent.h"
 #include "Sprite.h"
 #include "Object.h"
 #include "ParticleEmitter.h"
@@ -178,7 +178,11 @@ private:
 	bool isGameViewHovered = false;
 
 	// カメラ
-	std::unique_ptr<Camera> camera = nullptr;
+	// The normal camera belongs to an EMPTY in levelObjects. The fallback is
+	// only used when loading older levels that do not contain a Camera component.
+	GameObject* cameraObject = nullptr;
+	std::unique_ptr<GameObject> fallbackCameraObject = nullptr;
+	CameraComponent* camera = nullptr;
 	std::unique_ptr<RailCamera> railCamera = nullptr;
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};

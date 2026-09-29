@@ -16,6 +16,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimatorComponent.cpp" />
+	<ClCompile Include="CameraComponent.cpp" />
+	<ClCompile Include="ObjectRailMovementComponent.cpp" />
     <ClCompile Include="application\bookUi\Book.cpp" />
     <ClCompile Include="application\bookUi\BookUi.cpp" />
     <ClCompile Include="application\bookUi\BookUiCommon.cpp" />
@@ -283,6 +285,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimatorComponent.h" />
+	<ClInclude Include="CameraComponent.h" />
     <ClInclude Include="application\bookUi\Book.h" />
     <ClInclude Include="application\bookUi\BookUi.h" />
     <ClInclude Include="application\bookUi\BookUiCommon.h" />
@@ -357,6 +360,7 @@
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="ModelRendererComponent.h" />
     <ClInclude Include="RailPointComponent.h" />
+	<ClInclude Include="ObjectRailMovementComponent.h" />
     <ClInclude Include="RectTransformComponent.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerBullet.h" />

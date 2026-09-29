@@ -13,6 +13,9 @@ public:
 	virtual void Initialize() {}
 	virtual void Update() {}
 	virtual void Draw() {}
+	// 値が小さいコンポーネントほど先に Update される。移動系が描画用の
+	// Transform を更新してから Renderer が行列を作れるようにするための順序。
+	virtual int GetUpdateOrder() const { return 0; }
 
 	void SetGameObject(GameObject* owner) { owner_ = owner; }
 	GameObject* GetGameObject() const { return owner_; }

@@ -11,6 +11,10 @@ class Sprite;
 // A UTF-8 UI text component. It rasterizes an installed Windows font at runtime.
 class TextRendererComponent : public Component {
 public:
+	static constexpr size_t kMeshColumnCount = 4;
+	static constexpr size_t kMeshRowCount = 4;
+	static constexpr size_t kMeshVertexCount = kMeshColumnCount * kMeshRowCount;
+
 	void Initialize() override;
 	void Update() override;
 	void Draw() override {}
@@ -45,6 +49,9 @@ public:
 	void SetMaxWidth(float maxWidth);
 	float GetMaxWidth() const { return maxWidth_; }
 	Vector2 GetTextSize() const { return textSize_; }
+	// Control-point offsets in text pixels, in row-major order from top-left to bottom-right.
+	void SetMeshOffsets(const std::array<Vector2, kMeshVertexCount>& offsets) { meshOffsets_ = offsets; }
+	const std::array<Vector2, kMeshVertexCount>& GetMeshOffsets() const { return meshOffsets_; }
 
 private:
 	void RebuildTexture();
@@ -59,6 +66,7 @@ private:
 	Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 	Vector3 emissiveColor_ = { 1.0f, 1.0f, 1.0f };
 	Vector2 textSize_ = { 0.0f, 0.0f };
+	std::array<Vector2, kMeshVertexCount> meshOffsets_ = {};
 	int fontSize_ = 32;
 	float maxWidth_ = 0.0f;
 	float outlineThickness_ = 1.0f;

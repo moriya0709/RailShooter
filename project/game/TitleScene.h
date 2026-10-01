@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "Camera.h"
+#include "CameraComponent.h"
 #include "Sprite.h"
 #include "Object.h"
 #include "ParticleEmitter.h"
@@ -84,6 +84,8 @@ private:
 	Vector3 SpotLightDirection = { 0.0f, 0.0f, 0.0f };
 	float SpotLightRange = 10.0f;
 	float SpotLightIntensity = 1.0f;
+	// 太陽のライティング
+	bool isSunLight = true;
 
 	// *ポストエフェクト* //
 
@@ -165,6 +167,7 @@ private:
 	// ギズモの操作モード
 	#ifdef USE_IMGUI
 	ImGuizmo::OPERATION currentGizmoOperation = ImGuizmo::TRANSLATE;
+	int selectedTextMeshVertex_ = -1;
 	#endif
 	// 現在選択されているオブジェクト（とりあえず0番目のオブジェクト用）
 	GameObject* selectedObject = nullptr;
@@ -174,7 +177,9 @@ private:
 	bool isGameViewHovered = false;
 
 	// カメラ
-	std::unique_ptr<Camera> camera = nullptr;
+	GameObject* cameraObject = nullptr;
+	std::unique_ptr<GameObject> fallbackCameraObject = nullptr;
+	CameraComponent* camera = nullptr;
 	std::unique_ptr<RailCamera> railCamera = nullptr;
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
@@ -192,6 +197,19 @@ private:
 	// タイマー
 	std::unique_ptr<GameTimer> gameTimer = nullptr;
 	float deltaTime;
+
+	// タイトルロゴの表示時間
+	float logoAlphaTime = 0.8f;
+	bool isStartLogo = true;
+	// キーのテキスト点滅
+	enum keyTextState {
+		FADE_IN,
+		FADE_OUT
+	};
+	keyTextState keyTextState_ = FADE_IN;
+
+	// トランジション中
+	bool isTransition = false;
 
 	// 当たり判定の線
 	std::unique_ptr<Line> debugLineNormal;

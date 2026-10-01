@@ -50,6 +50,38 @@ int CALLBACK EnumerateFontFamily(const LOGFONTW* logFont, const TEXTMETRICW*, DW
 	families->emplace_back(logFont->lfFaceName);
 	return 1;
 }
+
+Vector2 CatmullRom(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Vector2& p3, float t) {
+	const float t2 = t * t;
+	const float t3 = t2 * t;
+	return {
+		0.5f * ((2.0f * p1.x) + (-p0.x + p2.x) * t + (2.0f * p0.x - 5.0f * p1.x + 4.0f * p2.x - p3.x) * t2 + (-p0.x + 3.0f * p1.x - 3.0f * p2.x + p3.x) * t3),
+		0.5f * ((2.0f * p1.y) + (-p0.y + p2.y) * t + (2.0f * p0.y - 5.0f * p1.y + 4.0f * p2.y - p3.y) * t2 + (-p0.y + 3.0f * p1.y - 3.0f * p2.y + p3.y) * t3),
+	};
+}
+
+Vector2 SampleCurve(const std::array<Vector2, TextRendererComponent::kMeshColumnCount>& points, float position) {
+	const float scaledPosition = position * static_cast<float>(points.size() - 1);
+	const size_t segment = (std::min)(static_cast<size_t>(scaledPosition), points.size() - 2);
+	const float localPosition = scaledPosition - static_cast<float>(segment);
+	const size_t previous = segment > 0 ? segment - 1 : 0;
+	const size_t next = segment + 1;
+	const size_t following = (std::min)(segment + 2, points.size() - 1);
+	return CatmullRom(points[previous], points[segment], points[next], points[following], localPosition);
+}
+
+Vector2 SampleMeshOffset(const std::array<Vector2, TextRendererComponent::kMeshVertexCount>& controlPoints,
+	float horizontalPosition, float verticalPosition) {
+	std::array<Vector2, TextRendererComponent::kMeshRowCount> interpolatedRows{};
+	for (size_t row = 0; row < interpolatedRows.size(); ++row) {
+		std::array<Vector2, TextRendererComponent::kMeshColumnCount> rowPoints{};
+		for (size_t column = 0; column < rowPoints.size(); ++column) {
+			rowPoints[column] = controlPoints[row * TextRendererComponent::kMeshColumnCount + column];
+		}
+		interpolatedRows[row] = SampleCurve(rowPoints, horizontalPosition);
+	}
+	return SampleCurve(interpolatedRows, verticalPosition);
+}
 }
 
 void TextRendererComponent::Initialize() {
@@ -94,12 +126,30 @@ void TextRendererComponent::Update() {
 	sprite_->SetPosition(position);
 	sprite_->SetRotation(rotation);
 	sprite_->SetSize({ textSize_.x * scale.x, textSize_.y * scale.y });
+	sprite_->SetMeshDeformationEnabled(true);
+	std::array<Vector2, Sprite::kMeshVertexCount> normalizedMeshOffsets{};
+	if (textSize_.x > 0.0f && textSize_.y > 0.0f) {
+		for (size_t row = 0; row < Sprite::kMeshRowCount; ++row) {
+			const float verticalPosition = static_cast<float>(row) / static_cast<float>(Sprite::kMeshRowCount - 1);
+			for (size_t column = 0; column < Sprite::kMeshColumnCount; ++column) {
+				const float horizontalPosition = static_cast<float>(column) / static_cast<float>(Sprite::kMeshColumnCount - 1);
+				const Vector2 interpolatedOffset = SampleMeshOffset(meshOffsets_, horizontalPosition, verticalPosition);
+				normalizedMeshOffsets[row * Sprite::kMeshColumnCount + column] = {
+					interpolatedOffset.x / textSize_.x, interpolatedOffset.y / textSize_.y };
+			}
+		}
+	}
+	sprite_->SetMeshOffsets(normalizedMeshOffsets);
 	sprite_->SetColor(color_);
 	sprite_->SetEmissive({ emissiveColor_.x * emissiveIntensity_, emissiveColor_.y * emissiveIntensity_,
 		emissiveColor_.z * emissiveIntensity_ });
 	sprite_->Update();
 
 	if (outlineEnabled_) {
+		// Text color alpha controls the opacity of the whole text treatment,
+		// including its independently colored outline.
+		Vector4 effectiveOutlineColor = outlineColor_;
+		effectiveOutlineColor.w *= color_.w;
 		const Vector2 outlineOffsets[8] = {
 			{ -1.0f, -1.0f }, { 0.0f, -1.0f }, { 1.0f, -1.0f }, { -1.0f, 0.0f },
 			{ 1.0f, 0.0f }, { -1.0f, 1.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f },
@@ -119,7 +169,9 @@ void TextRendererComponent::Update() {
 			outlineSprite->SetPosition({ position.x + rotatedOffset.x, position.y + rotatedOffset.y });
 			outlineSprite->SetRotation(rotation);
 			outlineSprite->SetSize({ textSize_.x * scale.x, textSize_.y * scale.y });
-			outlineSprite->SetColor(outlineColor_);
+			outlineSprite->SetMeshDeformationEnabled(true);
+			outlineSprite->SetMeshOffsets(normalizedMeshOffsets);
+			outlineSprite->SetColor(effectiveOutlineColor);
 			outlineSprite->SetEmissive({ 0.0f, 0.0f, 0.0f });
 			outlineSprite->Update();
 		}

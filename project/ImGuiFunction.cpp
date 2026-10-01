@@ -1,8 +1,22 @@
 ﻿#include "ImGuiFunction.h"
 
 // Dock layout is stored separately because Dear ImGui's imgui.ini only persists window bounds.
+#include "GameObject.h"
+#include "Level.h"
+#include "LevelEditorCommon.h"
+#include "PostEffect.h"
+#include <array>
+#include <cstring>
 #include <fstream>
 #include <sstream>
+#include <unordered_map>
+
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 
 std::unique_ptr <ImGuiFunction> ImGuiFunction::instance = nullptr;
 
@@ -65,6 +79,62 @@ void ImGuiFunction::SaveDockLayout() const {
 }
 
 #ifdef USE_IMGUI
+
+SceneEditorLayout ImGuiFunction::BeginSceneEditor(Level& level,
+	std::vector<std::unique_ptr<GameObject>>& levelObjects, const char* defaultLevelName,
+	Vector2& gameViewPosition, Vector2& gameViewSize, bool& isGameViewHovered) {
+	SceneEditorLayout layout;
+	ImGuiIO& editorIO = ImGui::GetIO();
+	layout.hierarchyHeight = (std::max)(180.0f, (editorIO.DisplaySize.y - layout.topBarHeight) * 0.42f);
+
+	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(editorIO.DisplaySize.x, layout.topBarHeight), ImGuiCond_Always);
+	ImGui::Begin("Editor Toolbar", nullptr,
+		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
+	static std::unordered_map<std::string, std::array<char, 128>> levelFileNames;
+	auto [entry, inserted] = levelFileNames.try_emplace(defaultLevelName);
+	if (inserted) {
+		strncpy_s(entry->second.data(), entry->second.size(), defaultLevelName, _TRUNCATE);
+	}
+	LevelEditorCommon::DrawToolbar(level, levelObjects, entry->second.data(), entry->second.size());
+	ImGui::End();
+
+	if (ShouldDrawDockableWindow("Game")) {
+		const ImVec2 initialPosition(layout.leftPaneWidth, layout.topBarHeight);
+		const ImVec2 initialSize(
+			(std::max)(100.0f, editorIO.DisplaySize.x - layout.leftPaneWidth - layout.rightPaneWidth),
+			(std::max)(100.0f, editorIO.DisplaySize.y - layout.topBarHeight - layout.bottomPaneHeight));
+		ImGui::SetNextWindowPos(initialPosition, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(initialSize, ImGuiCond_FirstUseEver);
+		ImGui::Begin("Game", nullptr,
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground |
+			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		TrackDockableWindow("Game");
+		DrawMergedWindowTabs("Game");
+		const ImVec2 contentMin = ImGui::GetCursorScreenPos();
+		const ImVec2 windowPosition = ImGui::GetWindowPos();
+		const ImVec2 contentRegionMax = ImGui::GetWindowContentRegionMax();
+		const ImVec2 contentMax(windowPosition.x + contentRegionMax.x, windowPosition.y + contentRegionMax.y);
+		gameViewPosition = { contentMin.x, contentMin.y };
+		gameViewSize = {
+			(std::max)(1.0f, contentMax.x - contentMin.x),
+			(std::max)(1.0f, contentMax.y - contentMin.y)
+		};
+		PostEffect::GetInstance()->SetOutputViewport(gameViewPosition.x, gameViewPosition.y,
+			gameViewSize.x, gameViewSize.y);
+		isGameViewHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+		ImGui::GetWindowDrawList()->AddRect(contentMin, contentMax, IM_COL32(115, 160, 210, 210));
+		ImGui::End();
+	} else {
+		PostEffect::GetInstance()->SetOutputViewport(0.0f, 0.0f, 1.0f, 1.0f);
+		isGameViewHovered = false;
+	}
+
+	layout.gameWindowPosition = gameViewPosition;
+	layout.gameWindowSize = gameViewSize;
+	return layout;
+}
 
 void ImGuiFunction::TrackDockableWindow(const char* windowName) {
 	EnsureDockLayoutLoaded();
@@ -350,6 +420,16 @@ void ImGuiFunction::UpdateDockingGuide() {}
 
 void ImGuiFunction::SnapWindowToDockTarget([[maybe_unused]] const char* windowName,
 	[[maybe_unused]] DockGuideTarget target) {}
+
+SceneEditorLayout ImGuiFunction::BeginSceneEditor([[maybe_unused]] Level& level,
+	[[maybe_unused]] std::vector<std::unique_ptr<GameObject>>& levelObjects,
+	[[maybe_unused]] const char* defaultLevelName, Vector2& gameViewPosition, Vector2& gameViewSize,
+	bool& isGameViewHovered) {
+	gameViewPosition = { 0.0f, 0.0f };
+	gameViewSize = { 1.0f, 1.0f };
+	isGameViewHovered = false;
+	return {};
+}
 
 #endif
 

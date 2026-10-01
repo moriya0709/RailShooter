@@ -7,10 +7,12 @@
 #include "ModelRendererComponent.h"
 #include "AnimatorComponent.h"
 #include "RailPointComponent.h"
+#include "ObjectRailMovementComponent.h"
 #include "EnemySpawnerComponent.h"
 #include "EnemyNormal.h"
 #include "SpriteRendererComponent.h"
 #include "TextRendererComponent.h"
+#include "TextMeshEditorGizmo.h"
 #include "RectTransformComponent.h"
 #include "ColliderComponent.h"
 #include "LevelEditorCommon.h"
@@ -23,29 +25,30 @@
 
 void TitleScene::Initialize() {
 
-	// カメラ初期化
-	camera = std::make_unique<Camera>();
-	camera->SetRotate({ cameraTransform.rotate });
-	camera->SetTranslate({ cameraTransform.translate });
-
 	railCamera = std::make_unique<RailCamera>();
 	railCamera->Initialize();
-
-
-	// カメラマネージャ登録
-	CameraManager::GetInstance()->AddCamera("main", camera.get());
-	CameraManager::GetInstance()->SetActiveCamera("main");
 
 	// レベル
 	level = std::make_unique<Level>();
 	level->LoadJson("TitleScene");
 	CreateLevel();
+	if (!camera) {
+		fallbackCameraObject = std::make_unique<GameObject>("MainCamera");
+		fallbackCameraObject->GetTransform()->transform = cameraTransform;
+		camera = fallbackCameraObject->AddComponent<CameraComponent>();
+		fallbackCameraObject->Initialize();
+		cameraObject = fallbackCameraObject.get();
+	}
+
+	// カメラマネージャ登録
+	CameraManager::GetInstance()->AddCamera("main", camera->GetCamera());
+	CameraManager::GetInstance()->SetActiveCamera("main");
 
 
 	// 3Dオブジェクト
 	for (int i = 0; i < 2; i++) {
 		object[i] = std::make_unique <Object>();
-		object[i]->Initialize(camera.get());
+		object[i]->Initialize(camera->GetCamera());
 	}
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
@@ -60,11 +63,11 @@ void TitleScene::Initialize() {
 
 	// 当たり判定の線
 	debugLineNormal = std::make_unique<Line>();
-	debugLineNormal->Initialize(camera.get());
+	debugLineNormal->Initialize(camera->GetCamera());
 	debugLineNormal->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f }); // 緑色を固定セット
 
 	debugLineHit = std::make_unique<Line>();
-	debugLineHit->Initialize(camera.get());
+	debugLineHit->Initialize(camera->GetCamera());
 	debugLineHit->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f }); // 赤色を固定セット
 
 	// トレイルエフェクト
@@ -82,6 +85,108 @@ void TitleScene::Update() {
 	deltaTime = gameTimer->Tick();
 
 	trailEffect->Editor();
+
+	// タイトルロゴ
+	auto* logoAnimation = GameObject::FindByName("logoAnimation");
+	auto* logoTextObject1 = GameObject::FindByName("logoText_1");
+	auto* logoTextObject2 = GameObject::FindByName("logoText_2");
+	auto* keyTextObject = GameObject::FindByName("keyText");
+
+	// ロゴアニメーションが終わったらロゴテキストをフェードイン
+	if (logoAnimation) {
+		auto* rail = logoAnimation->GetComponent<ObjectRailMovementComponent>();
+		if (rail && !rail->IsPlaying()) {
+			if (auto* text1 = logoTextObject1 ? logoTextObject1->GetComponent<TextRendererComponent>() : nullptr) {
+				if (auto* text2 = logoTextObject2 ? logoTextObject2->GetComponent<TextRendererComponent>() : nullptr) {
+					if (auto* text3 = keyTextObject ? keyTextObject->GetComponent<TextRendererComponent>() : nullptr) {
+						// ロゴテキストの色
+						Vector4 color = text1->GetColor();
+						float alpha = color.w;
+
+						if (isTransition) {
+							// ロゴテキストのアルファ値を徐々に減少させる
+							alpha = std::clamp(alpha - deltaTime * logoAlphaTime, 0.0f, 1.0f);
+							
+							color = text1->GetColor();
+							color.w = alpha;
+							text1->SetColor(color);
+							
+							color = text2->GetColor();
+							color.w = alpha;
+							text2->SetColor(color);
+							
+							color = text3->GetColor();
+							color.w = alpha;
+							text3->SetColor(color);
+
+							if (auto* transition = GameObject::FindByName("transition"); transition && transition->IsActive()) {
+								// トランジションが終了したらシーン遷移
+								auto* transitionAnimation = transition->GetComponent<ObjectRailMovementComponent>();
+								if (transitionAnimation && !transitionAnimation->IsPlaying()) {
+									//SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+								}
+							}
+						} else {
+							if (isStartLogo) {
+								// ロゴテキストのアルファ値を徐々に増加させる
+								alpha = std::clamp(alpha + deltaTime * logoAlphaTime, 0.0f, 1.0f);
+								
+								color = text1->GetColor();
+								color.w = alpha;
+								text1->SetColor(color);
+
+								color = text2->GetColor();
+								color.w = alpha;
+								text2->SetColor(color);
+
+								color = text3->GetColor();
+								color.w = alpha;
+								text3->SetColor(color);
+
+								if (color.w >= 1.0f) {
+									isStartLogo = false; // 完全に表示されたらフラグを下ろす
+								}
+							} else {
+								color = text3->GetColor();
+								alpha = color.w;
+
+								// フェードイン・フェードアウトの切り替え
+								if (color.w >= 1.0f) {
+									keyTextState_ = FADE_OUT;
+								} else if (color.w <= 0.0f) {
+									keyTextState_ = FADE_IN;
+								}
+
+								// キーのテキストを点滅
+								if (keyTextState_ == FADE_IN) {
+									alpha = std::clamp(alpha + deltaTime * logoAlphaTime, 0.0f, 1.0f);
+								} else if (keyTextState_ == FADE_OUT) {
+									alpha = std::clamp(alpha - deltaTime * logoAlphaTime, 0.0f, 1.0f);
+								}
+
+								color = text3->GetColor();
+								color.w = alpha;
+								text3->SetColor(color);
+							}
+						}
+
+						// ロゴが完全に表示されている状態でスペースキーが押されたらトランジション開始
+						if (!isStartLogo && input->TriggerKey(DIK_SPACE)) {
+							isTransition = true;
+							if (auto* transition = GameObject::FindByName("transition"); transition && !transition->IsActive()) {
+								// ロゴのモデルを非表示にする
+								logoAnimation->SetActive(false);
+
+								transition->SetActive(true);
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
+
 
 	// 1. レールカメラの更新（レール上の現在位置・回転を計算）
 	// 2. ★ GameObject の座標を RailCamera の制御点として毎フレーム上書き（同期）する
@@ -113,12 +218,8 @@ void TitleScene::Update() {
 		railCamera->Update();
 	}
 
-	// タイトルではレールカメラをそのまま表示カメラの基準にする。
-	const Vector3 railCameraPosition = railCamera->GetBasePosition();
-	const Vector3 railCameraRotation = railCamera->GetBaseRotation();
-
-
 	// デバックカメラ処理
+	#ifdef USE_IMGUI
 	if (isDebugCamera) {
 		const Vector2 mousePosition = input->GetMouseScreen();
 		const bool isMouseInGameView = ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Game") &&
@@ -128,16 +229,25 @@ void TitleScene::Update() {
 		if (isMouseInGameView) {
 			camera->DebugCameraUpdate();
 		}
-	} else {
-		camera->SetTranslate(railCameraPosition);
-		camera->SetRotate(railCameraRotation);
+	} else
+	#endif
+	{
+		// レール再生中だけ Empty のカメラをレール座標で動かす。
+		// 非再生時は CameraComponent が Empty の Transform をそのまま使う。
+		if (railCamera->IsRailActive()) {
+			camera->SetTranslate(railCamera->GetBasePosition());
+			camera->SetRotate(railCamera->GetBaseRotation());
+		}
 		camera->Update();
 	}
+	cameraObject->Update();
 
 	// *スポナーの距離判定と敵の更新* //
 
 	// エディタカメラ操作中ではない（ゲームプレイ中）場合のみ起動・生成を進める
+	#ifdef USE_IMGUI
 	if (!isDebugCamera) {
+	#endif
 		// タイトルでは表示カメラの位置をスポナーの起動基準にする。
 		Vector3 targetPos = camera->GetTranslate();
 
@@ -152,7 +262,9 @@ void TitleScene::Update() {
 				enemies.push_back(std::move(newEnemy));
 			}
 		}
+	#ifdef USE_IMGUI
 	}
+	#endif
 
 	// カメラの現在の進行度を取得
 	float cameraProgress = railCamera->GetRailT();
@@ -167,6 +279,9 @@ void TitleScene::Update() {
 
 	// レベルオブジェクト
 	for (auto& object : levelObjects) {
+		if (auto* railMovement = object->GetComponent<ObjectRailMovementComponent>()) {
+			railMovement->SetDeltaTime(deltaTime);
+		}
 		if (auto* enemy = object->GetComponent<Enemy>()) {
 			enemy->SetUpdateContext(camera->GetTranslate(), cameraProgress);
 		}
@@ -273,7 +388,7 @@ void TitleScene::Update() {
 
 #pragma region ポストエフェクト
 	// *ポストエフェクト* //
-	PostEffect::GetInstance()->Update(camera.get());
+	PostEffect::GetInstance()->Update(camera->GetCamera());
 
 	// 反転
 	PostEffect::GetInstance()->SetInversion(isInversion);
@@ -295,7 +410,7 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetHeightFogTop(heightFogTop);
 	PostEffect::GetInstance()->SetHeightFogBottom(heightFogBottom);
 	PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
-	PostEffect::GetInstance()->HightFogUpdate(camera.get());
+	PostEffect::GetInstance()->HightFogUpdate(camera->GetCamera());
 	// DOF
 	PostEffect::GetInstance()->SetDOF(isDOF);
 	PostEffect::GetInstance()->SetFocusDistance(focusDistance);
@@ -320,7 +435,7 @@ void TitleScene::Update() {
 
 #pragma region レイマーチング
 	// レイマーチング
-	RayMarching::GetInstance()->Update(camera.get());
+	RayMarching::GetInstance()->Update(camera->GetCamera());
 	//rayMarching->SetTime(rayMarchingTime);
 	RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
 	RayMarching::GetInstance()->SetCloudCoverage(rayMarchingCloudCoverage);
@@ -342,61 +457,16 @@ void TitleScene::Update() {
 #pragma endregion
 
 #ifdef USE_IMGUI
-	// 最初だけ Unity 風に配置し、以後は通常の ImGui ウィンドウとして移動・リサイズできる。
-	// ImGui が imgui.ini に位置とサイズを保存するため、Visual Studio のツールウィンドウのように
-	// ユーザーが決めた配置が次回起動時にも再現される。
+	const SceneEditorLayout editorLayout = ImGuiFunction::GetInstance()->BeginSceneEditor(
+		*level, levelObjects, "TitleScene", gameViewPosition, gameViewSize, isGameViewHovered);
 	ImGuiIO& editorIO = ImGui::GetIO();
-	const float editorTopBarHeight = 30.0f;
-	const float editorLeftPaneWidth = 300.0f;
-	const float editorRightPaneWidth = 360.0f;
-	const float editorBottomPaneHeight = 260.0f;
-	const float hierarchyHeight = (std::max)(180.0f, (editorIO.DisplaySize.y - editorTopBarHeight) * 0.42f);
-	const ImVec2 initialGameViewPosition(editorLeftPaneWidth, editorTopBarHeight);
-	const ImVec2 initialGameViewSize(
-		(std::max)(100.0f, editorIO.DisplaySize.x - editorLeftPaneWidth - editorRightPaneWidth),
-		(std::max)(100.0f, editorIO.DisplaySize.y - editorTopBarHeight - editorBottomPaneHeight));
-
-	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Always);
-	ImGui::SetNextWindowSize(ImVec2(editorIO.DisplaySize.x, editorTopBarHeight), ImGuiCond_Always);
-	ImGui::Begin("Editor Toolbar", nullptr,
-		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
-	static char levelFileName[128] = "TitleScene";
-	LevelEditorCommon::DrawToolbar(*level, levelObjects, levelFileName, IM_ARRAYSIZE(levelFileName));
-	ImGui::End();
-
-	if (ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Game")) {
-		ImGui::SetNextWindowPos(initialGameViewPosition, ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(initialGameViewSize, ImGuiCond_FirstUseEver);
-		ImGui::Begin("Game", nullptr,
-			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground |
-			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-		ImGuiFunction::GetInstance()->TrackDockableWindow("Game");
-		ImGuiFunction::GetInstance()->DrawMergedWindowTabs("Game");
-		const ImVec2 gameContentMin = ImGui::GetCursorScreenPos();
-		const ImVec2 gameWindowPosition = ImGui::GetWindowPos();
-		const ImVec2 contentRegionMax = ImGui::GetWindowContentRegionMax();
-		const ImVec2 gameContentMax(gameWindowPosition.x + contentRegionMax.x, gameWindowPosition.y + contentRegionMax.y);
-		gameViewPosition = { gameContentMin.x, gameContentMin.y };
-		gameViewSize = {
-			(std::max)(1.0f, gameContentMax.x - gameContentMin.x),
-			(std::max)(1.0f, gameContentMax.y - gameContentMin.y)
-		};
-		// 最終合成を Game のコンテンツ領域へ限定する。これにより ImGui の下にはゲームを描画しない。
-		PostEffect::GetInstance()->SetOutputViewport(gameViewPosition.x, gameViewPosition.y, gameViewSize.x, gameViewSize.y);
-		isGameViewHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
-		ImGui::GetWindowDrawList()->AddRect(
-			gameContentMin,
-			gameContentMax,
-			IM_COL32(115, 160, 210, 210));
-		ImGui::End();
-	} else {
-		// Game タブが非選択なら映像も非表示にする。
-		PostEffect::GetInstance()->SetOutputViewport(0.0f, 0.0f, 1.0f, 1.0f);
-		isGameViewHovered = false;
-	}
-	const ImVec2 gameViewWindowPosition(gameViewPosition.x, gameViewPosition.y);
-	const ImVec2 gameViewWindowSize(gameViewSize.x, gameViewSize.y);
+	const float editorTopBarHeight = editorLayout.topBarHeight;
+	const float editorLeftPaneWidth = editorLayout.leftPaneWidth;
+	const float editorRightPaneWidth = editorLayout.rightPaneWidth;
+	const float editorBottomPaneHeight = editorLayout.bottomPaneHeight;
+	const float hierarchyHeight = editorLayout.hierarchyHeight;
+	const ImVec2 gameViewWindowPosition(editorLayout.gameWindowPosition.x, editorLayout.gameWindowPosition.y);
+	const ImVec2 gameViewWindowSize(editorLayout.gameWindowSize.x, editorLayout.gameWindowSize.y);
 
 	if (ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Settings")) {
 		ImGui::SetNextWindowPos(ImVec2(editorLeftPaneWidth, editorIO.DisplaySize.y - editorBottomPaneHeight), ImGuiCond_FirstUseEver);
@@ -728,6 +798,10 @@ void TitleScene::Update() {
 				renderer->SetOutlineEnabled(copyData.modelOutlineEnabled);
 				renderer->SetOutlineThickness(copyData.modelOutlineThickness);
 				renderer->SetOutlineColor(copyData.modelOutlineColor);
+				renderer->SetColorOverrideEnabled(copyData.modelColorOverrideEnabled);
+				renderer->SetColorOverride(copyData.modelColorOverride);
+				renderer->SetColorOverrideUnlit(copyData.modelColorOverrideUnlit);
+				renderer->SetTextureOverride(copyData.modelTextureOverride);
 			}
 			if (sourceObject->GetComponent<RectTransformComponent>()) {
 				auto* rectTransform = copyObject->AddComponent<RectTransformComponent>();
@@ -760,8 +834,15 @@ void TitleScene::Update() {
 				textRenderer->SetOutlineColor(copyData.textOutlineColor);
 				textRenderer->SetEmissive(copyData.textEmissiveColor, copyData.textEmissiveIntensity);
 				textRenderer->SetCharacterSpacing(copyData.textCharacterSpacing);
+				textRenderer->SetMeshOffsets(copyData.textMeshOffsets);
 			}
 			if (sourceObject->GetComponent<RailPointComponent>()) copyObject->AddComponent<RailPointComponent>();
+			if (sourceObject->GetComponent<ObjectRailMovementComponent>()) {
+				auto* railMovement = copyObject->AddComponent<ObjectRailMovementComponent>();
+				railMovement->Configure(copyData.objectRailPoints, copyData.objectRailSpeed,
+					copyData.objectRailLoop, copyData.objectRailOrientToPath, copyData.objectRailPlayOnStart,
+					copyData.objectRailPointRotations, copyData.objectRailUsePointRotations);
+			}
 			if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
 				auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
 				spawner->Configure(copyData.spawnDataList, spawnDistance, railCamera.get());
@@ -770,6 +851,7 @@ void TitleScene::Update() {
 				auto* enemy = copyObject->AddComponent<EnemyNormal>();
 				enemy->SetTransform(copyData.transform);
 			}
+			copyObject->SetActive(copyData.active);
 			copyObject->Initialize();
 			selectedObject = copyObject.get();
 			levelObjects.push_back(std::move(copyObject));
@@ -834,7 +916,7 @@ void TitleScene::Update() {
 		}
 
 		ImGui::Separator();
-		ImGui::Text("Textures (drag to a Sprite Texture field):");
+		ImGui::Text("Textures (drag to a Sprite or Model Texture Override field):");
 		for (const auto& texturePath : textureFiles) {
 			ImGui::Selectable(texturePath.c_str());
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
@@ -1019,6 +1101,7 @@ void TitleScene::Update() {
 				bool isActive = selectedObject->IsActive();
 				if (ImGui::Checkbox("Active", &isActive)) {
 					selectedObject->SetActive(isActive);
+					level->GetLevelData()->objects[selectedIndex].active = isActive;
 				}
 
 				ImGui::Text("Type: %s", objType.c_str());
@@ -1104,6 +1187,23 @@ void TitleScene::Update() {
 						}
 					}
 					ImGui::EndDisabled();
+					bool colorOverrideEnabled = renderer->IsColorOverrideEnabled();
+					if (ImGui::Checkbox("Color Override##ModelRenderer", &colorOverrideEnabled)) {
+						renderer->SetColorOverrideEnabled(colorOverrideEnabled);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].modelColorOverrideEnabled = colorOverrideEnabled;
+					}
+					ImGui::BeginDisabled(!colorOverrideEnabled);
+					Vector4 colorOverride = renderer->GetColorOverride();
+					if (ImGui::ColorEdit4("Override Color##ModelRenderer", &colorOverride.x)) {
+						renderer->SetColorOverride(colorOverride);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].modelColorOverride = colorOverride;
+					}
+					bool colorOverrideUnlit = renderer->IsColorOverrideUnlit();
+					if (ImGui::Checkbox("Flat / Silhouette##ModelRenderer", &colorOverrideUnlit)) {
+						renderer->SetColorOverrideUnlit(colorOverrideUnlit);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].modelColorOverrideUnlit = colorOverrideUnlit;
+					}
+					ImGui::EndDisabled();
 
 					char modelPath[260]{};
 					strncpy_s(modelPath, renderer->GetModelPath().c_str(), _TRUNCATE);
@@ -1131,6 +1231,25 @@ void TitleScene::Update() {
 						}
 						ImGui::EndDragDropTarget();
 					}
+					char textureOverridePath[260]{};
+					strncpy_s(textureOverridePath, renderer->GetTextureOverridePath().c_str(), _TRUNCATE);
+					if (ImGui::InputText("Texture Override##ModelRenderer", textureOverridePath, IM_ARRAYSIZE(textureOverridePath))) {
+						renderer->SetTextureOverride(textureOverridePath);
+						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+							level->GetLevelData()->objects[selectedIndex].modelTextureOverride = textureOverridePath;
+						}
+					}
+					if (ImGui::BeginDragDropTarget()) {
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_TEXTURE_FILE")) {
+							const std::string droppedTexture = static_cast<const char*>(payload->Data);
+							renderer->SetTextureOverride(droppedTexture);
+							if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+								level->GetLevelData()->objects[selectedIndex].modelTextureOverride = droppedTexture;
+							}
+						}
+						ImGui::EndDragDropTarget();
+					}
+					ImGui::TextDisabled("Leave empty to use the model's original texture.");
 					float maxDrawDistance = renderer->GetMaxDrawDistance();
 					if (ImGui::DragFloat("Max Draw Distance", &maxDrawDistance, 1.0f, 0.0f, 10000.0f)) {
 						renderer->SetMaxDrawDistance(maxDrawDistance);
@@ -1265,6 +1384,30 @@ void TitleScene::Update() {
 						textRenderer->SetCharacterSpacing(characterSpacing);
 						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textCharacterSpacing = characterSpacing;
 					}
+					ImGui::Separator();
+					ImGui::TextUnformatted("Mesh Deformation 4x4 (pixels)");
+					ImGui::TextDisabled("Rows: top to bottom. Columns: left to right.");
+					auto meshOffsets = textRenderer->GetMeshOffsets();
+					bool meshChanged = false;
+					for (size_t row = 0; row < TextRendererComponent::kMeshRowCount; ++row) {
+						ImGui::Text("Row %d", static_cast<int>(row + 1));
+						ImGui::Indent();
+						for (size_t column = 0; column < TextRendererComponent::kMeshColumnCount; ++column) {
+							ImGui::PushID(static_cast<int>(row * TextRendererComponent::kMeshColumnCount + column));
+							meshChanged |= ImGui::DragFloat2("Point", &meshOffsets[row * TextRendererComponent::kMeshColumnCount + column].x,
+								0.1f, -500.0f, 500.0f);
+							ImGui::PopID();
+						}
+						ImGui::Unindent();
+					}
+					if (ImGui::Button("Reset Mesh Deformation")) {
+						meshOffsets = {};
+						meshChanged = true;
+					}
+					if (meshChanged) {
+						textRenderer->SetMeshOffsets(meshOffsets);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textMeshOffsets = meshOffsets;
+					}
 
 					int fontSize = textRenderer->GetFontSize();
 					if (ImGui::DragInt("Font Size", &fontSize, 1.0f, 1, 256)) {
@@ -1298,6 +1441,68 @@ void TitleScene::Update() {
 					bool enabled = railPoint->IsEnabled();
 					if (ImGui::Checkbox("Enabled##RailPoint", &enabled)) {
 						railPoint->SetEnabled(enabled);
+					}
+				}
+			}
+			if (auto* railMovement = selectedObject->GetComponent<ObjectRailMovementComponent>()) {
+				if (ImGui::CollapsingHeader("Object Rail Movement", ImGuiTreeNodeFlags_DefaultOpen)) {
+					bool enabled = railMovement->IsEnabled();
+					if (ImGui::Checkbox("Enabled##ObjectRailMovement", &enabled)) railMovement->SetEnabled(enabled);
+					bool playing = railMovement->IsPlaying();
+					if (ImGui::Checkbox("Playing##ObjectRailMovement", &playing)) railMovement->SetPlaying(playing);
+					ImGui::SameLine();
+					if (ImGui::Button("Restart##ObjectRailMovement")) railMovement->Restart();
+					float speed = railMovement->GetSpeed();
+					if (ImGui::DragFloat("Speed (segments/sec)##ObjectRailMovement", &speed, 0.01f, 0.0f, 100.0f)) {
+						railMovement->SetSpeed(speed);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].objectRailSpeed = railMovement->GetSpeed();
+					}
+					bool loop = railMovement->IsLooping();
+					if (ImGui::Checkbox("Loop##ObjectRailMovement", &loop)) {
+						railMovement->SetLooping(loop);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].objectRailLoop = loop;
+					}
+					bool orient = railMovement->IsOrientToPath();
+					if (ImGui::Checkbox("Orient To Path##ObjectRailMovement", &orient)) {
+						railMovement->SetOrientToPath(orient);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].objectRailOrientToPath = orient;
+					}
+					bool usePointRotations = railMovement->UsesPointRotations();
+					if (ImGui::Checkbox("Use Point Rotations##ObjectRailMovement", &usePointRotations)) {
+						railMovement->SetUsePointRotations(usePointRotations);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].objectRailUsePointRotations = usePointRotations;
+					}
+					auto& points = railMovement->GetPoints();
+					auto& rotations = railMovement->GetPointRotations();
+					ImGui::Text("Control Points: %d", static_cast<int>(points.size()));
+					for (size_t pointIndex = 0; pointIndex < points.size(); ++pointIndex) {
+						ImGui::PushID(static_cast<int>(pointIndex));
+						if (ImGui::DragFloat3("Point", &points[pointIndex].x, 0.1f) && selectedIndex != -1) {
+							level->GetLevelData()->objects[selectedIndex].objectRailPoints = points;
+						}
+						if (ImGui::DragFloat3("Rotation", &rotations[pointIndex].x, 0.01f) && selectedIndex != -1) {
+							level->GetLevelData()->objects[selectedIndex].objectRailPointRotations = rotations;
+						}
+						ImGui::SameLine();
+						if (ImGui::SmallButton("Remove") && points.size() > 2) {
+							points.erase(points.begin() + pointIndex);
+							rotations.erase(rotations.begin() + pointIndex);
+							if (selectedIndex != -1) {
+								level->GetLevelData()->objects[selectedIndex].objectRailPoints = points;
+								level->GetLevelData()->objects[selectedIndex].objectRailPointRotations = rotations;
+							}
+							ImGui::PopID();
+							break;
+						}
+						ImGui::PopID();
+					}
+					if (ImGui::Button("Add Point At Object")) {
+						points.push_back(selectedObject->GetTransform()->GetTranslate());
+						rotations.push_back(selectedObject->GetTransform()->GetRotate());
+						if (selectedIndex != -1) {
+							level->GetLevelData()->objects[selectedIndex].objectRailPoints = points;
+							level->GetLevelData()->objects[selectedIndex].objectRailPointRotations = rotations;
+						}
 					}
 				}
 			}
@@ -1376,6 +1581,22 @@ void TitleScene::Update() {
 				if (!selectedObject->GetComponent<RailPointComponent>() && ImGui::Button("Rail Camera Point")) {
 					selectedObject->AddComponent<RailPointComponent>();
 					addSerializedComponent("RailPoint");
+				}
+				if (!selectedObject->GetComponent<ObjectRailMovementComponent>() && ImGui::Button("Object Rail Movement")) {
+					auto* railMovement = selectedObject->AddComponent<ObjectRailMovementComponent>();
+					const Vector3 start = selectedObject->GetTransform()->GetTranslate();
+					const std::vector<Vector3> points = { start, start + Vector3{ 0.0f, 0.0f, 5.0f } };
+					const Vector3 rotation = selectedObject->GetTransform()->GetRotate();
+					const std::vector<Vector3> rotations = { rotation, rotation };
+					railMovement->Configure(points, 1.0f, true, true, true, rotations, false);
+					objectData.objectRailPoints = points;
+					objectData.objectRailPointRotations = rotations;
+					objectData.objectRailSpeed = 1.0f;
+					objectData.objectRailLoop = true;
+					objectData.objectRailOrientToPath = true;
+					objectData.objectRailUsePointRotations = false;
+					objectData.objectRailPlayOnStart = true;
+					addSerializedComponent("ObjectRailMovement");
 				}
 				if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
 					auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();
@@ -1661,8 +1882,19 @@ void TitleScene::CreateLevel() {
 			modelRenderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
 			modelRenderer->SetOutlineThickness(objectData.modelOutlineThickness);
 			modelRenderer->SetOutlineColor(objectData.modelOutlineColor);
+			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
+			modelRenderer->SetColorOverride(objectData.modelColorOverride);
+			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
+			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
+				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
+				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
+					objectData.objectRailLoop, objectData.objectRailOrientToPath, objectData.objectRailPlayOnStart,
+					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
+			}
 
 			// 4. アタッチされたコンポーネントを一括初期化
+			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 
 			// 5. コンテナに登録
@@ -1689,8 +1921,19 @@ void TitleScene::CreateLevel() {
 			modelRenderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
 			modelRenderer->SetOutlineThickness(objectData.modelOutlineThickness);
 			modelRenderer->SetOutlineColor(objectData.modelOutlineColor);
+			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
+			modelRenderer->SetColorOverride(objectData.modelColorOverride);
+			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
 			gameObject->AddComponent<RailPointComponent>();
+			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
+				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
+				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
+					objectData.objectRailLoop, objectData.objectRailOrientToPath, objectData.objectRailPlayOnStart,
+					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
+			}
 
+			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
 
@@ -1709,11 +1952,22 @@ void TitleScene::CreateLevel() {
 			modelRenderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
 			modelRenderer->SetOutlineThickness(objectData.modelOutlineThickness);
 			modelRenderer->SetOutlineColor(objectData.modelOutlineColor);
+			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
+			modelRenderer->SetColorOverride(objectData.modelColorOverride);
+			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
 
 			// ゲームロジック用のスポナーも同じ GameObject にアタッチする。
 			auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
 			spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
+				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
+				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
+					objectData.objectRailLoop, objectData.objectRailOrientToPath, objectData.objectRailPlayOnStart,
+					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
+			}
 
+			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
 		} else if (objectData.type == "EMPTY" || objectData.type == "empty") {
@@ -1734,6 +1988,10 @@ void TitleScene::CreateLevel() {
 				renderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
 				renderer->SetOutlineThickness(objectData.modelOutlineThickness);
 				renderer->SetOutlineColor(objectData.modelOutlineColor);
+				renderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
+				renderer->SetColorOverride(objectData.modelColorOverride);
+				renderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+				renderer->SetTextureOverride(objectData.modelTextureOverride);
 			}
 			if (hasComponent("RectTransform")) {
 				auto* rectTransform = gameObject->AddComponent<RectTransformComponent>();
@@ -1770,9 +2028,23 @@ void TitleScene::CreateLevel() {
 				textRenderer->SetOutlineColor(objectData.textOutlineColor);
 				textRenderer->SetEmissive(objectData.textEmissiveColor, objectData.textEmissiveIntensity);
 				textRenderer->SetCharacterSpacing(objectData.textCharacterSpacing);
+				textRenderer->SetMeshOffsets(objectData.textMeshOffsets);
 			}
 			if (hasComponent("RailPoint")) {
 				gameObject->AddComponent<RailPointComponent>();
+			}
+			if (hasComponent("ObjectRailMovement")) {
+				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
+				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
+					objectData.objectRailLoop, objectData.objectRailOrientToPath, objectData.objectRailPlayOnStart,
+					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
+			}
+			if (hasComponent("Camera")) {
+				auto* cameraComponent = gameObject->AddComponent<CameraComponent>();
+				if (!camera) {
+					camera = cameraComponent;
+					cameraObject = gameObject.get();
+				}
 			}
 			if (hasComponent("EnemySpawner")) {
 				auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
@@ -1782,6 +2054,7 @@ void TitleScene::CreateLevel() {
 				auto* enemy = gameObject->AddComponent<EnemyNormal>();
 				enemy->SetTransform(objectData.transform);
 			}
+			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
 		}
@@ -1821,7 +2094,24 @@ void TitleScene::GizmoUpdate(bool showEditorControls) {
 		mousePosition.y >= gameWindowPosition.y && mousePosition.y < gameWindowPosition.y + gameWindowSize.y;
 	// Game ウィンドウ自体も ImGui の入力を捕捉するため、領域内の操作はゲーム入力として許可する。
 	const bool isEditorPanelHovered = editorIO.WantCaptureMouse && !isMouseInGameView;
-	if (ImGui::IsMouseClicked(0) && isMouseInGameView && !ImGuizmo::IsOver() && !isEditorPanelHovered) {
+#ifdef TEXT_MESH_EDITOR_OVERLAY
+	bool isPointerOverTextMeshVertex = false;
+	if (selectedObject) {
+		if (auto* textRenderer = selectedObject->GetComponent<TextRendererComponent>()) {
+			if (auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>()) {
+				isPointerOverTextMeshVertex = TextMeshEditorGizmo::DrawAndSelect(*textRenderer, *rectTransform,
+					gameViewPosition, gameViewSize, selectedTextMeshVertex_);
+			} else {
+				selectedTextMeshVertex_ = -1;
+			}
+		} else {
+			selectedTextMeshVertex_ = -1;
+		}
+	}
+#else
+	constexpr bool isPointerOverTextMeshVertex = false;
+#endif
+	if (ImGui::IsMouseClicked(0) && isMouseInGameView && !ImGuizmo::IsOver() && !isPointerOverTextMeshVertex && !isEditorPanelHovered) {
 		Vector2 mousePos = input->GetMouseScreen(); // ※ご自身のInputクラスの関数に合わせる
 
 		float windowWidth = 1920.0f; // 画面幅
@@ -1898,8 +2188,26 @@ void TitleScene::GizmoUpdate(bool showEditorControls) {
 
 			// 動かした「差分」を受け取るための行列を用意
 			Matrix4x4 deltaMat;
+			bool isEditingTextMesh = false;
+#ifdef TEXT_MESH_EDITOR_OVERLAY
+			if (isSpriteObject) {
+				if (auto* textRenderer = selectedObject->GetComponent<TextRendererComponent>()) {
+					isEditingTextMesh = selectedTextMeshVertex_ >= 0;
+					if (isEditingTextMesh && TextMeshEditorGizmo::ManipulateSelected(*textRenderer, *rectTransform,
+						viewMat, projMat, selectedTextMeshVertex_)) {
+						for (size_t index = 0; index < levelObjects.size(); ++index) {
+							if (levelObjects[index].get() == selectedObject) {
+								level->GetLevelData()->objects[index].textMeshOffsets = textRenderer->GetMeshOffsets();
+								break;
+							}
+						}
+					}
+				}
+			}
+#endif
 
 			// 3. ギズモの操作と行列の更新
+			if (!isEditingTextMesh) {
 			ImGuizmo::Manipulate(
 				&viewMat.m[0][0],        // View行列のfloatポインタ
 				&projMat.m[0][0],        // Projection行列のfloatポインタ
@@ -1944,6 +2252,7 @@ void TitleScene::GizmoUpdate(bool showEditorControls) {
 					ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
 					transformComp->transform.scale = { scale[0], scale[1], scale[2] };
 				}
+			}
 			}
 		}
 	}

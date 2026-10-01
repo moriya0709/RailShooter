@@ -109,6 +109,13 @@ struct Material {
     float pad5;
 
 };
+// ModelRenderer ごとの色上書き。共有 Model のマテリアルには書き込まない。
+struct ModelColorOverride {
+	Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	int32_t enabled = 0;
+	int32_t unlit = 0;
+	Vector2 padding = { 0.0f, 0.0f };
+};
 // カメラデータ
 struct ViewData {
     Vector3 cameraPos;
@@ -224,6 +231,8 @@ struct SpawnData {
 struct ObjectData {
     std::string type;
     std::string name;
+	// GameObject の有効状態。古いレベルファイルでは true として読み込む。
+	bool active = true;
 	// 実行時のTransformには影響しない、エディタ整理用のグループ名。
 	std::string groupName;
 	std::string file_name;
@@ -242,6 +251,8 @@ struct ObjectData {
 	Vector3 textEmissiveColor = { 1.0f, 1.0f, 1.0f };
 	float textEmissiveIntensity = 0.0f;
 	float textCharacterSpacing = 0.0f;
+	// Pixel offsets for a 4x4 grid, in row-major order from top-left to bottom-right.
+	std::array<Vector2, 16> textMeshOffsets = {};
     Transform transform;
 	Vector2 rectPosition = { 960.0f, 540.0f };
 	float rectRotation = 0.0f;
@@ -261,8 +272,22 @@ struct ObjectData {
 	bool modelOutlineEnabled = false;
 	float modelOutlineThickness = 0.01f;
 	Vector4 modelOutlineColor = { 1.0f, 0.0f, 0.0f, 1.0f };
+	// Shared model data is never modified: this is a per-GameObject render override.
+	bool modelColorOverrideEnabled = false;
+	Vector4 modelColorOverride = { 1.0f, 1.0f, 1.0f, 1.0f };
+	bool modelColorOverrideUnlit = false;
+	// ModelRenderer ごとのベースカラーテクスチャ上書き。空文字列ならモデル定義を使用。
+	std::string modelTextureOverride;
 	// Unity のように複数の機能を 1 つの GameObject に追加するための型一覧。
 	std::vector<std::string> components;
+	// ObjectRailMovement 専用。RailCamera / RailPoint のデータとは完全に独立する。
+	std::vector<Vector3> objectRailPoints;
+	std::vector<Vector3> objectRailPointRotations;
+	float objectRailSpeed = 1.0f;
+	bool objectRailLoop = true;
+	bool objectRailOrientToPath = true;
+	bool objectRailUsePointRotations = false;
+	bool objectRailPlayOnStart = true;
 
     // スポナー専用の敵配置データリスト
     std::vector<SpawnData> spawnDataList;

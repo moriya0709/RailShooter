@@ -317,7 +317,7 @@ void Model::Update() {
 	}
 }
 
-void Model::Draw() {
+void Model::Draw(const std::string& textureOverride) {
 	// RootSignatureを設定。PSOに設定しているけど別途設定が必要
 	if (IsSkinning()) {
 		D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
@@ -349,10 +349,13 @@ void Model::Draw() {
 	for (const MaterialRange& range : modelData.materialRanges) {
 		assert(range.materialIndex < materialResources.size());
 		const MaterialData& material = modelData.materials[range.materialIndex];
+		const std::string& baseColorTexture = textureOverride.empty()
+			? material.textureFilePath
+			: textureOverride;
 		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(
 			0, materialResources[range.materialIndex]->GetGPUVirtualAddress());
 		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(
-			2, TextureManager::GetInstance()->GetSrvHandleGPU(material.textureFilePath));
+			2, TextureManager::GetInstance()->GetSrvHandleGPU(baseColorTexture));
 		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(
 			11, TextureManager::GetInstance()->GetSrvHandleGPU(material.normalTextureFilePath));
 		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(

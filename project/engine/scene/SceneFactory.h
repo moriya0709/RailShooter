@@ -2,6 +2,7 @@
 #include "AbstractSceneFactory.h"
 #include "GamePlayScene.h"
 #include "TitleScene.h"
+#include "SelectScene.h"
 
 class SceneFactory : public AbstractSceneFactory {
 public:

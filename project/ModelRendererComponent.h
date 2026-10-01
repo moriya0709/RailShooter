@@ -18,6 +18,9 @@ public:
 	void SetModel(const std::string& filePath);
 	Model* GetModel() const { return model_; }
 	const std::string& GetModelPath() const { return modelPath_; }
+	// このレンダラーだけのベースカラーテクスチャ上書き。空文字列でモデル本来のテクスチャに戻す。
+	void SetTextureOverride(const std::string& filePath);
+	const std::string& GetTextureOverridePath() const { return textureOverridePath_; }
 	// カメラ距離に応じて High / Medium / Low の 3 段階で描画モデルを切り替える。
 	// mediumDistance 未満は High、lowDistance 未満は Medium、それ以上は Low。
 	void SetLodModels(const std::string& highModelPath, const std::string& mediumModelPath,
@@ -38,6 +41,12 @@ public:
 	float GetOutlineThickness() const { return outlineThickness_; }
 	void SetOutlineColor(const Vector4& color);
 	const Vector4& GetOutlineColor() const { return outlineColor_; }
+	void SetColorOverrideEnabled(bool enabled);
+	bool IsColorOverrideEnabled() const { return colorOverrideEnabled_; }
+	void SetColorOverride(const Vector4& color);
+	const Vector4& GetColorOverride() const { return colorOverride_; }
+	void SetColorOverrideUnlit(bool unlit);
+	bool IsColorOverrideUnlit() const { return colorOverrideUnlit_; }
 
 private:
 	// バッファリソース
@@ -45,12 +54,14 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> outlineResource;
 	Microsoft::WRL::ComPtr<ID3D12Resource> viewResource;
 	Microsoft::WRL::ComPtr<ID3D12Resource> motionBlurResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> colorOverrideResource;
 
 	// バッファリソース内のデータを指すポインタ
 	TransformationMatrix* transformationMatrixData = nullptr;
 	Outline* outlineData = nullptr;
 	ViewData* viewData = nullptr;
 	MotionBlur* motionBlurData = nullptr;
+	ModelColorOverride* colorOverrideData = nullptr;
 
 	// Transform
 	Transform cameraTransform;
@@ -60,6 +71,10 @@ private:
 	// モデル
 	Model* model_ = nullptr;
 	std::string modelPath_;
+	// 入力途中などで未解決のパスを保持しても描画を壊さないよう、実際にバインドする
+	// 有効なテクスチャは別に管理する。
+	std::string textureOverridePath_;
+	std::string activeTextureOverridePath_;
 	Model* highLodModel_ = nullptr;
 	Model* mediumLodModel_ = nullptr;
 	Model* lowLodModel_ = nullptr;
@@ -77,5 +92,9 @@ private:
 	bool outlineEnabled_ = false;
 	float outlineThickness_ = 0.01f;
 	Vector4 outlineColor_ = { 1.0f, 0.0f, 0.0f, 1.0f };
+	bool colorOverrideEnabled_ = false;
+	Vector4 colorOverride_ = { 1.0f, 1.0f, 1.0f, 1.0f };
+	bool colorOverrideUnlit_ = false;
 	bool IsCulledByDistance() const;
+	void UpdateColorOverrideData();
 };

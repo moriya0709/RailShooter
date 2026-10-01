@@ -49,6 +49,7 @@ void Level::LoadJson(const std::string fileName) {
 			ObjectData newData{};
 			newData.type = objType;
 			newData.name = object["name"].get<std::string>();
+			newData.active = object.value("active", newData.active);
 			newData.groupName = object.value("group", std::string{});
 
 			nlohmann::json& transform = object["transform"];
@@ -71,10 +72,17 @@ void Level::LoadJson(const std::string fileName) {
 			if (object.contains("model_renderer")) {
 				newData.modelOutlineEnabled = object["model_renderer"].value("outline_enabled", newData.modelOutlineEnabled);
 				newData.modelOutlineThickness = object["model_renderer"].value("outline_thickness", newData.modelOutlineThickness);
+				newData.modelColorOverrideEnabled = object["model_renderer"].value("color_override_enabled", newData.modelColorOverrideEnabled);
+				newData.modelColorOverrideUnlit = object["model_renderer"].value("color_override_unlit", newData.modelColorOverrideUnlit);
+				newData.modelTextureOverride = object["model_renderer"].value("texture_override", newData.modelTextureOverride);
 				const auto& modelRenderer = object["model_renderer"];
 				if (modelRenderer.contains("outline_color") && modelRenderer["outline_color"].is_array() && modelRenderer["outline_color"].size() == 4) {
 					newData.modelOutlineColor = { modelRenderer["outline_color"][0].get<float>(), modelRenderer["outline_color"][1].get<float>(),
 						modelRenderer["outline_color"][2].get<float>(), modelRenderer["outline_color"][3].get<float>() };
+				}
+				if (modelRenderer.contains("color_override") && modelRenderer["color_override"].is_array() && modelRenderer["color_override"].size() == 4) {
+					newData.modelColorOverride = { modelRenderer["color_override"][0].get<float>(), modelRenderer["color_override"][1].get<float>(),
+						modelRenderer["color_override"][2].get<float>(), modelRenderer["color_override"][3].get<float>() };
 				}
 			}
 			if (object.contains("lod") && object["lod"].is_object()) {
@@ -113,6 +121,41 @@ void Level::LoadJson(const std::string fileName) {
 				newData.textOutlineThickness = textRenderer.value("outline_thickness", newData.textOutlineThickness);
 				newData.textEmissiveIntensity = textRenderer.value("emissive_intensity", newData.textEmissiveIntensity);
 				newData.textCharacterSpacing = textRenderer.value("character_spacing", newData.textCharacterSpacing);
+				if (textRenderer.contains("mesh_offsets") && textRenderer["mesh_offsets"].is_array()) {
+					const auto& meshOffsets = textRenderer["mesh_offsets"];
+					if (meshOffsets.size() == newData.textMeshOffsets.size()) {
+						for (size_t index = 0; index < newData.textMeshOffsets.size(); ++index) {
+							const auto& offset = meshOffsets[index];
+							if (offset.is_array() && offset.size() == 2) {
+								newData.textMeshOffsets[index] = { offset[0].get<float>(), offset[1].get<float>() };
+							}
+						}
+					} else if (meshOffsets.size() == 4) {
+						// Migrate the former corner-only mesh to the 4x4 grid with bilinear interpolation.
+						Vector2 corners[4]{};
+						for (size_t index = 0; index < 4; ++index) {
+							if (meshOffsets[index].is_array() && meshOffsets[index].size() == 2) {
+								corners[index] = { meshOffsets[index][0].get<float>(), meshOffsets[index][1].get<float>() };
+							}
+						}
+						// Previous order: bottom-left, top-left, bottom-right, top-right.
+						for (size_t row = 0; row < 4; ++row) {
+							const float verticalRatio = static_cast<float>(row) / 3.0f;
+							for (size_t column = 0; column < 4; ++column) {
+								const float horizontalRatio = static_cast<float>(column) / 3.0f;
+								const Vector2 top = {
+									corners[1].x + (corners[3].x - corners[1].x) * horizontalRatio,
+									corners[1].y + (corners[3].y - corners[1].y) * horizontalRatio };
+								const Vector2 bottom = {
+									corners[0].x + (corners[2].x - corners[0].x) * horizontalRatio,
+									corners[0].y + (corners[2].y - corners[0].y) * horizontalRatio };
+								newData.textMeshOffsets[row * 4 + column] = {
+									top.x + (bottom.x - top.x) * verticalRatio,
+									top.y + (bottom.y - top.y) * verticalRatio };
+							}
+						}
+					}
+				}
 				if (textRenderer.contains("color") && textRenderer["color"].is_array() && textRenderer["color"].size() == 4) {
 					newData.textColor = { textRenderer["color"][0].get<float>(), textRenderer["color"][1].get<float>(),
 						textRenderer["color"][2].get<float>(), textRenderer["color"][3].get<float>() };
@@ -134,6 +177,28 @@ void Level::LoadJson(const std::string fileName) {
 				}
 				if (collider.contains("center_offset") && collider["center_offset"].is_array() && collider["center_offset"].size() == 3) {
 					newData.colliderCenterOffset = { collider["center_offset"][0].get<float>(), collider["center_offset"][1].get<float>(), collider["center_offset"][2].get<float>() };
+				}
+			}
+			if (object.contains("object_rail_movement") && object["object_rail_movement"].is_object()) {
+				const auto& railMovement = object["object_rail_movement"];
+				newData.objectRailSpeed = railMovement.value("speed", newData.objectRailSpeed);
+				newData.objectRailLoop = railMovement.value("loop", newData.objectRailLoop);
+				newData.objectRailOrientToPath = railMovement.value("orient_to_path", newData.objectRailOrientToPath);
+				newData.objectRailUsePointRotations = railMovement.value("use_point_rotations", newData.objectRailUsePointRotations);
+				newData.objectRailPlayOnStart = railMovement.value("play_on_start", newData.objectRailPlayOnStart);
+				if (railMovement.contains("points") && railMovement["points"].is_array()) {
+					for (const auto& point : railMovement["points"]) {
+						if (point.is_array() && point.size() == 3) {
+							newData.objectRailPoints.push_back({ point[0].get<float>(), point[1].get<float>(), point[2].get<float>() });
+						}
+					}
+				}
+				if (railMovement.contains("point_rotations") && railMovement["point_rotations"].is_array()) {
+					for (const auto& rotation : railMovement["point_rotations"]) {
+						if (rotation.is_array() && rotation.size() == 3) {
+							newData.objectRailPointRotations.push_back({ rotation[0].get<float>(), rotation[1].get<float>(), rotation[2].get<float>() });
+						}
+					}
 				}
 			}
 
@@ -223,6 +288,7 @@ void Level::SaveJson(const std::string fileName) {
 		nlohmann::json newObjJson;
 		newObjJson["type"] = obj.type;
 		newObjJson["name"] = obj.name;
+		newObjJson["active"] = obj.active;
 		if (!obj.groupName.empty()) {
 			newObjJson["group"] = obj.groupName;
 		}
@@ -236,6 +302,12 @@ void Level::SaveJson(const std::string fileName) {
 			newObjJson["model_renderer"]["outline_enabled"] = obj.modelOutlineEnabled;
 			newObjJson["model_renderer"]["outline_thickness"] = obj.modelOutlineThickness;
 			newObjJson["model_renderer"]["outline_color"] = { obj.modelOutlineColor.x, obj.modelOutlineColor.y, obj.modelOutlineColor.z, obj.modelOutlineColor.w };
+			newObjJson["model_renderer"]["color_override_enabled"] = obj.modelColorOverrideEnabled;
+			newObjJson["model_renderer"]["color_override"] = { obj.modelColorOverride.x, obj.modelColorOverride.y, obj.modelColorOverride.z, obj.modelColorOverride.w };
+			newObjJson["model_renderer"]["color_override_unlit"] = obj.modelColorOverrideUnlit;
+			if (!obj.modelTextureOverride.empty()) {
+				newObjJson["model_renderer"]["texture_override"] = obj.modelTextureOverride;
+			}
 		}
 		if (!obj.lodHighModel.empty()) {
 			newObjJson["lod"]["high_model"] = obj.lodHighModel;
@@ -274,6 +346,26 @@ void Level::SaveJson(const std::string fileName) {
 			newObjJson["text_renderer"]["emissive_color"] = { obj.textEmissiveColor.x, obj.textEmissiveColor.y, obj.textEmissiveColor.z };
 			newObjJson["text_renderer"]["emissive_intensity"] = obj.textEmissiveIntensity;
 			newObjJson["text_renderer"]["character_spacing"] = obj.textCharacterSpacing;
+			newObjJson["text_renderer"]["mesh_offsets"] = nlohmann::json::array();
+			for (const Vector2& offset : obj.textMeshOffsets) {
+				newObjJson["text_renderer"]["mesh_offsets"].push_back({ offset.x, offset.y });
+			}
+		}
+		if (std::find(obj.components.begin(), obj.components.end(), "ObjectRailMovement") != obj.components.end()) {
+			auto& railMovement = newObjJson["object_rail_movement"];
+			railMovement["speed"] = obj.objectRailSpeed;
+			railMovement["loop"] = obj.objectRailLoop;
+			railMovement["orient_to_path"] = obj.objectRailOrientToPath;
+			railMovement["use_point_rotations"] = obj.objectRailUsePointRotations;
+			railMovement["play_on_start"] = obj.objectRailPlayOnStart;
+			railMovement["points"] = nlohmann::json::array();
+			for (const Vector3& point : obj.objectRailPoints) {
+				railMovement["points"].push_back({ point.x, point.y, point.z });
+			}
+			railMovement["point_rotations"] = nlohmann::json::array();
+			for (const Vector3& rotation : obj.objectRailPointRotations) {
+				railMovement["point_rotations"].push_back({ rotation.x, rotation.y, rotation.z });
+			}
 		}
 		if (!obj.components.empty()) {
 			newObjJson["components"] = obj.components;

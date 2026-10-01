@@ -7,8 +7,10 @@
 #include "ObjectCommon.h"
 #include "Camera.h"
 #include "LightManager.h"
+#include "TextureManager.h"
 
 #include <algorithm>
+#include <filesystem>
 
 void ModelRendererComponent::Initialize() {
 	// 引数で受け取ってメンバ変数に記録する
@@ -39,6 +41,11 @@ void ModelRendererComponent::Initialize() {
 	motionBlurResource = dxCommon_->CreateBufferResource(sizeof(MotionBlur));
 	motionBlurResource->Map(0, nullptr, reinterpret_cast<void**>(&motionBlurData));
 	motionBlurData->isMotionBlur = false;
+
+	// Per-renderer data keeps color changes isolated from other instances of the same Model.
+	colorOverrideResource = dxCommon_->CreateBufferResource(sizeof(ModelColorOverride));
+	colorOverrideResource->Map(0, nullptr, reinterpret_cast<void**>(&colorOverrideData));
+	UpdateColorOverrideData();
 
 	// *Transform* //
 	cameraTransform = {
@@ -96,6 +103,10 @@ void ModelRendererComponent::Draw() {
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(8, viewResource->GetGPUVirtualAddress());
 	// モーションブラー
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(9, motionBlurResource->GetGPUVirtualAddress());
+	// Pixel shader b8. The animated root signature reserves 15 for its palette SRV.
+	const UINT colorOverrideRootParameter = model_->IsSkinning() ? 16u : 15u;
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(
+		colorOverrideRootParameter, colorOverrideResource->GetGPUVirtualAddress());
 
 	if (model_->IsSkinning()) {
 		dxCommon_->GetCommandList()->SetGraphicsRootShaderResourceView(
@@ -106,7 +117,7 @@ void ModelRendererComponent::Draw() {
 
 	// 3Dモデルが割り当てられていれば描画する
 	if (model_) {
-		model_->Draw();
+		model_->Draw(activeTextureOverridePath_);
 	}
 
 }
@@ -119,7 +130,7 @@ void ModelRendererComponent::DrawOutline() {
 	// SetOutlinePipelineState() はシーン側で一度だけ設定済み。
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(3, outlineResource->GetGPUVirtualAddress());
-	model_->Draw();
+	model_->Draw(activeTextureOverridePath_);
 }
 
 void ModelRendererComponent::SetOutlineThickness(float thickness) {
@@ -134,6 +145,30 @@ void ModelRendererComponent::SetOutlineColor(const Vector4& color) {
 	if (outlineData) {
 		outlineData->color = outlineColor_;
 	}
+}
+
+void ModelRendererComponent::SetColorOverrideEnabled(bool enabled) {
+	colorOverrideEnabled_ = enabled;
+	UpdateColorOverrideData();
+}
+
+void ModelRendererComponent::SetColorOverride(const Vector4& color) {
+	colorOverride_ = color;
+	UpdateColorOverrideData();
+}
+
+void ModelRendererComponent::SetColorOverrideUnlit(bool unlit) {
+	colorOverrideUnlit_ = unlit;
+	UpdateColorOverrideData();
+}
+
+void ModelRendererComponent::UpdateColorOverrideData() {
+	if (!colorOverrideData) {
+		return;
+	}
+	colorOverrideData->color = colorOverride_;
+	colorOverrideData->enabled = colorOverrideEnabled_ ? 1 : 0;
+	colorOverrideData->unlit = colorOverrideUnlit_ ? 1 : 0;
 }
 
 bool ModelRendererComponent::IsCulledByDistance() const {
@@ -164,6 +199,19 @@ void ModelRendererComponent::SetModel(const std::string& filePath) {
 	lodHighModelPath_.clear();
 	lodMediumModelPath_.clear();
 	lodLowModelPath_.clear();
+}
+
+void ModelRendererComponent::SetTextureOverride(const std::string& filePath) {
+	textureOverridePath_ = filePath;
+	activeTextureOverridePath_.clear();
+	if (!textureOverridePath_.empty()) {
+		std::error_code error;
+		if (!std::filesystem::is_regular_file(textureOverridePath_, error)) {
+			return;
+		}
+		TextureManager::GetInstance()->LoadTexture(textureOverridePath_);
+		activeTextureOverridePath_ = textureOverridePath_;
+	}
 }
 
 void ModelRendererComponent::SetLodModels(const std::string& highModelPath, const std::string& mediumModelPath,

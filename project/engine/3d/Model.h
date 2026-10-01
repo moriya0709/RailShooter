@@ -30,7 +30,9 @@ public:
 	// 更新
 	void Update();
 	// 描画
-	void Draw();
+	// textureOverride が指定されている場合は、全マテリアルのベースカラー
+	// テクスチャだけをそのパスで描画する。共有 Model のマテリアルは変更しない。
+	void Draw(const std::string& textureOverride = {});
 
 	// 骨の線更新
 	void BoneLineUpdate(Line* line, const Vector3& scale, const Vector3& rotate, const Vector3& translate);

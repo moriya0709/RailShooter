@@ -2,10 +2,36 @@
     "groups": [
         "city",
         "RailPoint",
-        "Enemies"
+        "Enemies",
+        "Cameras"
     ],
     "name": "scene",
     "objects": [
+        {
+            "components": [
+                "Camera"
+            ],
+            "group": "Cameras",
+            "name": "MainCamera",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    -5.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
         {
             "components": [
                 "EnemySpawner",

@@ -6,6 +6,7 @@
 #include <typeindex>
 #include <type_traits>
 #include <utility>
+#include <algorithm>
 #include "Component.h"
 #include "TransformComponent.h"
 
@@ -14,6 +15,7 @@
 class GameObject {
 public:
 	explicit GameObject(std::string name = "GameObject") : name_(std::move(name)) {
+		GetRegistry().push_back(this);
 		transform_ = AddComponent<TransformComponent>();
 	}
 
@@ -21,10 +23,32 @@ public:
 	GameObject& operator=(const GameObject&) = delete;
 	GameObject(GameObject&&) = delete;
 	GameObject& operator=(GameObject&&) = delete;
-	~GameObject() = default;
+	~GameObject() {
+		auto& registry = GetRegistry();
+		std::erase(registry, this);
+	}
 
 	const std::string& GetName() const { return name_; }
 	void SetName(std::string name) { name_ = std::move(name); }
+
+	// Returns the first live GameObject with this name, or nullptr when absent.
+	// Names are not required to be unique; use FindAllByName when every match is needed.
+	static GameObject* FindByName(const std::string& name) {
+		const auto& registry = GetRegistry();
+		const auto found = std::find_if(registry.begin(), registry.end(),
+			[&name](const GameObject* object) { return object->GetName() == name; });
+		return found != registry.end() ? *found : nullptr;
+	}
+
+	static std::vector<GameObject*> FindAllByName(const std::string& name) {
+		std::vector<GameObject*> results;
+		for (GameObject* object : GetRegistry()) {
+			if (object->GetName() == name) {
+				results.push_back(object);
+			}
+		}
+		return results;
+	}
 
 	void SetActive(bool active) { activeSelf_ = active; }
 	bool IsActive() const { return activeSelf_; }
@@ -51,13 +75,20 @@ public:
 			return;
 		}
 		Initialize();
+		std::vector<Component*> updateComponents;
+		updateComponents.reserve(components_.size());
 		for (size_t index = 0; index < components_.size(); ++index) {
 			if (components_[index]->IsEnabled()) {
 				components_[index]->StartIfNeeded();
+				updateComponents.push_back(components_[index].get());
 			}
-			if (components_[index]->IsEnabled()) {
-				components_[index]->Update();
-			}
+		}
+		std::stable_sort(updateComponents.begin(), updateComponents.end(),
+			[](const Component* lhs, const Component* rhs) {
+				return lhs->GetUpdateOrder() < rhs->GetUpdateOrder();
+			});
+		for (Component* component : updateComponents) {
+			component->Update();
 		}
 	}
 
@@ -130,6 +161,11 @@ public:
 	}
 
 private:
+	static std::vector<GameObject*>& GetRegistry() {
+		static std::vector<GameObject*> registry;
+		return registry;
+	}
+
 	std::string name_;
 	bool activeSelf_ = true;
 	bool started_ = false;

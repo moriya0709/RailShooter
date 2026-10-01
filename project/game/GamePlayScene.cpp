@@ -12,6 +12,7 @@
 #include "EnemyNormal.h"
 #include "SpriteRendererComponent.h"
 #include "TextRendererComponent.h"
+#include "TextMeshEditorGizmo.h"
 #include "RectTransformComponent.h"
 #include "ColliderComponent.h"
 #include "LevelEditorCommon.h"
@@ -107,6 +108,16 @@ void GamePlayScene::Update() {
 				railCamera->points.push_back(p);
 			}
 		}
+
+		// Release builds do not include the Rail Editor, which is normally the
+		// only place StartRail() can be invoked. Start playback as soon as the
+		// level has supplied a valid path so the runtime camera does not remain
+		// at RailCamera's default transform.
+#ifndef USE_IMGUI
+		if (!railCamera->IsRailActive() && railCamera->CanStartRail()) {
+			railCamera->StartRail();
+		}
+#endif
 	}
 
 	// 3. その後、RailCamera自身の更新処理を呼ぶ
@@ -157,6 +168,7 @@ void GamePlayScene::Update() {
 	
 
 	// デバックカメラ処理
+	#ifdef USE_IMGUI
 	if (isDebugCamera) {
 		const Vector2 mousePosition = input->GetMouseScreen();
 		const bool isMouseInGameView = ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Game") &&
@@ -166,7 +178,9 @@ void GamePlayScene::Update() {
 		if (isMouseInGameView) {
 			camera->DebugCameraUpdate();
 		}
-	} else {
+	} else
+	#endif
+	{
 		camera->SetTranslate(player->GetTranslate());
 		camera->SetRotate(player->GetRotate());
 		camera->Update();
@@ -177,7 +191,9 @@ void GamePlayScene::Update() {
 	// *スポナーの距離判定と敵の更新* //
 	
 	// エディタカメラ操作中ではない（ゲームプレイ中）場合のみ起動・生成を進める
+	#ifdef USE_IMGUI
 	if (!isDebugCamera) {
+	#endif
 		// レールカメラ上のプレイヤー座標（またはカメラ座標）を基準にする
 		Vector3 targetPos = player->GetTranslate();
 
@@ -192,7 +208,9 @@ void GamePlayScene::Update() {
 				enemies.push_back(std::move(newEnemy));
 			}
 		}
+	#ifdef USE_IMGUI
 	}
+	#endif
 
 	// カメラの現在の進行度を取得
 	float cameraProgress = railCamera->GetRailT();
@@ -418,61 +436,16 @@ void GamePlayScene::Update() {
 #pragma endregion
 
 #ifdef USE_IMGUI
-	// 最初だけ Unity 風に配置し、以後は通常の ImGui ウィンドウとして移動・リサイズできる。
-	// ImGui が imgui.ini に位置とサイズを保存するため、Visual Studio のツールウィンドウのように
-	// ユーザーが決めた配置が次回起動時にも再現される。
+	const SceneEditorLayout editorLayout = ImGuiFunction::GetInstance()->BeginSceneEditor(
+		*level, levelObjects, "gamePlayScene", gameViewPosition, gameViewSize, isGameViewHovered);
 	ImGuiIO& editorIO = ImGui::GetIO();
-	const float editorTopBarHeight = 30.0f;
-	const float editorLeftPaneWidth = 300.0f;
-	const float editorRightPaneWidth = 360.0f;
-	const float editorBottomPaneHeight = 260.0f;
-	const float hierarchyHeight = (std::max)(180.0f, (editorIO.DisplaySize.y - editorTopBarHeight) * 0.42f);
-	const ImVec2 initialGameViewPosition(editorLeftPaneWidth, editorTopBarHeight);
-	const ImVec2 initialGameViewSize(
-		(std::max)(100.0f, editorIO.DisplaySize.x - editorLeftPaneWidth - editorRightPaneWidth),
-		(std::max)(100.0f, editorIO.DisplaySize.y - editorTopBarHeight - editorBottomPaneHeight));
-
-	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Always);
-	ImGui::SetNextWindowSize(ImVec2(editorIO.DisplaySize.x, editorTopBarHeight), ImGuiCond_Always);
-	ImGui::Begin("Editor Toolbar", nullptr,
-		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
-	static char levelFileName[128] = "gamePlayScene";
-	LevelEditorCommon::DrawToolbar(*level, levelObjects, levelFileName, IM_ARRAYSIZE(levelFileName));
-	ImGui::End();
-
-	if (ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Game")) {
-		ImGui::SetNextWindowPos(initialGameViewPosition, ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(initialGameViewSize, ImGuiCond_FirstUseEver);
-		ImGui::Begin("Game", nullptr,
-			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground |
-			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-		ImGuiFunction::GetInstance()->TrackDockableWindow("Game");
-		ImGuiFunction::GetInstance()->DrawMergedWindowTabs("Game");
-		const ImVec2 gameContentMin = ImGui::GetCursorScreenPos();
-		const ImVec2 gameWindowPosition = ImGui::GetWindowPos();
-		const ImVec2 contentRegionMax = ImGui::GetWindowContentRegionMax();
-		const ImVec2 gameContentMax(gameWindowPosition.x + contentRegionMax.x, gameWindowPosition.y + contentRegionMax.y);
-		gameViewPosition = { gameContentMin.x, gameContentMin.y };
-		gameViewSize = {
-			(std::max)(1.0f, gameContentMax.x - gameContentMin.x),
-			(std::max)(1.0f, gameContentMax.y - gameContentMin.y)
-		};
-		// 最終合成を Game のコンテンツ領域へ限定する。これにより ImGui の下にはゲームを描画しない。
-		PostEffect::GetInstance()->SetOutputViewport(gameViewPosition.x, gameViewPosition.y, gameViewSize.x, gameViewSize.y);
-		isGameViewHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
-		ImGui::GetWindowDrawList()->AddRect(
-			gameContentMin,
-			gameContentMax,
-			IM_COL32(115, 160, 210, 210));
-		ImGui::End();
-	} else {
-		// Game タブが非選択なら映像も非表示にする。
-		PostEffect::GetInstance()->SetOutputViewport(0.0f, 0.0f, 1.0f, 1.0f);
-		isGameViewHovered = false;
-	}
-	const ImVec2 gameViewWindowPosition(gameViewPosition.x, gameViewPosition.y);
-	const ImVec2 gameViewWindowSize(gameViewSize.x, gameViewSize.y);
+	const float editorTopBarHeight = editorLayout.topBarHeight;
+	const float editorLeftPaneWidth = editorLayout.leftPaneWidth;
+	const float editorRightPaneWidth = editorLayout.rightPaneWidth;
+	const float editorBottomPaneHeight = editorLayout.bottomPaneHeight;
+	const float hierarchyHeight = editorLayout.hierarchyHeight;
+	const ImVec2 gameViewWindowPosition(editorLayout.gameWindowPosition.x, editorLayout.gameWindowPosition.y);
+	const ImVec2 gameViewWindowSize(editorLayout.gameWindowSize.x, editorLayout.gameWindowSize.y);
 
 	if (ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Settings")) {
 		ImGui::SetNextWindowPos(ImVec2(editorLeftPaneWidth, editorIO.DisplaySize.y - editorBottomPaneHeight), ImGuiCond_FirstUseEver);
@@ -825,6 +798,7 @@ void GamePlayScene::Update() {
 			renderer->SetColorOverrideEnabled(copyData.modelColorOverrideEnabled);
 			renderer->SetColorOverride(copyData.modelColorOverride);
 			renderer->SetColorOverrideUnlit(copyData.modelColorOverrideUnlit);
+			renderer->SetTextureOverride(copyData.modelTextureOverride);
 		}
 		if (sourceObject->GetComponent<RectTransformComponent>()) {
 			auto* rectTransform = copyObject->AddComponent<RectTransformComponent>();
@@ -857,6 +831,7 @@ void GamePlayScene::Update() {
 			textRenderer->SetOutlineColor(copyData.textOutlineColor);
 			textRenderer->SetEmissive(copyData.textEmissiveColor, copyData.textEmissiveIntensity);
 			textRenderer->SetCharacterSpacing(copyData.textCharacterSpacing);
+			textRenderer->SetMeshOffsets(copyData.textMeshOffsets);
 		}
 		if (sourceObject->GetComponent<RailPointComponent>()) copyObject->AddComponent<RailPointComponent>();
 		if (sourceObject->GetComponent<ObjectRailMovementComponent>()) {
@@ -873,6 +848,7 @@ void GamePlayScene::Update() {
 			auto* enemy = copyObject->AddComponent<EnemyNormal>();
 			enemy->SetTransform(copyData.transform);
 		}
+		copyObject->SetActive(copyData.active);
 		copyObject->Initialize();
 		selectedObject = copyObject.get();
 		levelObjects.push_back(std::move(copyObject));
@@ -941,7 +917,7 @@ void GamePlayScene::Update() {
 	}
 
 	ImGui::Separator();
-	ImGui::Text("Textures (drag to a Sprite Texture field):");
+	ImGui::Text("Textures (drag to a Sprite or Model Texture Override field):");
 	for (const auto& texturePath : textureFiles) {
 		ImGui::Selectable(texturePath.c_str());
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
@@ -1126,6 +1102,7 @@ void GamePlayScene::Update() {
 			bool isActive = selectedObject->IsActive();
 			if (ImGui::Checkbox("Active", &isActive)) {
 				selectedObject->SetActive(isActive);
+				level->GetLevelData()->objects[selectedIndex].active = isActive;
 			}
 
 			ImGui::Text("Type: %s", objType.c_str());
@@ -1256,6 +1233,25 @@ void GamePlayScene::Update() {
 					}
 					ImGui::EndDragDropTarget();
 				}
+				char textureOverridePath[260]{};
+				strncpy_s(textureOverridePath, renderer->GetTextureOverridePath().c_str(), _TRUNCATE);
+				if (ImGui::InputText("Texture Override##ModelRenderer", textureOverridePath, IM_ARRAYSIZE(textureOverridePath))) {
+					renderer->SetTextureOverride(textureOverridePath);
+					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+						level->GetLevelData()->objects[selectedIndex].modelTextureOverride = textureOverridePath;
+					}
+				}
+				if (ImGui::BeginDragDropTarget()) {
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_TEXTURE_FILE")) {
+						const std::string droppedTexture = static_cast<const char*>(payload->Data);
+						renderer->SetTextureOverride(droppedTexture);
+						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+							level->GetLevelData()->objects[selectedIndex].modelTextureOverride = droppedTexture;
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+				ImGui::TextDisabled("Leave empty to use the model's original texture.");
 				float maxDrawDistance = renderer->GetMaxDrawDistance();
 				if (ImGui::DragFloat("Max Draw Distance", &maxDrawDistance, 1.0f, 0.0f, 10000.0f)) {
 					renderer->SetMaxDrawDistance(maxDrawDistance);
@@ -1389,6 +1385,30 @@ void GamePlayScene::Update() {
 				if (ImGui::DragFloat("Character Spacing", &characterSpacing, 0.1f, -10.0f, 50.0f)) {
 					textRenderer->SetCharacterSpacing(characterSpacing);
 					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textCharacterSpacing = characterSpacing;
+				}
+				ImGui::Separator();
+				ImGui::TextUnformatted("Mesh Deformation 4x4 (pixels)");
+				ImGui::TextDisabled("Rows: top to bottom. Columns: left to right.");
+				auto meshOffsets = textRenderer->GetMeshOffsets();
+				bool meshChanged = false;
+				for (size_t row = 0; row < TextRendererComponent::kMeshRowCount; ++row) {
+					ImGui::Text("Row %d", static_cast<int>(row + 1));
+					ImGui::Indent();
+					for (size_t column = 0; column < TextRendererComponent::kMeshColumnCount; ++column) {
+						ImGui::PushID(static_cast<int>(row * TextRendererComponent::kMeshColumnCount + column));
+						meshChanged |= ImGui::DragFloat2("Point", &meshOffsets[row * TextRendererComponent::kMeshColumnCount + column].x,
+							0.1f, -500.0f, 500.0f);
+						ImGui::PopID();
+					}
+					ImGui::Unindent();
+				}
+				if (ImGui::Button("Reset Mesh Deformation")) {
+					meshOffsets = {};
+					meshChanged = true;
+				}
+				if (meshChanged) {
+					textRenderer->SetMeshOffsets(meshOffsets);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].textMeshOffsets = meshOffsets;
 				}
 
 				int fontSize = textRenderer->GetFontSize();
@@ -1910,6 +1930,7 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
 			modelRenderer->SetColorOverride(objectData.modelColorOverride);
 			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
 			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
 				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
 				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
@@ -1918,6 +1939,7 @@ void GamePlayScene::CreateLevel() {
 			}
 
 			// 4. アタッチされたコンポーネントを一括初期化
+			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 
 			// 5. コンテナに登録
@@ -1947,6 +1969,7 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
 			modelRenderer->SetColorOverride(objectData.modelColorOverride);
 			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
 			gameObject->AddComponent<RailPointComponent>();
 			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
 				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
@@ -1955,6 +1978,7 @@ void GamePlayScene::CreateLevel() {
 					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
 			}
 
+			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
 
@@ -1976,6 +2000,7 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
 			modelRenderer->SetColorOverride(objectData.modelColorOverride);
 			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
 
 			// ゲームロジック用のスポナーも同じ GameObject にアタッチする。
 			auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
@@ -1987,6 +2012,7 @@ void GamePlayScene::CreateLevel() {
 					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
 			}
 
+			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
 		} else if (objectData.type == "EMPTY" || objectData.type == "empty") {
@@ -2010,6 +2036,7 @@ void GamePlayScene::CreateLevel() {
 				renderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
 				renderer->SetColorOverride(objectData.modelColorOverride);
 				renderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+				renderer->SetTextureOverride(objectData.modelTextureOverride);
 			}
 			if (hasComponent("RectTransform")) {
 				auto* rectTransform = gameObject->AddComponent<RectTransformComponent>();
@@ -2046,6 +2073,7 @@ void GamePlayScene::CreateLevel() {
 				textRenderer->SetOutlineColor(objectData.textOutlineColor);
 				textRenderer->SetEmissive(objectData.textEmissiveColor, objectData.textEmissiveIntensity);
 				textRenderer->SetCharacterSpacing(objectData.textCharacterSpacing);
+				textRenderer->SetMeshOffsets(objectData.textMeshOffsets);
 			}
 			if (hasComponent("RailPoint")) {
 				gameObject->AddComponent<RailPointComponent>();
@@ -2077,6 +2105,7 @@ void GamePlayScene::CreateLevel() {
 				auto* enemy = gameObject->AddComponent<EnemyNormal>();
 				enemy->SetTransform(objectData.transform);
 			}
+			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
 		}
@@ -2116,7 +2145,24 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 		mousePosition.y >= gameWindowPosition.y && mousePosition.y < gameWindowPosition.y + gameWindowSize.y;
 	// Game ウィンドウ自体も ImGui の入力を捕捉するため、領域内の操作はゲーム入力として許可する。
 	const bool isEditorPanelHovered = editorIO.WantCaptureMouse && !isMouseInGameView;
-	if (ImGui::IsMouseClicked(0) && isMouseInGameView && !ImGuizmo::IsOver() && !isEditorPanelHovered) {
+#ifdef TEXT_MESH_EDITOR_OVERLAY
+	bool isPointerOverTextMeshVertex = false;
+	if (selectedObject) {
+		if (auto* textRenderer = selectedObject->GetComponent<TextRendererComponent>()) {
+			if (auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>()) {
+				isPointerOverTextMeshVertex = TextMeshEditorGizmo::DrawAndSelect(*textRenderer, *rectTransform,
+					gameViewPosition, gameViewSize, selectedTextMeshVertex_);
+			} else {
+				selectedTextMeshVertex_ = -1;
+			}
+		} else {
+			selectedTextMeshVertex_ = -1;
+		}
+	}
+#else
+	constexpr bool isPointerOverTextMeshVertex = false;
+#endif
+	if (ImGui::IsMouseClicked(0) && isMouseInGameView && !ImGuizmo::IsOver() && !isPointerOverTextMeshVertex && !isEditorPanelHovered) {
 		Vector2 mousePos = input->GetMouseScreen(); // ※ご自身のInputクラスの関数に合わせる
 
 		float windowWidth = 1920.0f; // 画面幅
@@ -2193,8 +2239,26 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 
 			// 動かした「差分」を受け取るための行列を用意
 			Matrix4x4 deltaMat;
+			bool isEditingTextMesh = false;
+#ifdef TEXT_MESH_EDITOR_OVERLAY
+			if (isSpriteObject) {
+				if (auto* textRenderer = selectedObject->GetComponent<TextRendererComponent>()) {
+					isEditingTextMesh = selectedTextMeshVertex_ >= 0;
+					if (isEditingTextMesh && TextMeshEditorGizmo::ManipulateSelected(*textRenderer, *rectTransform,
+						viewMat, projMat, selectedTextMeshVertex_)) {
+						for (size_t index = 0; index < levelObjects.size(); ++index) {
+							if (levelObjects[index].get() == selectedObject) {
+								level->GetLevelData()->objects[index].textMeshOffsets = textRenderer->GetMeshOffsets();
+								break;
+							}
+						}
+					}
+				}
+			}
+#endif
 
 			// 3. ギズモの操作と行列の更新
+			if (!isEditingTextMesh) {
 			ImGuizmo::Manipulate(
 				&viewMat.m[0][0],        // View行列のfloatポインタ
 				&projMat.m[0][0],        // Projection行列のfloatポインタ
@@ -2239,6 +2303,7 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 					ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
 					transformComp->transform.scale = { scale[0], scale[1], scale[2] };
 				}
+			}
 			}
 		}
 	}

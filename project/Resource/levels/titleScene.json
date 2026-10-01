@@ -3,6 +3,7 @@
     "name": "scene",
     "objects": [
         {
+            "active": true,
             "components": [
                 "Camera"
             ],
@@ -27,70 +28,7 @@
             "type": "EMPTY"
         },
         {
-            "components": [
-                "RectTransform",
-                "TextRenderer"
-            ],
-            "name": "text",
-            "rect_transform": {
-                "position": [
-                    960.0,
-                    518.5974731445313
-                ],
-                "rotation": 0.0,
-                "scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "text_renderer": {
-                "bold": true,
-                "character_spacing": 0.0,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_intensity": 0.0,
-                "font_family": "Bodoni MT",
-                "font_size": 256,
-                "max_width": 0.0,
-                "outline_color": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 2.0999999046325684,
-                "text": "URANUS"
-            },
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": "EMPTY"
-        },
-        {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "ObjectRailMovement"
@@ -114,7 +52,7 @@
                 "outline_enabled": false,
                 "outline_thickness": 0.009999999776482582
             },
-            "name": "jet_1",
+            "name": "logoAnimation",
             "object_rail_movement": {
                 "loop": false,
                 "orient_to_path": false,
@@ -186,6 +124,7 @@
             "type": "EMPTY"
         },
         {
+            "active": false,
             "components": [
                 "ModelRenderer",
                 "ObjectRailMovement"
@@ -209,7 +148,7 @@
                 "outline_enabled": false,
                 "outline_thickness": 0.009999999776482582
             },
-            "name": "Empty_4",
+            "name": "transition",
             "object_rail_movement": {
                 "loop": false,
                 "orient_to_path": false,
@@ -221,9 +160,9 @@
                         -6.269999980926514
                     ],
                     [
-                        -0.2199999988079071,
-                        -2.549999952316284,
-                        -4.230000019073486
+                        -0.23999999463558197,
+                        -2.2799999713897705,
+                        -4.75
                     ],
                     [
                         0.20999999344348907,
@@ -253,12 +192,12 @@
                         101.8010025024414
                     ],
                     [
-                        -40.624000549316406,
-                        25.899999618530273,
-                        79.0009994506836
+                        -37.624000549316406,
+                        20.899999618530273,
+                        66.8010025024414
                     ],
                     [
-                        -33.42399978637695,
+                        -35.42399978637695,
                         15.800000190734863,
                         16.10099983215332
                     ],
@@ -278,7 +217,7 @@
                         -59.0989990234375
                     ]
                 ],
-                "speed": 1.0,
+                "speed": 1.5,
                 "use_point_rotations": true
             },
             "transform": {
@@ -296,6 +235,399 @@
                     -1.2240009307861328,
                     -59.09900665283203,
                     1.7000007629394531
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "RectTransform",
+                "TextRenderer"
+            ],
+            "name": "logoText_1",
+            "rect_transform": {
+                "position": [
+                    1354.3812255859375,
+                    546.2380981445313
+                ],
+                "rotation": 0.3507597744464874,
+                "scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 0.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    0.0,
+                    0.0
+                ],
+                "emissive_intensity": 0.0,
+                "font_family": "@HGP創英ﾌﾟﾚｾﾞﾝｽEB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        80.0
+                    ],
+                    [
+                        0.0,
+                        -20.0
+                    ],
+                    [
+                        0.0,
+                        -200.0
+                    ],
+                    [
+                        0.0,
+                        -350.0
+                    ],
+                    [
+                        0.0,
+                        27.0
+                    ],
+                    [
+                        0.0,
+                        -6.0
+                    ],
+                    [
+                        0.0,
+                        -66.0
+                    ],
+                    [
+                        0.0,
+                        -116.0
+                    ],
+                    [
+                        0.0,
+                        -27.0
+                    ],
+                    [
+                        0.0,
+                        6.0
+                    ],
+                    [
+                        0.0,
+                        66.0
+                    ],
+                    [
+                        0.0,
+                        116.0
+                    ],
+                    [
+                        0.0,
+                        -80.0
+                    ],
+                    [
+                        0.0,
+                        20.0
+                    ],
+                    [
+                        0.0,
+                        200.0
+                    ],
+                    [
+                        0.0,
+                        350.0
+                    ]
+                ],
+                "outline_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "outline_enabled": true,
+                "outline_thickness": 2.0,
+                "text": "URANUS"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    4.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "RectTransform",
+                "TextRenderer"
+            ],
+            "name": "logoText_2",
+            "rect_transform": {
+                "position": [
+                    1350.1627197265625,
+                    542.1607666015625
+                ],
+                "rotation": 0.3507597744464874,
+                "scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 0.0,
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    0.0,
+                    0.0
+                ],
+                "emissive_intensity": 0.0,
+                "font_family": "@HGP創英ﾌﾟﾚｾﾞﾝｽEB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        80.0
+                    ],
+                    [
+                        0.0,
+                        -20.0
+                    ],
+                    [
+                        0.0,
+                        -200.0
+                    ],
+                    [
+                        0.0,
+                        -350.0
+                    ],
+                    [
+                        0.0,
+                        27.0
+                    ],
+                    [
+                        0.0,
+                        -6.0
+                    ],
+                    [
+                        0.0,
+                        -66.0
+                    ],
+                    [
+                        0.0,
+                        -116.0
+                    ],
+                    [
+                        0.0,
+                        -27.0
+                    ],
+                    [
+                        0.0,
+                        6.0
+                    ],
+                    [
+                        0.0,
+                        66.0
+                    ],
+                    [
+                        0.0,
+                        116.0
+                    ],
+                    [
+                        0.0,
+                        -80.0
+                    ],
+                    [
+                        0.0,
+                        20.0
+                    ],
+                    [
+                        0.0,
+                        200.0
+                    ],
+                    [
+                        0.0,
+                        350.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": true,
+                "outline_thickness": 2.0,
+                "text": "URANUS"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    5.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "RectTransform",
+                "TextRenderer"
+            ],
+            "name": "keyText",
+            "rect_transform": {
+                "position": [
+                    1287.9803466796875,
+                    729.719970703125
+                ],
+                "rotation": 0.3507597744464874,
+                "scale": [
+                    0.6000000238418579,
+                    0.5
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 0.0,
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    0.0,
+                    0.0
+                ],
+                "emissive_intensity": 0.0,
+                "font_family": "@HGP創英ﾌﾟﾚｾﾞﾝｽEB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        36.53644943237305,
+                        -183.19747924804688
+                    ],
+                    [
+                        4.991899490356445,
+                        -17.619403839111328
+                    ],
+                    [
+                        -85.72496795654297,
+                        195.53372192382813
+                    ],
+                    [
+                        4.448886871337891,
+                        499.99334716796875
+                    ],
+                    [
+                        2.3112094402313232,
+                        -252.7831268310547
+                    ],
+                    [
+                        -44.02822494506836,
+                        -77.24613952636719
+                    ],
+                    [
+                        -192.20773315429688,
+                        162.10855102539063
+                    ],
+                    [
+                        -295.4256591796875,
+                        545.398193359375
+                    ],
+                    [
+                        -32.281700134277344,
+                        -322.4820556640625
+                    ],
+                    [
+                        -107.24475860595703,
+                        -133.82528686523438
+                    ],
+                    [
+                        -306.3339538574219,
+                        124.9656753540039
+                    ],
+                    [
+                        -574.2881469726563,
+                        571.2764892578125
+                    ],
+                    [
+                        -70.38727569580078,
+                        -388.1113586425781
+                    ],
+                    [
+                        -180.02639770507813,
+                        -188.87203979492188
+                    ],
+                    [
+                        -424.96075439453125,
+                        94.5177993774414
+                    ],
+                    [
+                        -833.52490234375,
+                        594.2604370117188
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": true,
+                "outline_thickness": 2.0,
+                "text": "PRESS SPACE"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    0.6000000238418579,
+                    1.0,
+                    0.5
+                ],
+                "translation": [
+                    6.0,
+                    0.0,
+                    0.0
                 ]
             },
             "type": "EMPTY"

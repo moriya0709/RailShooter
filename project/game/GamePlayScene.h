@@ -169,6 +169,7 @@ private:
 	// ギズモの操作モード
 	#ifdef USE_IMGUI
 	ImGuizmo::OPERATION currentGizmoOperation = ImGuizmo::TRANSLATE;
+	int selectedTextMeshVertex_ = -1;
 	#endif
 	// 現在選択されているオブジェクト（とりあえず0番目のオブジェクト用）
 	GameObject* selectedObject = nullptr;

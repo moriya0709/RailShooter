@@ -231,6 +231,8 @@ struct SpawnData {
 struct ObjectData {
     std::string type;
     std::string name;
+	// GameObject の有効状態。古いレベルファイルでは true として読み込む。
+	bool active = true;
 	// 実行時のTransformには影響しない、エディタ整理用のグループ名。
 	std::string groupName;
 	std::string file_name;
@@ -249,6 +251,8 @@ struct ObjectData {
 	Vector3 textEmissiveColor = { 1.0f, 1.0f, 1.0f };
 	float textEmissiveIntensity = 0.0f;
 	float textCharacterSpacing = 0.0f;
+	// Pixel offsets for a 4x4 grid, in row-major order from top-left to bottom-right.
+	std::array<Vector2, 16> textMeshOffsets = {};
     Transform transform;
 	Vector2 rectPosition = { 960.0f, 540.0f };
 	float rectRotation = 0.0f;
@@ -272,6 +276,8 @@ struct ObjectData {
 	bool modelColorOverrideEnabled = false;
 	Vector4 modelColorOverride = { 1.0f, 1.0f, 1.0f, 1.0f };
 	bool modelColorOverrideUnlit = false;
+	// ModelRenderer ごとのベースカラーテクスチャ上書き。空文字列ならモデル定義を使用。
+	std::string modelTextureOverride;
 	// Unity のように複数の機能を 1 つの GameObject に追加するための型一覧。
 	std::vector<std::string> components;
 	// ObjectRailMovement 専用。RailCamera / RailPoint のデータとは完全に独立する。

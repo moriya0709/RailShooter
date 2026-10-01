@@ -18,6 +18,9 @@ public:
 	void SetModel(const std::string& filePath);
 	Model* GetModel() const { return model_; }
 	const std::string& GetModelPath() const { return modelPath_; }
+	// このレンダラーだけのベースカラーテクスチャ上書き。空文字列でモデル本来のテクスチャに戻す。
+	void SetTextureOverride(const std::string& filePath);
+	const std::string& GetTextureOverridePath() const { return textureOverridePath_; }
 	// カメラ距離に応じて High / Medium / Low の 3 段階で描画モデルを切り替える。
 	// mediumDistance 未満は High、lowDistance 未満は Medium、それ以上は Low。
 	void SetLodModels(const std::string& highModelPath, const std::string& mediumModelPath,
@@ -68,6 +71,10 @@ private:
 	// モデル
 	Model* model_ = nullptr;
 	std::string modelPath_;
+	// 入力途中などで未解決のパスを保持しても描画を壊さないよう、実際にバインドする
+	// 有効なテクスチャは別に管理する。
+	std::string textureOverridePath_;
+	std::string activeTextureOverridePath_;
 	Model* highLodModel_ = nullptr;
 	Model* mediumLodModel_ = nullptr;
 	Model* lowLodModel_ = nullptr;

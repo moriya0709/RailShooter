@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <Windows.h>
+#include <array>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -15,6 +16,16 @@ class DirectXCommon;
 
 class Sprite {
 public:
+	// A denser render mesh lets components turn a small set of control points
+	// into visually smooth deformation without changing their authored data.
+	static constexpr uint32_t kMeshColumnCount = 13;
+	static constexpr uint32_t kMeshRowCount = 13;
+	static constexpr uint32_t kMeshVertexCount = kMeshColumnCount * kMeshRowCount;
+	static constexpr uint32_t kMeshIndexCount = (kMeshColumnCount - 1) * (kMeshRowCount - 1) * 6;
+	static constexpr uint32_t kDefaultMeshColumnCount = 2;
+	static constexpr uint32_t kDefaultMeshRowCount = 2;
+	static constexpr uint32_t kDefaultMeshIndexCount = 6;
+
 	// 初期化
 	void Initialize(std::string textureFilePath);
 	// 更新
@@ -43,6 +54,10 @@ public:
 	void SetFlipY(bool isFlipY) { this->isFlipY_ = isFlipY; }
 	void SetTextureLeftTop(const Vector2& textureLeftTop) { this->textureLeftTop = textureLeftTop; }
 	void SetTextureSize(const Vector2& textureSize) { this->textureSize = textureSize; }
+	// Offsets are in normalized local space, in row-major order from top-left to bottom-right.
+	void SetMeshOffsets(const std::array<Vector2, kMeshVertexCount>& offsets) { meshOffsets_ = offsets; }
+	const std::array<Vector2, kMeshVertexCount>& GetMeshOffsets() const { return meshOffsets_; }
+	void SetMeshDeformationEnabled(bool enabled) { meshDeformationEnabled_ = enabled; }
 
 	// テクスチャ変更
 	void ChangeTexture(const std::string& textureFilePath);
@@ -100,6 +115,9 @@ private:
 	// テクスチャ範囲指定
 	Vector2 textureLeftTop = { 0.0f,0.0f };		// テクスチャ左上座標
 	Vector2 textureSize = { 100.0f,100.0f };	// テクスチャ切り出しサイズ
+	std::array<Vector2, kMeshVertexCount> meshOffsets_ = {};
+	uint32_t activeMeshIndexCount_ = kDefaultMeshIndexCount;
+	bool meshDeformationEnabled_ = false;
 
 	// テクスチャファイルパス
 	std::string textureFilePath_;

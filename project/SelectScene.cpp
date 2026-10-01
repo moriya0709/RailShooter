@@ -1,4 +1,4 @@
-﻿#include "TitleScene.h"
+﻿#include "SelectScene.h"
 #include "ObjectCommon.h"
 #include "SpriteCommon.h"
 #include "SceneManager.h"
@@ -23,14 +23,14 @@
 #include <cctype>
 #include <filesystem>
 
-void TitleScene::Initialize() {
+void SelectScene::Initialize() {
 
 	railCamera = std::make_unique<RailCamera>();
 	railCamera->Initialize();
 
 	// レベル
 	level = std::make_unique<Level>();
-	level->LoadJson("TitleScene");
+	level->LoadJson("SelectScene");
 	CreateLevel();
 	if (!camera) {
 		fallbackCameraObject = std::make_unique<GameObject>("MainCamera");
@@ -76,7 +76,7 @@ void TitleScene::Initialize() {
 
 }
 
-void TitleScene::Update() {
+void SelectScene::Update() {
 	// 入力取得
 	auto input = Input::GetInstance();
 	// カメラ更新
@@ -90,7 +90,6 @@ void TitleScene::Update() {
 	auto* logoAnimation = GameObject::FindByName("logoAnimation");
 	auto* logoTextObject1 = GameObject::FindByName("logoText_1");
 	auto* logoTextObject2 = GameObject::FindByName("logoText_2");
-	auto* keyTextObject = GameObject::FindByName("keyText");
 
 	// ロゴアニメーションが終わったらロゴテキストをフェードイン
 	if (logoAnimation) {
@@ -98,87 +97,46 @@ void TitleScene::Update() {
 		if (rail && !rail->IsPlaying()) {
 			if (auto* text1 = logoTextObject1 ? logoTextObject1->GetComponent<TextRendererComponent>() : nullptr) {
 				if (auto* text2 = logoTextObject2 ? logoTextObject2->GetComponent<TextRendererComponent>() : nullptr) {
-					if (auto* text3 = keyTextObject ? keyTextObject->GetComponent<TextRendererComponent>() : nullptr) {
-						// ロゴテキストの色
-						Vector4 color = text1->GetColor();
-						float alpha = color.w;
+					// ロゴテキストの色
+					Vector4 color1;
+					Vector4 color2;
 
-						if (isTransition) {
-							// ロゴテキストのアルファ値を徐々に減少させる
-							alpha = std::clamp(alpha - deltaTime * logoAlphaTime, 0.0f, 1.0f);
-							
-							color = text1->GetColor();
-							color.w = alpha;
-							text1->SetColor(color);
-							
-							color = text2->GetColor();
-							color.w = alpha;
-							text2->SetColor(color);
-							
-							color = text3->GetColor();
-							color.w = alpha;
-							text3->SetColor(color);
+					if (isTransition) {
+						// ロゴテキストのアルファ値を徐々に減少させる
+						color1 = text1->GetColor();
+						color1.w = std::clamp(color1.w - deltaTime * logoAlphaTime, 0.0f, 1.0f);
+						text1->SetColor(color1);
 
-							if (auto* transition = GameObject::FindByName("transition"); transition && transition->IsActive()) {
-								// トランジションが終了したらシーン遷移
-								auto* transitionAnimation = transition->GetComponent<ObjectRailMovementComponent>();
-								if (transitionAnimation && !transitionAnimation->IsPlaying()) {
-									//SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-								}
-							}
-						} else {
-							if (isStartLogo) {
-								// ロゴテキストのアルファ値を徐々に増加させる
-								alpha = std::clamp(alpha + deltaTime * logoAlphaTime, 0.0f, 1.0f);
-								
-								color = text1->GetColor();
-								color.w = alpha;
-								text1->SetColor(color);
+						color2 = text2->GetColor();
+						color2.w = std::clamp(color2.w - deltaTime * logoAlphaTime, 0.0f, 1.0f);
+						text2->SetColor(color2);
 
-								color = text2->GetColor();
-								color.w = alpha;
-								text2->SetColor(color);
-
-								color = text3->GetColor();
-								color.w = alpha;
-								text3->SetColor(color);
-
-								if (color.w >= 1.0f) {
-									isStartLogo = false; // 完全に表示されたらフラグを下ろす
-								}
-							} else {
-								color = text3->GetColor();
-								alpha = color.w;
-
-								// フェードイン・フェードアウトの切り替え
-								if (color.w >= 1.0f) {
-									keyTextState_ = FADE_OUT;
-								} else if (color.w <= 0.0f) {
-									keyTextState_ = FADE_IN;
-								}
-
-								// キーのテキストを点滅
-								if (keyTextState_ == FADE_IN) {
-									alpha = std::clamp(alpha + deltaTime * logoAlphaTime, 0.0f, 1.0f);
-								} else if (keyTextState_ == FADE_OUT) {
-									alpha = std::clamp(alpha - deltaTime * logoAlphaTime, 0.0f, 1.0f);
-								}
-
-								color = text3->GetColor();
-								color.w = alpha;
-								text3->SetColor(color);
+						if (auto* transition = GameObject::FindByName("transition"); transition && transition->IsActive()) {
+							// トランジションが終了したらシーン遷移
+							auto* transitionAnimation = transition->GetComponent<ObjectRailMovementComponent>();
+							if (transitionAnimation && !transitionAnimation->IsPlaying()) {
+								//SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 							}
 						}
+					} else {
+						// ロゴテキストのアルファ値を徐々に増加させる
+						color1 = text1->GetColor();
+						color1.w = std::clamp(color1.w + deltaTime * logoAlphaTime, 0.0f, 1.0f);
+						text1->SetColor(color1);
 
-						// ロゴが完全に表示されている状態でスペースキーが押されたらトランジション開始
-						if (!isStartLogo && input->TriggerKey(DIK_SPACE)) {
-							isTransition = true;
-							if (auto* transition = GameObject::FindByName("transition"); transition && !transition->IsActive()) {
-								// ロゴのモデルを非表示にする
-								logoAnimation->SetActive(false);
+						color2 = text2->GetColor();
+						color2.w = std::clamp(color2.w + deltaTime * logoAlphaTime, 0.0f, 1.0f);
+						text2->SetColor(color2);
+					}
 
-								transition->SetActive(true);
-							}
+					// ロゴが完全に表示されている状態でスペースキーが押されたらトランジション開始
+					if (color1.w >= 1.0f && color2.w >= 1.0f && input->TriggerKey(DIK_SPACE)) {
+						isTransition = true;
+						if (auto* transition = GameObject::FindByName("transition"); transition && !transition->IsActive()) {
+							// ロゴのモデルを非表示にする
+							logoAnimation->SetActive(false);
+
+							transition->SetActive(true);
 						}
 					}
 				}
@@ -202,6 +160,13 @@ void TitleScene::Update() {
 				railCamera->points.push_back(p);
 			}
 		}
+
+		// The release build has no Rail Editor button to start the path.
+#ifndef USE_IMGUI
+		if (!railCamera->IsRailActive() && railCamera->CanStartRail()) {
+			railCamera->StartRail();
+		}
+#endif
 	}
 
 	// 3. その後、RailCamera自身の更新処理を呼ぶ
@@ -218,6 +183,11 @@ void TitleScene::Update() {
 		railCamera->Update();
 	}
 
+	// タイトルではレールカメラをそのまま表示カメラの基準にする。
+	const Vector3 railCameraPosition = railCamera->GetBasePosition();
+	const Vector3 railCameraRotation = railCamera->GetBaseRotation();
+
+
 	// デバックカメラ処理
 	#ifdef USE_IMGUI
 	if (isDebugCamera) {
@@ -232,12 +202,8 @@ void TitleScene::Update() {
 	} else
 	#endif
 	{
-		// レール再生中だけ Empty のカメラをレール座標で動かす。
-		// 非再生時は CameraComponent が Empty の Transform をそのまま使う。
-		if (railCamera->IsRailActive()) {
-			camera->SetTranslate(railCamera->GetBasePosition());
-			camera->SetRotate(railCamera->GetBaseRotation());
-		}
+		camera->SetTranslate(railCameraPosition);
+		camera->SetRotate(railCameraRotation);
 		camera->Update();
 	}
 	cameraObject->Update();
@@ -458,7 +424,7 @@ void TitleScene::Update() {
 
 #ifdef USE_IMGUI
 	const SceneEditorLayout editorLayout = ImGuiFunction::GetInstance()->BeginSceneEditor(
-		*level, levelObjects, "TitleScene", gameViewPosition, gameViewSize, isGameViewHovered);
+		*level, levelObjects, "SelectScene", gameViewPosition, gameViewSize, isGameViewHovered);
 	ImGuiIO& editorIO = ImGui::GetIO();
 	const float editorTopBarHeight = editorLayout.topBarHeight;
 	const float editorLeftPaneWidth = editorLayout.leftPaneWidth;
@@ -730,7 +696,7 @@ void TitleScene::Update() {
 				}
 				ImGui::EndPopup();
 			}
-		};
+			};
 		for (const std::string& groupName : level->GetLevelData()->groups) {
 			const bool groupOpen = ImGui::TreeNodeEx(
 				groupName.c_str(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth);
@@ -1771,7 +1737,7 @@ void TitleScene::Update() {
 
 }
 
-void TitleScene::Draw2D() {
+void SelectScene::Draw2D() {
 	// 2Dオブジェクトの描画準備
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
@@ -1789,7 +1755,7 @@ void TitleScene::Draw2D() {
 		}
 	}
 }
-void TitleScene::Draw3D() {
+void SelectScene::Draw3D() {
 	// スカイボックス
 	//Skybox::GetInstance()->Draw();
 
@@ -1847,11 +1813,11 @@ void TitleScene::Draw3D() {
 
 }
 
-void TitleScene::Finalize() {
+void SelectScene::Finalize() {
 	CameraManager::GetInstance()->RemoveCamera("main");
 }
 
-void TitleScene::ResetEnemySpawning() {
+void SelectScene::ResetEnemySpawning() {
 	for (const auto& levelObject : levelObjects) {
 		if (auto* spawner = levelObject->GetComponent<EnemySpawnerComponent>()) {
 			spawner->ResetSpawnState();
@@ -1860,7 +1826,7 @@ void TitleScene::ResetEnemySpawning() {
 	enemies.clear();
 }
 
-void TitleScene::CreateLevel() {
+void SelectScene::CreateLevel() {
 	for (auto& objectData : level->GetLevelData()->objects) {
 		if (objectData.type == "MESH" || objectData.type == "mesh") {
 			// 1. GameObject の生成
@@ -2065,7 +2031,7 @@ void TitleScene::CreateLevel() {
 
 #ifdef USE_IMGUI
 
-void TitleScene::GizmoUpdate(bool showEditorControls) {
+void SelectScene::GizmoUpdate(bool showEditorControls) {
 	auto input = Input::GetInstance();
 	const ImGuiIO& editorIO = ImGui::GetIO();
 	const ImVec2 gameWindowPosition(gameViewPosition.x, gameViewPosition.y);
@@ -2189,7 +2155,7 @@ void TitleScene::GizmoUpdate(bool showEditorControls) {
 			// 動かした「差分」を受け取るための行列を用意
 			Matrix4x4 deltaMat;
 			bool isEditingTextMesh = false;
-#ifdef TEXT_MESH_EDITOR_OVERLAY
+		#ifdef TEXT_MESH_EDITOR_OVERLAY
 			if (isSpriteObject) {
 				if (auto* textRenderer = selectedObject->GetComponent<TextRendererComponent>()) {
 					isEditingTextMesh = selectedTextMeshVertex_ >= 0;
@@ -2204,55 +2170,55 @@ void TitleScene::GizmoUpdate(bool showEditorControls) {
 					}
 				}
 			}
-#endif
+		#endif
 
 			// 3. ギズモの操作と行列の更新
 			if (!isEditingTextMesh) {
-			ImGuizmo::Manipulate(
-				&viewMat.m[0][0],        // View行列のfloatポインタ
-				&projMat.m[0][0],        // Projection行列のfloatポインタ
-				currentGizmoOperation,   // 操作モード
-				ImGuizmo::LOCAL,         // 座標系 (LOCAL or WORLD)
-				&worldMat.m[0][0],       // World行列のfloatポインタ
-				&deltaMat.m[0][0]       // 差分行列のfloatポインタ
-			);
+				ImGuizmo::Manipulate(
+					&viewMat.m[0][0],        // View行列のfloatポインタ
+					&projMat.m[0][0],        // Projection行列のfloatポインタ
+					currentGizmoOperation,   // 操作モード
+					ImGuizmo::LOCAL,         // 座標系 (LOCAL or WORLD)
+					&worldMat.m[0][0],       // World行列のfloatポインタ
+					&deltaMat.m[0][0]       // 差分行列のfloatポインタ
+				);
 
-			// 4. ギズモによって操作が行われたら、TransformComponent に反映
-			if (ImGuizmo::IsUsing()) {
-				float translation[3] = { 0.0f };
-				float rotation[3] = { 0.0f };
-				float scale[3] = { 0.0f };
+				// 4. ギズモによって操作が行われたら、TransformComponent に反映
+				if (ImGuizmo::IsUsing()) {
+					float translation[3] = { 0.0f };
+					float rotation[3] = { 0.0f };
+					float scale[3] = { 0.0f };
 
-				if (isSpriteObject) {
-					if (currentGizmoOperation == ImGuizmo::ROTATE) {
-						ImGuizmo::DecomposeMatrixToComponents(&deltaMat.m[0][0], translation, rotation, scale);
-						rectTransform->rotation += rotation[2] * (3.14159265f / 180.0f);
-					} else {
-						ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
-						if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
-							rectTransform->position = { translation[0], translation[1] };
-						} else if (currentGizmoOperation == ImGuizmo::SCALE) {
-							rectTransform->scale = { scale[0], scale[1] };
+					if (isSpriteObject) {
+						if (currentGizmoOperation == ImGuizmo::ROTATE) {
+							ImGuizmo::DecomposeMatrixToComponents(&deltaMat.m[0][0], translation, rotation, scale);
+							rectTransform->rotation += rotation[2] * (3.14159265f / 180.0f);
+						} else {
+							ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
+							if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
+								rectTransform->position = { translation[0], translation[1] };
+							} else if (currentGizmoOperation == ImGuizmo::SCALE) {
+								rectTransform->scale = { scale[0], scale[1] };
+							}
 						}
-					}
-				} else if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
-					// 移動は今まで通り全体の行列から取り出す
-					ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
-					transformComp->transform.translate = { translation[0], translation[1], translation[2] };
-				} else if (currentGizmoOperation == ImGuizmo::ROTATE) {
-					// ★回転の時だけ、全体の行列ではなく「差分(deltaMat)」を分解する！
-					ImGuizmo::DecomposeMatrixToComponents(&deltaMat.m[0][0], translation, rotation, scale);
+					} else if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
+						// 移動は今まで通り全体の行列から取り出す
+						ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
+						transformComp->transform.translate = { translation[0], translation[1], translation[2] };
+					} else if (currentGizmoOperation == ImGuizmo::ROTATE) {
+						// ★回転の時だけ、全体の行列ではなく「差分(deltaMat)」を分解する！
+						ImGuizmo::DecomposeMatrixToComponents(&deltaMat.m[0][0], translation, rotation, scale);
 
-					// 差分(このフレームで動かした量)を、現在の角度に「足し算(+=)」する
-					transformComp->transform.rotate.x += rotation[0] * (3.14159265f / 180.0f);
-					transformComp->transform.rotate.y += rotation[1] * (3.14159265f / 180.0f);
-					transformComp->transform.rotate.z += rotation[2] * (3.14159265f / 180.0f);
-				} else if (currentGizmoOperation == ImGuizmo::SCALE) {
-					// 拡縮も今まで通り全体の行列から取り出す
-					ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
-					transformComp->transform.scale = { scale[0], scale[1], scale[2] };
+						// 差分(このフレームで動かした量)を、現在の角度に「足し算(+=)」する
+						transformComp->transform.rotate.x += rotation[0] * (3.14159265f / 180.0f);
+						transformComp->transform.rotate.y += rotation[1] * (3.14159265f / 180.0f);
+						transformComp->transform.rotate.z += rotation[2] * (3.14159265f / 180.0f);
+					} else if (currentGizmoOperation == ImGuizmo::SCALE) {
+						// 拡縮も今まで通り全体の行列から取り出す
+						ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
+						transformComp->transform.scale = { scale[0], scale[1], scale[2] };
+					}
 				}
-			}
 			}
 		}
 	}
@@ -2379,7 +2345,7 @@ void TitleScene::GizmoUpdate(bool showEditorControls) {
 
 #else
 
-void TitleScene::GizmoUpdate([[maybe_unused]] bool showEditorControls) {}
+void SelectScene::GizmoUpdate([[maybe_unused]] bool showEditorControls) {}
 
 #endif
 

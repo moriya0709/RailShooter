@@ -10,46 +10,49 @@ void Sprite::Initialize(std::string textureFilePath) {
 	// *頂点データ* //
 	
 	// リソース
-	vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * 6);
+	vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * kMeshVertexCount);
 	// バッファリソース
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * kMeshVertexCount;
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 	// データを書き込む
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	// １枚目の三角形
-	vertexData[0].position = { 0.0f,1.0f,0.0f,1.0f };// 左下
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
-
-	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f };// 左上
-	vertexData[1].texcoord = { 0.0f,0.0f };
-	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-
-	vertexData[2].position = { 1.0f,1.0f,0.0f,1.0f };// 右下
-	vertexData[2].texcoord = { 1.0f,1.0f };
-	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	// 2枚目の三角形
-	vertexData[3].position = { 1.0f,0.0f,0.0f,1.0f };// 右上
-	vertexData[3].texcoord = { 1.0f,0.0f };
-	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+	for (uint32_t row = 0; row < kMeshRowCount; ++row) {
+		for (uint32_t column = 0; column < kMeshColumnCount; ++column) {
+			const uint32_t vertexIndex = row * kMeshColumnCount + column;
+			vertexData[vertexIndex].position = { static_cast<float>(column) / (kMeshColumnCount - 1),
+				static_cast<float>(row) / (kMeshRowCount - 1), 0.0f, 1.0f };
+			vertexData[vertexIndex].texcoord = { static_cast<float>(column) / (kMeshColumnCount - 1),
+				static_cast<float>(row) / (kMeshRowCount - 1) };
+			vertexData[vertexIndex].normal = { 0.0f, 0.0f, -1.0f };
+		}
+	}
 
 	// *インデックス* //
 	
 	// リソース
-	indexResource = dxCommon_->CreateBufferResource(sizeof(uint32_t) * 6);
+	indexResource = dxCommon_->CreateBufferResource(sizeof(uint32_t) * kMeshIndexCount);
 	// バッファリソース
 	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
-	indexBufferView.SizeInBytes = sizeof(uint32_t) * 6;
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * kMeshIndexCount;
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 	// インデックス
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
-	indexData[0] = 0;
-	indexData[1] = 1;
-	indexData[2] = 2;
-	indexData[3] = 1;
-	indexData[4] = 3;
-	indexData[5] = 2;
+	uint32_t index = 0;
+	for (uint32_t row = 0; row < kMeshRowCount - 1; ++row) {
+		for (uint32_t column = 0; column < kMeshColumnCount - 1; ++column) {
+			const uint32_t topLeft = row * kMeshColumnCount + column;
+			const uint32_t topRight = topLeft + 1;
+			const uint32_t bottomLeft = topLeft + kMeshColumnCount;
+			const uint32_t bottomRight = bottomLeft + 1;
+			indexData[index++] = topLeft;
+			indexData[index++] = bottomLeft;
+			indexData[index++] = topRight;
+			indexData[index++] = bottomLeft;
+			indexData[index++] = bottomRight;
+			indexData[index++] = topRight;
+		}
+	}
 
 	// *マテリアル* //
 
@@ -114,15 +117,40 @@ void Sprite::Update() {
 	float tex_bottom = (textureLeftTop.y + textureSize.y) / metadata.height;
 
 
+	const uint32_t meshColumnCount = meshDeformationEnabled_ ? kMeshColumnCount : kDefaultMeshColumnCount;
+	const uint32_t meshRowCount = meshDeformationEnabled_ ? kMeshRowCount : kDefaultMeshRowCount;
 	// 頂点データ更新
-	vertexData[0].position = { left,bottom,0.0f,1.0f };// 左下
-	vertexData[1].position = { left,top,0.0f,1.0f };// 左上
-	vertexData[2].position = { right,bottom,0.0f,1.0f };// 右下
-	vertexData[3].position = { right,top,0.0f,1.0f };// 右上
-	vertexData[0].texcoord = { tex_left,tex_bottom };
-	vertexData[1].texcoord = { tex_left,tex_top };
-	vertexData[2].texcoord = { tex_right,tex_bottom };
-	vertexData[3].texcoord = { tex_right,tex_top };
+	for (uint32_t row = 0; row < meshRowCount; ++row) {
+		const float verticalRatio = static_cast<float>(row) / (meshRowCount - 1);
+		for (uint32_t column = 0; column < meshColumnCount; ++column) {
+			const float horizontalRatio = static_cast<float>(column) / (meshColumnCount - 1);
+			const uint32_t vertexIndex = row * meshColumnCount + column;
+			const Vector2& offset = meshOffsets_[vertexIndex];
+			vertexData[vertexIndex].position = {
+				left + (right - left) * horizontalRatio + offset.x,
+				top + (bottom - top) * verticalRatio + offset.y, 0.0f, 1.0f };
+			vertexData[vertexIndex].texcoord = {
+				tex_left + (tex_right - tex_left) * horizontalRatio,
+				tex_top + (tex_bottom - tex_top) * verticalRatio };
+		}
+	}
+	uint32_t index = 0;
+	for (uint32_t row = 0; row < meshRowCount - 1; ++row) {
+		for (uint32_t column = 0; column < meshColumnCount - 1; ++column) {
+			const uint32_t topLeft = row * meshColumnCount + column;
+			const uint32_t topRight = topLeft + 1;
+			const uint32_t bottomLeft = topLeft + meshColumnCount;
+			const uint32_t bottomRight = bottomLeft + 1;
+			indexData[index++] = topLeft;
+			indexData[index++] = bottomLeft;
+			indexData[index++] = topRight;
+			indexData[index++] = bottomLeft;
+			indexData[index++] = bottomRight;
+			indexData[index++] = topRight;
+		}
+	}
+	activeMeshIndexCount_ = index;
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * activeMeshIndexCount_;
 
 
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
@@ -152,7 +180,7 @@ void Sprite::Draw() {
 	// SRVのDescriptorTableの先頭を設定
 	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_));
 	// インデックスを使って描画
-	dxCommon_->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+	dxCommon_->GetCommandList()->DrawIndexedInstanced(activeMeshIndexCount_, 1, 0, 0, 0);
 
 }
 

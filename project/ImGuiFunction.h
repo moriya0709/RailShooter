@@ -6,6 +6,19 @@
 #include "ImGuiManager.h"
 #include "Calc.h"
 
+class Level;
+class GameObject;
+
+struct SceneEditorLayout {
+	float topBarHeight = 30.0f;
+	float leftPaneWidth = 300.0f;
+	float rightPaneWidth = 360.0f;
+	float bottomPaneHeight = 260.0f;
+	float hierarchyHeight = 180.0f;
+	Vector2 gameWindowPosition{};
+	Vector2 gameWindowSize{};
+};
+
 // 標準版 ImGui 向けの簡易ドッキングガイド。Visual Studio の中央ガイドと同じ操作を提供する。
 enum class DockGuideTarget {
 	None,
@@ -31,6 +44,8 @@ public:
 	bool ShouldDrawDockableWindow(const char* windowName);
 	void DrawMergedWindowTabs(const char* windowName);
 	void MergeDockableWindows(const char* targetWindow, const char* sourceWindow);
+	SceneEditorLayout BeginSceneEditor(Level& level, std::vector<std::unique_ptr<GameObject>>& levelObjects,
+		const char* defaultLevelName, Vector2& gameViewPosition, Vector2& gameViewSize, bool& isGameViewHovered);
 
 	// シングルトンインスタンスの取得
 	static ImGuiFunction* GetInstance();

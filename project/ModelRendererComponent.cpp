@@ -7,8 +7,10 @@
 #include "ObjectCommon.h"
 #include "Camera.h"
 #include "LightManager.h"
+#include "TextureManager.h"
 
 #include <algorithm>
+#include <filesystem>
 
 void ModelRendererComponent::Initialize() {
 	// 引数で受け取ってメンバ変数に記録する
@@ -115,7 +117,7 @@ void ModelRendererComponent::Draw() {
 
 	// 3Dモデルが割り当てられていれば描画する
 	if (model_) {
-		model_->Draw();
+		model_->Draw(activeTextureOverridePath_);
 	}
 
 }
@@ -128,7 +130,7 @@ void ModelRendererComponent::DrawOutline() {
 	// SetOutlinePipelineState() はシーン側で一度だけ設定済み。
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(3, outlineResource->GetGPUVirtualAddress());
-	model_->Draw();
+	model_->Draw(activeTextureOverridePath_);
 }
 
 void ModelRendererComponent::SetOutlineThickness(float thickness) {
@@ -197,6 +199,19 @@ void ModelRendererComponent::SetModel(const std::string& filePath) {
 	lodHighModelPath_.clear();
 	lodMediumModelPath_.clear();
 	lodLowModelPath_.clear();
+}
+
+void ModelRendererComponent::SetTextureOverride(const std::string& filePath) {
+	textureOverridePath_ = filePath;
+	activeTextureOverridePath_.clear();
+	if (!textureOverridePath_.empty()) {
+		std::error_code error;
+		if (!std::filesystem::is_regular_file(textureOverridePath_, error)) {
+			return;
+		}
+		TextureManager::GetInstance()->LoadTexture(textureOverridePath_);
+		activeTextureOverridePath_ = textureOverridePath_;
+	}
 }
 
 void ModelRendererComponent::SetLodModels(const std::string& highModelPath, const std::string& mediumModelPath,

@@ -32,7 +32,7 @@ using namespace DirectX;
 class SpriteCommon;
 class ObjectCommon;
 
-class TitleScene : public BaseScene {
+class SelectScene : public BaseScene {
 public:
 	// 初期化
 	void Initialize() override;
@@ -45,7 +45,7 @@ public:
 	void Finalize() override;
 
 private:
-	
+
 
 	Transform cameraTransform{
 	   { 1.0f, 1.0f, 1.0f }, // scale
@@ -165,10 +165,10 @@ private:
 	uint64_t lastRailStartRevision_ = 0;
 
 	// ギズモの操作モード
-	#ifdef USE_IMGUI
+#ifdef USE_IMGUI
 	ImGuizmo::OPERATION currentGizmoOperation = ImGuizmo::TRANSLATE;
 	int selectedTextMeshVertex_ = -1;
-	#endif
+#endif
 	// 現在選択されているオブジェクト（とりあえず0番目のオブジェクト用）
 	GameObject* selectedObject = nullptr;
 	// Game ウィンドウの現在位置。ImGui の移動・リサイズに合わせて毎フレーム更新する。
@@ -200,13 +200,6 @@ private:
 
 	// タイトルロゴの表示時間
 	float logoAlphaTime = 0.8f;
-	bool isStartLogo = true;
-	// キーのテキスト点滅
-	enum keyTextState {
-		FADE_IN,
-		FADE_OUT
-	};
-	keyTextState keyTextState_ = FADE_IN;
 
 	// トランジション中
 	bool isTransition = false;

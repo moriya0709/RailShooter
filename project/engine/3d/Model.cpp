@@ -111,14 +111,19 @@ std::string FindMaterialTexturePath(aiMaterial* material, const std::string& dir
 }
 
 std::string FindCompanionMetallicTexture(const std::string& roughnessTexturePath) {
-	constexpr std::string_view kRoughnessSuffix = "_Roughness.png";
-	if (!roughnessTexturePath.ends_with(kRoughnessSuffix)) {
+	namespace fs = std::filesystem;
+	const fs::path roughnessPath(roughnessTexturePath);
+	constexpr std::string_view kRoughnessSuffix = "_Roughness";
+	const std::string stem = roughnessPath.stem().string();
+	if (!std::string_view(stem).ends_with(kRoughnessSuffix)) {
 		return "__pbr_metallic";
 	}
 
-	std::string metallicTexturePath = roughnessTexturePath.substr(0, roughnessTexturePath.size() - kRoughnessSuffix.size());
-	metallicTexturePath += "_Metallic.png";
-	return std::filesystem::exists(metallicTexturePath) ? metallicTexturePath : "__pbr_metallic";
+	// map_refl を Assimp が認識できない OBJ では、粗さマップの拡張子を保った
+	// *_Metallic を探す。PNG だけでなく DDS を指定したモデルもここで補完できる。
+	const fs::path metallicPath = roughnessPath.parent_path() /
+		(stem.substr(0, stem.size() - kRoughnessSuffix.size()) + "_Metallic" + roughnessPath.extension().string());
+	return fs::exists(metallicPath) ? metallicPath.generic_string() : "__pbr_metallic";
 }
 
 bool IsGlassMaterialName(const std::string& materialName) {

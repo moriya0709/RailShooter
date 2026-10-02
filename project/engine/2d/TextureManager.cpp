@@ -1,6 +1,8 @@
 ﻿#include "TextureManager.h"
 #include "DirectXCommon.h"
 #include "SrvManager.h"
+#include <algorithm>
+#include <cctype>
 #include <cstring>
 #include <filesystem>
 
@@ -9,6 +11,13 @@ std::string NormalizeTextureKey(const std::string& key) {
 	// LOD ごとに "Higth/../Textures" のような異なる表記になる同一ファイルを
 	// 1 枚のテクスチャとして共有する。仮想キー（__pbr_* 等）もそのまま扱える。
 	return std::filesystem::path(key).lexically_normal().generic_string();
+}
+
+bool IsDdsTexturePath(const std::string& filePath) {
+	std::string extension = std::filesystem::path(filePath).extension().string();
+	std::transform(extension.begin(), extension.end(), extension.begin(),
+		[](unsigned char character) { return static_cast<char>(std::tolower(character)); });
+	return extension == ".dds";
 }
 }
 
@@ -48,8 +57,9 @@ void TextureManager::LoadTexture(const std::string& filePath, bool isSRGB) {
 	std::wstring filePathW = ConvertString(key);
 	HRESULT hr;
 
-	if (filePathW.ends_with(L".dds")) {
-		// DDSの読み込み
+	if (IsDdsTexturePath(key)) {
+		// DDS は WIC の対象外なので DirectXTex の DDS ローダーを使う。
+		// 拡張子の大文字小文字には依存しない。
 		hr = DirectX::LoadFromDDSFile(filePathW.c_str(), DirectX::DDS_FLAGS_NONE,nullptr,image);
 	} else {
 		// WICの読み込み

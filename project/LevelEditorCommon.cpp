@@ -345,13 +345,15 @@ void DrawToolbar(Level& level, const std::vector<std::unique_ptr<GameObject>>& l
 	auto* const sceneManager = SceneManager::GetInstance();
 	// Scene changes are deferred; disable selection until the pending change completes.
 	const bool isChangingScene = sceneManager->IsSceneChangePending();
-	const char* const currentSceneLabel = sceneManager->GetCurrentSceneName() == "TITLE" ? "Title" : "GamePlay";
+	const std::string& currentSceneName = sceneManager->GetCurrentSceneName();
+	const char* const currentSceneLabel = currentSceneName == "TITLE" ? "Title" :
+		currentSceneName == "SELECT" ? "Select" : "GamePlay";
 	ImGui::TextUnformatted("Scene");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(180.0f);
 	if (ImGui::BeginCombo("##SceneSelector", currentSceneLabel)) {
-		const char* const sceneIds[] = { "TITLE", "GAMEPLAY" };
-		const char* const sceneLabels[] = { "Title", "GamePlay" };
+		const char* const sceneIds[] = { "TITLE", "SELECT", "GAMEPLAY" };
+		const char* const sceneLabels[] = { "Title", "Select", "GamePlay" };
 		for (int index = 0; index < IM_ARRAYSIZE(sceneIds); ++index) {
 			const bool isCurrentScene = sceneManager->GetCurrentSceneName() == sceneIds[index];
 			if (!isChangingScene && ImGui::Selectable(sceneLabels[index], isCurrentScene) && !isCurrentScene) {

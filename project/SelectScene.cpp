@@ -16,6 +16,7 @@
 #include "RectTransformComponent.h"
 #include "ColliderComponent.h"
 #include "LevelEditorCommon.h"
+#include "LevelObjectFactory.h"
 #include "SkyBox.h"
 #include "LineCommon.h"
 #include "ModelManager.h"
@@ -86,57 +87,123 @@ void SelectScene::Update() {
 
 	trailEffect->Editor();
 
-	// タイトルロゴ
-	auto* logoAnimation = GameObject::FindByName("logoAnimation");
-	auto* logoTextObject1 = GameObject::FindByName("logoText_1");
-	auto* logoTextObject2 = GameObject::FindByName("logoText_2");
+	// セレクトテキスト&戦闘機
+	auto* modelAnimation = GameObject::FindByName("modelAnimation");
+	auto* playTextObject1 = GameObject::FindByName("PlayText_1");
+	auto* playTextObject2 = GameObject::FindByName("PlayText_2");
+	auto* settingTextObject1 = GameObject::FindByName("SettingText_1");
+	auto* settingTextObject2 = GameObject::FindByName("SettingText_2");
+	auto* quitTextObject1 = GameObject::FindByName("QuitText_1");
+	auto* quitTextObject2 = GameObject::FindByName("QuitText_2");
 
 	// ロゴアニメーションが終わったらロゴテキストをフェードイン
-	if (logoAnimation) {
-		auto* rail = logoAnimation->GetComponent<ObjectRailMovementComponent>();
+	if (modelAnimation) {
+		auto* rail = modelAnimation->GetComponent<ObjectRailMovementComponent>();
 		if (rail && !rail->IsPlaying()) {
-			if (auto* text1 = logoTextObject1 ? logoTextObject1->GetComponent<TextRendererComponent>() : nullptr) {
-				if (auto* text2 = logoTextObject2 ? logoTextObject2->GetComponent<TextRendererComponent>() : nullptr) {
-					// ロゴテキストの色
-					Vector4 color1;
-					Vector4 color2;
+			if (auto* text1 = playTextObject1 ? playTextObject1->GetComponent<TextRendererComponent>() : nullptr) {
+				if (auto* text2 = settingTextObject1 ? settingTextObject1->GetComponent<TextRendererComponent>() : nullptr) {
+					if (auto* text3 = quitTextObject1 ? quitTextObject1->GetComponent<TextRendererComponent>() : nullptr) {
+						// ロゴテキストの色
+						Vector4 color = text1->GetColor();
+						float alpha = color.w;
 
-					if (isTransition) {
-						// ロゴテキストのアルファ値を徐々に減少させる
-						color1 = text1->GetColor();
-						color1.w = std::clamp(color1.w - deltaTime * logoAlphaTime, 0.0f, 1.0f);
-						text1->SetColor(color1);
+						if (isTransition) {
+							// ロゴテキストのアルファ値を徐々に減少させる
+							alpha = std::clamp(alpha - deltaTime * logoAlphaTime, 0.0f, 1.0f);
 
-						color2 = text2->GetColor();
-						color2.w = std::clamp(color2.w - deltaTime * logoAlphaTime, 0.0f, 1.0f);
-						text2->SetColor(color2);
+							color = text1->GetColor();
+							color.w = alpha;
+							text1->SetColor(color);
 
-						if (auto* transition = GameObject::FindByName("transition"); transition && transition->IsActive()) {
-							// トランジションが終了したらシーン遷移
-							auto* transitionAnimation = transition->GetComponent<ObjectRailMovementComponent>();
-							if (transitionAnimation && !transitionAnimation->IsPlaying()) {
-								//SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+							color = text2->GetColor();
+							color.w = alpha;
+							text2->SetColor(color);
+
+							color = text3->GetColor();
+							color.w = alpha;
+							text3->SetColor(color);
+
+							if (auto* transition = GameObject::FindByName("transition"); transition && transition->IsActive()) {
+								// トランジションが終了したらシーン遷移
+								auto* transitionAnimation = transition->GetComponent<ObjectRailMovementComponent>();
+								if (transitionAnimation && !transitionAnimation->IsPlaying()) {
+									//if (selectedText_ == PLAY) {
+									//	SceneManager::GetInstance()->ChangeScene("TITLE");
+									//} else if (selectedText_ == SETTING) {
+									//	SceneManager::GetInstance()->ChangeScene("SETTING");
+									//} else if (selectedText_ == QUIT) {
+									//	SceneManager::GetInstance()->ChangeScene("QUIT");
+									//}
+								}
+							}
+						} else {
+							if (isStartFadeIn) {
+								// ロゴテキストのアルファ値を徐々に増加させる
+								alpha = std::clamp(alpha + deltaTime * logoAlphaTime, 0.0f, 1.0f);
+
+								color = text1->GetColor();
+								color.w = alpha;
+								text1->SetColor(color);
+
+								color = text2->GetColor();
+								color.w = alpha;
+								text2->SetColor(color);
+
+								color = text3->GetColor();
+								color.w = alpha;
+								text3->SetColor(color);
+
+								if (color.w >= 1.0f) {
+									isStartFadeIn = false; // 完全に表示されたらフラグを下ろす
+								}
 							}
 						}
-					} else {
-						// ロゴテキストのアルファ値を徐々に増加させる
-						color1 = text1->GetColor();
-						color1.w = std::clamp(color1.w + deltaTime * logoAlphaTime, 0.0f, 1.0f);
-						text1->SetColor(color1);
 
-						color2 = text2->GetColor();
-						color2.w = std::clamp(color2.w + deltaTime * logoAlphaTime, 0.0f, 1.0f);
-						text2->SetColor(color2);
-					}
+						// 演出が終了してから操作可能に
+						if (!isStartFadeIn) {
+							// 上下キーで選択中のテキストを切り替え
+							if (input->TriggerKey(DIK_W)) {
+								if (selectedText_ == PLAY) {
+									selectedText_ = QUIT;
+								} else if (selectedText_ == SETTING) {
+									selectedText_ = PLAY;
+								} else if (selectedText_ == QUIT) {
+									selectedText_ = SETTING;
+								}
+							}else if (input->TriggerKey(DIK_S)) {
+								if (selectedText_ == PLAY) {
+									selectedText_ = SETTING;
+								} else if (selectedText_ == SETTING) {
+									selectedText_ = QUIT;
+								} else if (selectedText_ == QUIT) {
+									selectedText_ = PLAY;
+								}
+							}
 
-					// ロゴが完全に表示されている状態でスペースキーが押されたらトランジション開始
-					if (color1.w >= 1.0f && color2.w >= 1.0f && input->TriggerKey(DIK_SPACE)) {
-						isTransition = true;
-						if (auto* transition = GameObject::FindByName("transition"); transition && !transition->IsActive()) {
-							// ロゴのモデルを非表示にする
-							logoAnimation->SetActive(false);
+							if (selectedText_ == PLAY) {
+								playTextObject2->SetActive(true);
+								settingTextObject2->SetActive(false);
+								quitTextObject2->SetActive(false);
+							} else if (selectedText_ == SETTING) {
+								playTextObject2->SetActive(false);
+								settingTextObject2->SetActive(true);
+								quitTextObject2->SetActive(false);
+							} else if (selectedText_ == QUIT) {
+								playTextObject2->SetActive(false);
+								settingTextObject2->SetActive(false);
+								quitTextObject2->SetActive(true);
+							}
 
-							transition->SetActive(true);
+							// トランジション開始
+							if (input->TriggerKey(DIK_SPACE)) {
+								isTransition = true;
+								if (auto* transition = GameObject::FindByName("transition"); transition && !transition->IsActive()) {
+									// ロゴのモデルを非表示にする
+									modelAnimation->SetActive(false);
+
+									transition->SetActive(true);
+								}
+							}
 						}
 					}
 				}
@@ -160,13 +227,6 @@ void SelectScene::Update() {
 				railCamera->points.push_back(p);
 			}
 		}
-
-		// The release build has no Rail Editor button to start the path.
-#ifndef USE_IMGUI
-		if (!railCamera->IsRailActive() && railCamera->CanStartRail()) {
-			railCamera->StartRail();
-		}
-#endif
 	}
 
 	// 3. その後、RailCamera自身の更新処理を呼ぶ
@@ -183,13 +243,8 @@ void SelectScene::Update() {
 		railCamera->Update();
 	}
 
-	// タイトルではレールカメラをそのまま表示カメラの基準にする。
-	const Vector3 railCameraPosition = railCamera->GetBasePosition();
-	const Vector3 railCameraRotation = railCamera->GetBaseRotation();
-
-
 	// デバックカメラ処理
-	#ifdef USE_IMGUI
+#ifdef USE_IMGUI
 	if (isDebugCamera) {
 		const Vector2 mousePosition = input->GetMouseScreen();
 		const bool isMouseInGameView = ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Game") &&
@@ -202,8 +257,12 @@ void SelectScene::Update() {
 	} else
 	#endif
 	{
-		camera->SetTranslate(railCameraPosition);
-		camera->SetRotate(railCameraRotation);
+		// レール再生中だけ Empty のカメラをレール座標で動かす。
+		// 非再生時は CameraComponent が Empty の Transform をそのまま使う。
+		if (railCamera->IsRailActive()) {
+			camera->SetTranslate(railCamera->GetBasePosition());
+			camera->SetRotate(railCamera->GetBaseRotation());
+		}
 		camera->Update();
 	}
 	cameraObject->Update();
@@ -211,7 +270,7 @@ void SelectScene::Update() {
 	// *スポナーの距離判定と敵の更新* //
 
 	// エディタカメラ操作中ではない（ゲームプレイ中）場合のみ起動・生成を進める
-	#ifdef USE_IMGUI
+#ifdef USE_IMGUI
 	if (!isDebugCamera) {
 	#endif
 		// タイトルでは表示カメラの位置をスポナーの起動基準にする。
@@ -230,7 +289,7 @@ void SelectScene::Update() {
 		}
 	#ifdef USE_IMGUI
 	}
-	#endif
+#endif
 
 	// カメラの現在の進行度を取得
 	float cameraProgress = railCamera->GetRailT();
@@ -1827,206 +1886,8 @@ void SelectScene::ResetEnemySpawning() {
 }
 
 void SelectScene::CreateLevel() {
-	for (auto& objectData : level->GetLevelData()->objects) {
-		if (objectData.type == "MESH" || objectData.type == "mesh") {
-			// 1. GameObject の生成
-			auto gameObject = std::make_unique<GameObject>(objectData.name);
-
-			// 2. TransformComponent を追加してトランスフォーム情報をセット
-			auto transform = gameObject->AddComponent<TransformComponent>();
-			transform->transform.translate = objectData.transform.translate;
-			transform->transform.rotate = objectData.transform.rotate;
-			transform->transform.scale = objectData.transform.scale;
-
-			// 3. ModelRendererComponent を追加して 3D モデルをセット
-			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
-			LevelEditorCommon::ConfigureBuildingLod(*modelRenderer, objectData);
-			if (!modelRenderer->HasLod()) {
-				modelRenderer->SetModel(objectData.file_name);
-			}
-			modelRenderer->SetMaxDrawDistance(objectData.maxDrawDistance);
-			modelRenderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
-			modelRenderer->SetOutlineThickness(objectData.modelOutlineThickness);
-			modelRenderer->SetOutlineColor(objectData.modelOutlineColor);
-			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
-			modelRenderer->SetColorOverride(objectData.modelColorOverride);
-			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
-			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
-			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
-				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
-				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
-					objectData.objectRailLoop, objectData.objectRailOrientToPath, objectData.objectRailPlayOnStart,
-					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
-			}
-
-			// 4. アタッチされたコンポーネントを一括初期化
-			gameObject->SetActive(objectData.active);
-			gameObject->Initialize();
-
-			// 5. コンテナに登録
-			levelObjects.push_back(std::move(gameObject));
-
-			std::string debugMsg = "LevelObject File: [" + objectData.file_name + "]\n";
-			OutputDebugStringA(debugMsg.c_str());
-		} else if (objectData.type == "RAIL" || objectData.type == "rail") {
-			// ★ JSONから読み込んだ座標と回転を RailCamera の制御点として追加
-			railCamera->AddPoint(objectData.transform.translate, objectData.transform.rotate);
-
-			// ★ ここから追加: 実体のGameObjectを生成してシーンに配置する
-			auto gameObject = std::make_unique<GameObject>(objectData.name);
-			auto transform = gameObject->AddComponent<TransformComponent>();
-
-			transform->transform.translate = objectData.transform.translate;
-			transform->transform.rotate = objectData.transform.rotate;
-			transform->transform.scale = objectData.transform.scale;
-
-			// モデルのセット (JSONにファイル名がない場合は "rail.obj" をデフォルトにする)
-			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
-			std::string modelName = objectData.file_name.empty() ? "rail.obj" : objectData.file_name;
-			modelRenderer->SetModel(modelName);
-			modelRenderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
-			modelRenderer->SetOutlineThickness(objectData.modelOutlineThickness);
-			modelRenderer->SetOutlineColor(objectData.modelOutlineColor);
-			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
-			modelRenderer->SetColorOverride(objectData.modelColorOverride);
-			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
-			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
-			gameObject->AddComponent<RailPointComponent>();
-			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
-				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
-				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
-					objectData.objectRailLoop, objectData.objectRailOrientToPath, objectData.objectRailPlayOnStart,
-					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
-			}
-
-			gameObject->SetActive(objectData.active);
-			gameObject->Initialize();
-			levelObjects.push_back(std::move(gameObject));
-
-		} else if (objectData.type == "SPAWNER" || objectData.type == "spawner") {
-			// SPAWNER の実体オブジェクトを生成して levelObjects に登録する
-			auto gameObject = std::make_unique<GameObject>(objectData.name);
-
-			auto transform = gameObject->AddComponent<TransformComponent>();
-			transform->transform.translate = objectData.transform.translate;
-			transform->transform.rotate = objectData.transform.rotate;
-			transform->transform.scale = objectData.transform.scale;
-
-			// エディタ表示用のモデルをアタッチ
-			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
-			modelRenderer->SetModel("cube.gltf");
-			modelRenderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
-			modelRenderer->SetOutlineThickness(objectData.modelOutlineThickness);
-			modelRenderer->SetOutlineColor(objectData.modelOutlineColor);
-			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
-			modelRenderer->SetColorOverride(objectData.modelColorOverride);
-			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
-			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
-
-			// ゲームロジック用のスポナーも同じ GameObject にアタッチする。
-			auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
-			spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
-			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
-				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
-				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
-					objectData.objectRailLoop, objectData.objectRailOrientToPath, objectData.objectRailPlayOnStart,
-					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
-			}
-
-			gameObject->SetActive(objectData.active);
-			gameObject->Initialize();
-			levelObjects.push_back(std::move(gameObject));
-		} else if (objectData.type == "EMPTY" || objectData.type == "empty") {
-			// Empty は Transform だけを持つ、Hierarchy 用の GameObject。
-			auto gameObject = std::make_unique<GameObject>(objectData.name);
-			gameObject->GetTransform()->transform = objectData.transform;
-
-			const auto hasComponent = [&objectData](const char* componentName) {
-				return std::find(objectData.components.begin(), objectData.components.end(), componentName) != objectData.components.end();
-				};
-			if (hasComponent("ModelRenderer")) {
-				auto* renderer = gameObject->AddComponent<ModelRendererComponent>();
-				LevelEditorCommon::ConfigureBuildingLod(*renderer, objectData);
-				if (!renderer->HasLod()) {
-					renderer->SetModel(objectData.file_name.empty() ? "cube.gltf" : objectData.file_name);
-				}
-				renderer->SetMaxDrawDistance(objectData.maxDrawDistance);
-				renderer->SetOutlineEnabled(objectData.modelOutlineEnabled);
-				renderer->SetOutlineThickness(objectData.modelOutlineThickness);
-				renderer->SetOutlineColor(objectData.modelOutlineColor);
-				renderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
-				renderer->SetColorOverride(objectData.modelColorOverride);
-				renderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
-				renderer->SetTextureOverride(objectData.modelTextureOverride);
-			}
-			if (hasComponent("RectTransform")) {
-				auto* rectTransform = gameObject->AddComponent<RectTransformComponent>();
-				rectTransform->position = objectData.rectPosition;
-				rectTransform->rotation = objectData.rectRotation;
-				rectTransform->scale = objectData.rectScale;
-			}
-			if (hasComponent("Collider")) {
-				auto* collider = gameObject->AddComponent<ColliderComponent>();
-				collider->size = objectData.colliderSize;
-				collider->centerOffset = objectData.colliderCenterOffset;
-			}
-			if (hasComponent("SpriteRenderer")) {
-				if (!gameObject->GetComponent<RectTransformComponent>()) {
-					gameObject->AddComponent<RectTransformComponent>();
-				}
-				auto* spriteRenderer = gameObject->AddComponent<SpriteRendererComponent>();
-				spriteRenderer->SetTexture(objectData.sprite_file_name.empty() ? "Resource/title/title.png" : objectData.sprite_file_name);
-				spriteRenderer->SetEmissive(objectData.spriteEmissiveColor, objectData.spriteEmissiveIntensity);
-			}
-			if (hasComponent("TextRenderer")) {
-				if (!gameObject->GetComponent<RectTransformComponent>()) {
-					gameObject->AddComponent<RectTransformComponent>();
-				}
-				auto* textRenderer = gameObject->AddComponent<TextRendererComponent>();
-				textRenderer->SetText(objectData.text);
-				textRenderer->SetFontFamilyUtf8(objectData.textFontFamily);
-				textRenderer->SetFontSize(objectData.textFontSize);
-				textRenderer->SetColor(objectData.textColor);
-				textRenderer->SetMaxWidth(objectData.textMaxWidth);
-				textRenderer->SetBold(objectData.textBold);
-				textRenderer->SetOutlineEnabled(objectData.textOutlineEnabled);
-				textRenderer->SetOutlineThickness(objectData.textOutlineThickness);
-				textRenderer->SetOutlineColor(objectData.textOutlineColor);
-				textRenderer->SetEmissive(objectData.textEmissiveColor, objectData.textEmissiveIntensity);
-				textRenderer->SetCharacterSpacing(objectData.textCharacterSpacing);
-				textRenderer->SetMeshOffsets(objectData.textMeshOffsets);
-			}
-			if (hasComponent("RailPoint")) {
-				gameObject->AddComponent<RailPointComponent>();
-			}
-			if (hasComponent("ObjectRailMovement")) {
-				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
-				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
-					objectData.objectRailLoop, objectData.objectRailOrientToPath, objectData.objectRailPlayOnStart,
-					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
-			}
-			if (hasComponent("Camera")) {
-				auto* cameraComponent = gameObject->AddComponent<CameraComponent>();
-				if (!camera) {
-					camera = cameraComponent;
-					cameraObject = gameObject.get();
-				}
-			}
-			if (hasComponent("EnemySpawner")) {
-				auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
-				spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
-			}
-			if (hasComponent("EnemyNormal")) {
-				auto* enemy = gameObject->AddComponent<EnemyNormal>();
-				enemy->SetTransform(objectData.transform);
-			}
-			gameObject->SetActive(objectData.active);
-			gameObject->Initialize();
-			levelObjects.push_back(std::move(gameObject));
-		}
-
-	}
-
+	LevelObjectFactory::CreateObjects(level->GetLevelData()->objects, *railCamera, spawnDistance,
+		levelObjects, camera, cameraObject);
 }
 
 #ifdef USE_IMGUI

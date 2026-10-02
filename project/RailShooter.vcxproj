@@ -70,6 +70,7 @@
     <ClCompile Include="engine\base\Level.cpp" />
     <ClCompile Include="ImGuiFunction.cpp" />
     <ClCompile Include="LevelEditorCommon.cpp" />
+	<ClCompile Include="LevelObjectFactory.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
@@ -343,6 +344,7 @@
     <ClInclude Include="engine\2d\Sprite.h" />
     <ClInclude Include="ImGuiFunction.h" />
     <ClInclude Include="LevelEditorCommon.h" />
+	<ClInclude Include="LevelObjectFactory.h" />
     <ClInclude Include="SelectScene.h" />
     <ClInclude Include="SpriteRendererComponent.h" />
     <ClInclude Include="TextRendererComponent.h" />

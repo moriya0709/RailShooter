@@ -1,0 +1,42 @@
+# Blender 5.1.0 MTL File: 'untitled.blend'
+# www.blender.org
+
+newmtl default.076
+Ns 129.600006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/F-20_Tigershark_P01.dds
+map_Bump -bm 1.000000 C:/F-20_Tigershark_N.dds
+
+newmtl default.077
+Ns 129.600006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ni 1.500000
+d 0.309091
+illum 1
+map_Kd C:/F-20_Tigershark_P01.dds
+map_Bump -bm 1.000000 C:/F-20_Tigershark_N.dds
+
+newmtl default.078
+Ns 129.600006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/Pilot_usa.dds
+
+newmtl default.079
+Ns 129.600006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/Eject_Seat.dds

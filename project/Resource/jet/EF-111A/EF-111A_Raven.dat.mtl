@@ -1,0 +1,43 @@
+# Blender 5.1.0 MTL File: 'untitled.blend'
+# www.blender.org
+
+newmtl default.031
+Ns 184.119019
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/EF-111_Raven_P01.dds
+map_Bump -bm 1.000000 C:/EF-111_Raven_N.dds
+
+newmtl default.032
+Ns 193.600006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 0.618182
+illum 1
+map_Kd C:/EF-111_Raven_P01.dds
+map_Bump -bm 1.000000 C:/EF-111_Raven_N.dds
+
+newmtl default.033
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/Pilot_usa.dds
+
+newmtl default.034
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/Eject_Seat.dds

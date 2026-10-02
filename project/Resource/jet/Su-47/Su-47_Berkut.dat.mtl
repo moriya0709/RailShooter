@@ -1,0 +1,42 @@
+# Blender 5.1.0 MTL File: 'untitled.blend'
+# www.blender.org
+
+newmtl default.112
+Ns 148.575195
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/Su-47_Berkut_P01.dds
+map_Bump -bm 1.000000 C:/Su-47_Berkut_N.dds
+
+newmtl default.113
+Ns 148.575195
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ni 1.500000
+d 0.283636
+illum 1
+map_Kd C:/Su-47_Berkut_P01.dds
+map_Bump -bm 1.000000 C:/Su-47_Berkut_N.dds
+
+newmtl default.114
+Ns 148.575195
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/Pilot_usa.dds
+
+newmtl default.115
+Ns 148.575195
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/Eject_Seat.dds

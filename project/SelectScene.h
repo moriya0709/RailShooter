@@ -198,8 +198,16 @@ private:
 	std::unique_ptr<GameTimer> gameTimer = nullptr;
 	float deltaTime;
 
-	// タイトルロゴの表示時間
+	// セレクトテキストの表示時間
 	float logoAlphaTime = 0.8f;
+	bool isStartFadeIn = true;
+	// 選択中のテキスト
+	enum SelectionText {
+		PLAY,
+		SETTING,
+		QUIT
+	};
+	SelectionText selectedText_ = PLAY;
 
 	// トランジション中
 	bool isTransition = false;

@@ -1,0 +1,43 @@
+# Blender 5.1.0 MTL File: 'untitled.blend'
+# www.blender.org
+
+newmtl default.023
+Ns 102.399994
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/B-52H_Stratofortress_P01_highpoly.dds
+map_Bump -bm 1.000000 C:/B-52H_Stratofortress_N.dds
+
+newmtl default.024
+Ns 109.500816
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 0.378182
+illum 1
+map_Kd C:/B-52H_Stratofortress_P01_highpoly.dds
+map_Bump -bm 1.000000 C:/B-52H_Stratofortress_N.dds
+
+newmtl default.025
+Ns 102.399994
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/Pilot_usa.dds
+
+newmtl default.026
+Ns 102.399994
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/Eject_Seat.dds

@@ -263,6 +263,7 @@
     </ClCompile>
     <ClCompile Include="ImGuiFunction.cpp" />
     <ClCompile Include="LevelEditorCommon.cpp" />
+	<ClCompile Include="LevelObjectFactory.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="SelectScene.cpp" />
   </ItemGroup>
@@ -462,6 +463,7 @@
     </ClInclude>
     <ClInclude Include="ImGuiFunction.h" />
     <ClInclude Include="LevelEditorCommon.h" />
+	<ClInclude Include="LevelObjectFactory.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="SelectScene.h" />
   </ItemGroup>

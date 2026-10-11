@@ -52,17 +52,19 @@ public:
     // 進行度 (railT) を取得する関数
     float GetRailT() const { return railT; }
 
-    // 注視点を設定する関数
+	// 注視点を設定する関数
     void SetTargetPosition(const Vector3& target) { targetPosition = target; }
+	void SetDirectionMode(RailCameraDirectionMode mode) { cameraMode = static_cast<CameraMode>(mode); }
+	RailCameraDirectionMode GetDirectionMode() const { return static_cast<RailCameraDirectionMode>(cameraMode); }
 
     // 制御点追加
     void AddPoint(Vector3 pos, Vector3 rotate);
 
 private:
 	enum class CameraMode {
-        Direction,
-		Target,
-        Specified
+		Direction = static_cast<int>(RailCameraDirectionMode::FollowPath),
+		Target = static_cast<int>(RailCameraDirectionMode::LookAtTarget),
+        Specified = static_cast<int>(RailCameraDirectionMode::UsePointRotation)
 	};
 	CameraMode cameraMode = CameraMode::Direction;
 

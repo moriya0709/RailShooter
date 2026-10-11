@@ -32,6 +32,7 @@ void SelectScene::Initialize() {
 	// レベル
 	level = std::make_unique<Level>();
 	level->LoadJson("SelectScene");
+	activeRailGroupName_ = level->GetLevelData()->activeRailCameraGroup;
 	CreateLevel();
 	if (!camera) {
 		fallbackCameraObject = std::make_unique<GameObject>("MainCamera");
@@ -216,9 +217,15 @@ void SelectScene::Update() {
 	// 1. レールカメラの更新（レール上の現在位置・回転を計算）
 	// 2. ★ GameObject の座標を RailCamera の制御点として毎フレーム上書き（同期）する
 	if (railCamera) {
+		RailCameraGroupData& railSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), activeRailGroupName_);
+		railCamera->SetDirectionMode(railSettings.directionMode);
+		railCamera->SetTargetPosition(railSettings.targetPosition);
 		railCamera->points.clear(); // 一旦リセット
 
-		for (const auto& levelObject : levelObjects) {
+		for (size_t index = 0; index < levelObjects.size(); ++index) {
+			if (index >= level->GetLevelData()->objects.size() ||
+				level->GetLevelData()->objects[index].groupName != activeRailGroupName_) continue;
+			const auto& levelObject = levelObjects[index];
 			if (auto* railPoint = levelObject->GetComponent<RailPointComponent>(); railPoint && railPoint->IsEnabled() && levelObject->IsActive()) {
 				auto* transformComp = levelObject->GetTransform();
 				RailPoint p{};
@@ -775,6 +782,26 @@ void SelectScene::Update() {
 				ImGui::EndPopup();
 			}
 			if (groupOpen) {
+				ImGui::PushID(groupName.c_str());
+				const bool isActiveRailGroup = activeRailGroupName_ == groupName;
+				if (ImGui::Button(isActiveRailGroup ? "Active Rail Camera" : "Use as Rail Camera")) {
+					activeRailGroupName_ = groupName;
+					level->GetLevelData()->activeRailCameraGroup = groupName;
+					railCamera->StopRail();
+				}
+				if (isActiveRailGroup) {
+					RailCameraGroupData& railSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), groupName);
+					int directionMode = static_cast<int>(railSettings.directionMode);
+					const char* directionModes[] = { "Follow Path", "Look At Target", "Use Point Rotation" };
+					if (ImGui::Combo("Camera Direction", &directionMode, directionModes, IM_ARRAYSIZE(directionModes))) {
+						railSettings.directionMode = static_cast<RailCameraDirectionMode>(directionMode);
+					}
+					if (railSettings.directionMode == RailCameraDirectionMode::LookAtTarget) {
+						ImGui::DragFloat3("Look At Target", &railSettings.targetPosition.x, 0.1f);
+					}
+					ImGui::TextDisabled("Only Rail Camera Point objects in this group are used.");
+				}
+				ImGui::PopID();
 				for (size_t index = 0; index < levelObjects.size(); ++index) {
 					if (level->GetLevelData()->objects[index].groupName == groupName) {
 						drawHierarchyObject(index);
@@ -784,6 +811,25 @@ void SelectScene::Update() {
 			}
 		}
 		if (ImGui::TreeNodeEx("Ungrouped", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::PushID("UngroupedRailCamera");
+			const bool isActiveRailGroup = activeRailGroupName_.empty();
+			if (ImGui::Button(isActiveRailGroup ? "Active Rail Camera" : "Use as Rail Camera")) {
+				activeRailGroupName_.clear();
+				level->GetLevelData()->activeRailCameraGroup.clear();
+				railCamera->StopRail();
+			}
+			if (isActiveRailGroup) {
+				RailCameraGroupData& railSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), "");
+				int directionMode = static_cast<int>(railSettings.directionMode);
+				const char* directionModes[] = { "Follow Path", "Look At Target", "Use Point Rotation" };
+				if (ImGui::Combo("Camera Direction", &directionMode, directionModes, IM_ARRAYSIZE(directionModes))) {
+					railSettings.directionMode = static_cast<RailCameraDirectionMode>(directionMode);
+				}
+				if (railSettings.directionMode == RailCameraDirectionMode::LookAtTarget) {
+					ImGui::DragFloat3("Look At Target", &railSettings.targetPosition.x, 0.1f);
+				}
+			}
+			ImGui::PopID();
 			for (size_t index = 0; index < levelObjects.size(); ++index) {
 				if (level->GetLevelData()->objects[index].groupName.empty()) {
 					drawHierarchyObject(index);
@@ -792,11 +838,19 @@ void SelectScene::Update() {
 			ImGui::TreePop();
 		}
 		if (!groupToDelete.empty()) {
+			if (activeRailGroupName_ == groupToDelete) {
+				activeRailGroupName_.clear();
+				level->GetLevelData()->activeRailCameraGroup.clear();
+				railCamera->StopRail();
+			}
 			for (auto& objectData : level->GetLevelData()->objects) {
 				if (objectData.groupName == groupToDelete) objectData.groupName.clear();
 			}
 			auto& groups = level->GetLevelData()->groups;
 			groups.erase(std::remove(groups.begin(), groups.end(), groupToDelete), groups.end());
+			auto& railGroups = level->GetLevelData()->railCameraGroups;
+			railGroups.erase(std::remove_if(railGroups.begin(), railGroups.end(),
+				[&groupToDelete](const RailCameraGroupData& group) { return group.groupName == groupToDelete; }), railGroups.end());
 		}
 		if (objectToDuplicate >= 0) {
 			ObjectData copyData = level->GetLevelData()->objects[objectToDuplicate];
@@ -2209,4 +2263,3 @@ void SelectScene::GizmoUpdate(bool showEditorControls) {
 void SelectScene::GizmoUpdate([[maybe_unused]] bool showEditorControls) {}
 
 #endif
-

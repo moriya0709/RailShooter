@@ -141,7 +141,7 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	effectData->isRadialBlur = false;
 	effectData->isDistanceFog = false;
 	effectData->isHeightFog = false;
-	effectData->isDOF = true;
+	effectData->isDoF = true;
 	// 放射線ブラー用のパラメータ
 	effectData->blurCenter = { 0.5f,0.5f };
 	effectData->blurWidth = 0.01f;
@@ -183,13 +183,41 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	effectData->isVignette = false; // ビネットON/OFF
 	effectData->vignetteIntensity = 0.5f; // ビネットの強さ
 	effectData->vignetteColor = { 0.0f,0.0f,0.0f }; // ビネットの色
-	// ガウシアンフィルタ
-	effectData->isGaussianFilter = false; // ガウシアンフィルタON/OFF
-	effectData->gaussianSigma = 1.0f; // ガウシアンフィルタのぼかしの強さ
+	// スピードディストーション
+	effectData->isSpeedDistortion = false; // スピードディストーションON/OFF
+	effectData->speedDistortionStrength = 1.0f; // スピードディストーションの強さ
+	// 集中線
+	effectData->isConcentrationLines = false; // 集中線ON/OFF
+	effectData->concentrationLineIntensity = 1.0f; // 集中線の強さ
+	effectData->concentrationLineCenter = { 0.5f, 0.5f }; // 集中線の中心
+	effectData->concentrationLineDensity = 1.0f; // 集中線の密度
+	effectData->concentrationLineLength = 1.0f; // 集中線の長さ
+	effectData->concentrationLineSpeed = 1.0f; // 集中線の速度
+	effectData->time = 0.0f; // アニメーションの時間（秒）
+	// ピンチエフェクト
+	effectData->isPinch = false; // ピンチエフェクトON/OFF
+	effectData->pinchStrength = 1.0f; // ピンチエフェクトの強さ
+	effectData->pinchCenter = { 0.5f, 0.5f }; // ピンチエフェクトの中心
+	effectData->pinchRadius = 0.5f; // ピンチエフェクトの半径
+	// モノクロ
+	effectData->isTwoColor = false; // モノクロON/OFF
+	effectData->threshold = 0.5f; // 二値化の閾値
+	effectData->contrast = 1.0f; // コントラスト
 	// アウトライン
 	effectData->isOutline = false; // アウトラインON/OFF
 	effectData->outlineThreshold = 0.1f; // エッジ判定の閾値
 	effectData->outlineColor = { 0.0f,0.0f,0.0f,1.0f }; // エッジの色
+	// 平滑化
+	effectData->isBoxFilter = false; // 平滑化ON/OFF
+	// ディゾルブ
+	effectData->isDissolve = false; // ディゾルブON/OFF
+	effectData->dissolveThreshold = 0.5f; // ディゾルブの閾値
+	effectData->dissolveEdgeWidth = 0.1f; // ディゾルブのエッジ幅
+	effectData->dissolveNoiseScale = 1.0f; // ディゾルブのノイズの細かさ
+	effectData->dissolveNoiseColor = { 1.0f,1.0f,1.0f }; // ディゾルブのノイズの色
+	effectData->dissolveEdgeColor = { 1.0f,1.0f,1.0f }; // ディゾルブのエッジの色
+	// ランダムノイズ
+	effectData->isRandomNoise = false; // ランダムノイズON/OFF
 
 	effectData->intensity = 1.0f;
 
@@ -222,6 +250,12 @@ void PostEffect::Update(Camera* camera) {
 	float baseDist = 0.3f; // 太陽が中央のとき（密集）
 	float maxDist = 0.7f;  // 太陽が端のとき（拡散）
 	effectData->lensFlareGhostDispersal = baseDist + (maxDist - baseDist) * lerpFactor;
+	
+
+	// 集中線のアニメーション制御
+	if (effectData->isConcentrationLines) {
+		effectData->time += 1.0f / 60.0f;
+	}
 
 	// ダメージエフェクト
 	DamageEffectUpdate();

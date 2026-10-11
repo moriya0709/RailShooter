@@ -137,16 +137,67 @@ private:
 	int motionBlurSamples = 16; // サンプル数（例：8〜16）
 	float motionBlurScale = 1.0f;   // ブラーの強さ
 
+	// 色収差
+	bool isFullScreenCA = false; // 画面全体の色収差ON/OFF
+	float fullScreenCAIntensity = 0.02f; // 画面全体の色収差の強さ
+	// ビネット
+	bool isVignette = true; // ビネットのON/OFF
+	float vignetteIntensity = 0.5f; // ビネットの強さ
+	Vector3 vignetteColor = { 0.0f, 0.0f, 0.0f };   // 色
+
+	// スピードディストーション
+	bool isSpeedDistortion = false; // スピードディストーションのON/OFF
+	float speedDistortionStrength = 1.0f; // 歪みの強さ
+
+	// 集中線
+	bool isConcentrationLines = false; // ON/OFF
+	float concentrationLineIntensity = 1.0f; // 線の濃さ
+	Vector2 concentrationLineCenter = { 0.5f, 0.5f }; // 中心座標 (通常 0.5, 0.5)
+	float concentrationLineDensity = 10.0f; // 線の密度（本数）
+	float concentrationLineLength = 0.5f; // 線の長さ（中心からの開始距離 0.0〜1.0）
+	float concentrationLineSpeed = 1.0f; // アニメーション速度
+
+	// ピンチエフェクト
+	bool isPinch = false; // ON/OFF
+	float pinchStrength = 0.5f; // 歪みの強さ（正の値で吸い込み、負の値で膨張）
+	Vector2 pinchCenter = { 0.5f, 0.5f }; // 歪みの中心 (通常 0.5, 0.5)
+	float pinchRadius = 0.5f; // 歪みが影響する半径
+
+	// モノクロ
+	bool isTwoColor = false; // 二値化
+	float threshold = 0.5f; // 白と黒の境界値 (0.0~1.0)
+	float contrast = 1.0f; // コントラストの強さ
+
+	// アウトライン
+	bool isOutline = false;  // ON/OFF
+	float outlineThreshold = 0.5f; // 境界値
+	Vector4 outlineColor = { 1.0f, 1.0f, 1.0f, 1.0f };    // 色
+
+	// 平滑化
+	bool isBoxFilter = false;   // ON/OFF
+
+	// ディゾルブ
+	bool isDissolve = false;     // ON/OFF
+	float dissolveThreshold = 0.5f;    // 境界値
+	float dissolveEdgeWidth = 0.1f;    // エッジの幅
+	float dissolveNoiseScale = 1.0f;   // ノイズの細かさ
+
+	Vector3 dissolveNoiseColor = { 0.5f, 0.5f, 0.5f }; // ノイズの色
+	Vector3 dissolveEdgeColor = { 0.0f, 0.0f, 0.0f };   // エッジの色
+
+	// ランダムノイズ
+	bool isRandomNoise = false;  // ON/OFF
+
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
-	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
-	float rayMarchingCloudCoverage = 0.00f;
-	float rayMarchingCloudBottom = -90.0f;
-	float rayMarchingCloudTop = 2900.0f;
+	Vector3 rayMarchingSunDir = { 0.0f, -0.17f, -1.0f };
+	float rayMarchingCloudCoverage = 0.22f;
+	float rayMarchingCloudBottom = -330.0f;
+	float rayMarchingCloudTop = -1000.0f;
 	bool rayMarchingIsRialLight = false;
 	bool rayMarchingIsAnimeLight = true;
 	bool  rayMarchingIsMotionBlur = false;
-	float  rayMarchingCloudOpacity = 0.04f;
+	float  rayMarchingCloudOpacity = 0.002f;
 	bool isStorm = false;
 	float thunderFrequency = 0.3f;
 	float thunderBrightness = 120.0f;
@@ -181,6 +232,8 @@ private:
 	std::unique_ptr<GameObject> fallbackCameraObject = nullptr;
 	CameraComponent* camera = nullptr;
 	std::unique_ptr<RailCamera> railCamera = nullptr;
+	// 空文字列は従来どおり未グループの RailPoint をレールとして使う。
+	std::string activeRailGroupName_;
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
 	// レベル

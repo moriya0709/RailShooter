@@ -38,6 +38,20 @@ void Level::LoadJson(const std::string fileName) {
 	if (deserialized.contains("groups") && deserialized["groups"].is_array()) {
 		levelData->groups = deserialized["groups"].get<std::vector<std::string>>();
 	}
+	levelData->activeRailCameraGroup = deserialized.value("active_rail_camera_group", std::string{});
+	if (deserialized.contains("rail_camera_groups") && deserialized["rail_camera_groups"].is_array()) {
+		for (const auto& group : deserialized["rail_camera_groups"]) {
+			if (!group.is_object() || !group.contains("name") || !group["name"].is_string()) continue;
+			RailCameraGroupData settings{};
+			settings.groupName = group["name"].get<std::string>();
+			const int mode = group.value("direction_mode", static_cast<int>(RailCameraDirectionMode::FollowPath));
+			settings.directionMode = static_cast<RailCameraDirectionMode>(std::clamp(mode, 0, 2));
+			if (group.contains("target_position") && group["target_position"].is_array() && group["target_position"].size() == 3) {
+				settings.targetPosition = { group["target_position"][0].get<float>(), group["target_position"][1].get<float>(), group["target_position"][2].get<float>() };
+			}
+			levelData->railCameraGroups.push_back(settings);
+		}
+	}
 
 	// "objects"の全オブジェクトを走査
 	for (nlohmann::json& object : deserialized["objects"]) {
@@ -280,6 +294,15 @@ void Level::SaveJson(const std::string fileName) {
 	}
 	deserialized["name"] = levelData->name.empty() ? "scene" : levelData->name;
 	deserialized["groups"] = levelData->groups;
+	deserialized["active_rail_camera_group"] = levelData->activeRailCameraGroup;
+	deserialized["rail_camera_groups"] = nlohmann::json::array();
+	for (const RailCameraGroupData& group : levelData->railCameraGroups) {
+		deserialized["rail_camera_groups"].push_back({
+			{ "name", group.groupName },
+			{ "direction_mode", static_cast<int>(group.directionMode) },
+			{ "target_position", { group.targetPosition.x, group.targetPosition.y, group.targetPosition.z } }
+		});
+	}
 	deserialized["objects"] = nlohmann::json::array();
 
 	// ★ JSONの objects 配列を一旦クリアし、現在の levelData で完全に作り直す（インデックスのズレを防止）

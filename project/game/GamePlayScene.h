@@ -185,6 +185,8 @@ private:
 	std::unique_ptr<GameObject> fallbackCameraObject = nullptr;
 	CameraComponent* camera = nullptr;
 	std::unique_ptr<RailCamera> railCamera = nullptr;
+	// 空文字列は従来どおり未グループの RailPoint をレールとして使う。
+	std::string activeRailGroupName_;
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
 	// レベル

@@ -32,6 +32,7 @@ void TitleScene::Initialize() {
 	// レベル
 	level = std::make_unique<Level>();
 	level->LoadJson("TitleScene");
+	activeRailGroupName_ = level->GetLevelData()->activeRailCameraGroup;
 	CreateLevel();
 	if (!camera) {
 		fallbackCameraObject = std::make_unique<GameObject>("MainCamera");
@@ -91,69 +92,77 @@ void TitleScene::Update() {
 	auto* logoAnimation = GameObject::FindByName("logoAnimation");
 	auto* logoTextObject1 = GameObject::FindByName("logoText_1");
 	auto* logoTextObject2 = GameObject::FindByName("logoText_2");
+	auto* logoTextObject3 = GameObject::FindByName("logoText_3");
 	auto* keyTextObject = GameObject::FindByName("keyText");
 
 	// ロゴアニメーションが終わったらロゴテキストをフェードイン
 	if (logoAnimation) {
 		auto* rail = logoAnimation->GetComponent<ObjectRailMovementComponent>();
 		if (rail && !rail->IsPlaying()) {
-			if (auto* text1 = logoTextObject1 ? logoTextObject1->GetComponent<TextRendererComponent>() : nullptr) {
-				if (auto* text2 = logoTextObject2 ? logoTextObject2->GetComponent<TextRendererComponent>() : nullptr) {
-					// Title presentation includes keyText; selection-specific fading is handled by SelectScene.
-					auto* text3 = keyTextObject ? keyTextObject->GetComponent<TextRendererComponent>() : nullptr;
-					auto setAlpha = [text1, text2, text3](float alpha) {
-						auto color = text1->GetColor();
-						color.w = alpha;
-						text1->SetColor(color);
-						color = text2->GetColor();
-						color.w = alpha;
-						text2->SetColor(color);
-						if (text3) {
-							color = text3->GetColor();
-							color.w = alpha;
-							text3->SetColor(color);
-						}
-					};
+			auto* logoText1 = logoTextObject1 ? logoTextObject1->GetComponent<TextRendererComponent>() : nullptr;
+			auto* logoText2 = logoTextObject2 ? logoTextObject2->GetComponent<TextRendererComponent>() : nullptr;
+			auto* logoText3 = logoTextObject3 ? logoTextObject3->GetComponent<TextRendererComponent>() : nullptr;
+			auto* keyText = keyTextObject ? keyTextObject->GetComponent<TextRendererComponent>() : nullptr;
+			auto setAlpha = [logoText1, logoText2, logoText3, keyText](float alpha) {
+				
+				auto color = logoText1->GetColor();
+				if (alpha < 0.1f) {
+					color.w = alpha;
+					logoText1->SetColor(color);
+				}
 
-					float alpha = text1->GetColor().w;
-					if (isTransition) {
-						setAlpha(std::clamp(alpha - deltaTime * logoAlphaTime, 0.0f, 1.0f));
-						if (auto* transition = GameObject::FindByName("transition"); transition && transition->IsActive()) {
-							auto* transitionAnimation = transition->GetComponent<ObjectRailMovementComponent>();
-							if (transitionAnimation && !transitionAnimation->IsPlaying()) {
-								SceneManager::GetInstance()->ChangeScene("SELECT");
-							}
-						}
-					} else if (isStartLogo) {
-						alpha = std::clamp(alpha + deltaTime * logoAlphaTime, 0.0f, 1.0f);
-						setAlpha(alpha);
-						if (alpha >= 1.0f) {
-							isStartLogo = false;
-						}
-					} else if (text3) {
-						alpha = text3->GetColor().w;
-						if (alpha >= 1.0f) {
-							keyTextState_ = FADE_OUT;
-						} else if (alpha <= 0.0f) {
-							keyTextState_ = FADE_IN;
-						}
-						alpha = keyTextState_ == FADE_IN ?
-							std::clamp(alpha + deltaTime * logoAlphaTime, 0.0f, 1.0f) :
-							std::clamp(alpha - deltaTime * logoAlphaTime, 0.0f, 1.0f);
-						auto color = text3->GetColor();
-						color.w = alpha;
-						text3->SetColor(color);
-					}
+				color = logoText2->GetColor();
+				color.w = alpha;
+				logoText2->SetColor(color);
 
-					if (!isStartLogo && input->TriggerKey(DIK_SPACE)) {
-						isTransition = true;
-						if (auto* transition = GameObject::FindByName("transition"); transition && !transition->IsActive()) {
-							logoAnimation->SetActive(false);
-							transition->SetActive(true);
-						}
+				color = logoText3->GetColor();
+				color.w = alpha;
+				logoText3->SetColor(color);
+
+				color = keyText->GetColor();
+				color.w = alpha;
+				keyText->SetColor(color);
+			};
+
+			float alpha = logoText2->GetColor().w;
+			if (isTransition) {
+				setAlpha(std::clamp(alpha - deltaTime * logoAlphaTime, 0.0f, 1.0f));
+				if (auto* transition = GameObject::FindByName("transition"); transition && transition->IsActive()) {
+					auto* transitionAnimation = transition->GetComponent<ObjectRailMovementComponent>();
+					if (transitionAnimation && !transitionAnimation->IsPlaying()) {
+						//SceneManager::GetInstance()->ChangeScene("SELECT");
 					}
 				}
+			} else if (isStartLogo) {
+				alpha = std::clamp(alpha + deltaTime * logoAlphaTime, 0.0f, 1.0f);
+				setAlpha(alpha);
+				if (alpha >= 1.0f) {
+					isStartLogo = false;
+				}
+			} else if (keyText) {
+				alpha = keyText->GetColor().w;
+				if (alpha >= 1.0f) {
+					keyTextState_ = FADE_OUT;
+				} else if (alpha <= 0.0f) {
+					keyTextState_ = FADE_IN;
+				}
+				alpha = keyTextState_ == FADE_IN ?
+					std::clamp(alpha + deltaTime * logoAlphaTime, 0.0f, 1.0f) :
+					std::clamp(alpha - deltaTime * logoAlphaTime, 0.0f, 1.0f);
+				auto color = keyText->GetColor();
+				color.w = alpha;
+				keyText->SetColor(color);
 			}
+
+			if (!isStartLogo && input->TriggerKey(DIK_SPACE)) {
+				isTransition = true;
+				if (auto* transition = GameObject::FindByName("transition"); transition && !transition->IsActive()) {
+					logoAnimation->SetActive(false);
+					transition->SetActive(true);
+				}
+			}
+
+
 		}
 
 	}
@@ -162,9 +171,15 @@ void TitleScene::Update() {
 	// 1. レールカメラの更新（レール上の現在位置・回転を計算）
 	// 2. ★ GameObject の座標を RailCamera の制御点として毎フレーム上書き（同期）する
 	if (railCamera) {
+		RailCameraGroupData& railSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), activeRailGroupName_);
+		railCamera->SetDirectionMode(railSettings.directionMode);
+		railCamera->SetTargetPosition(railSettings.targetPosition);
 		railCamera->points.clear(); // 一旦リセット
 
-		for (const auto& levelObject : levelObjects) {
+		for (size_t index = 0; index < levelObjects.size(); ++index) {
+			if (index >= level->GetLevelData()->objects.size() ||
+				level->GetLevelData()->objects[index].groupName != activeRailGroupName_) continue;
+			const auto& levelObject = levelObjects[index];
 			if (auto* railPoint = levelObject->GetComponent<RailPointComponent>(); railPoint && railPoint->IsEnabled() && levelObject->IsActive()) {
 				auto* transformComp = levelObject->GetTransform();
 				RailPoint p{};
@@ -190,7 +205,7 @@ void TitleScene::Update() {
 	}
 
 	// デバックカメラ処理
-	#ifdef USE_IMGUI
+#ifdef USE_IMGUI
 	if (isDebugCamera) {
 		const Vector2 mousePosition = input->GetMouseScreen();
 		const bool isMouseInGameView = ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Game") &&
@@ -216,7 +231,7 @@ void TitleScene::Update() {
 	// *スポナーの距離判定と敵の更新* //
 
 	// エディタカメラ操作中ではない（ゲームプレイ中）場合のみ起動・生成を進める
-	#ifdef USE_IMGUI
+#ifdef USE_IMGUI
 	if (!isDebugCamera) {
 	#endif
 		// タイトルでは表示カメラの位置をスポナーの起動基準にする。
@@ -235,7 +250,7 @@ void TitleScene::Update() {
 		}
 	#ifdef USE_IMGUI
 	}
-	#endif
+#endif
 
 	// カメラの現在の進行度を取得
 	float cameraProgress = railCamera->GetRailT();
@@ -401,6 +416,48 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
 	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
 	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
+	// 色収差
+	PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
+	PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
+	// ビネット
+	PostEffect::GetInstance()->SetVignette(isVignette);
+	PostEffect::GetInstance()->SetVignetteIntensity(vignetteIntensity);
+	PostEffect::GetInstance()->SetVignetteColor(vignetteColor);
+	// スピードディストーション
+	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
+	PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
+	// 集中線
+	PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
+	PostEffect::GetInstance()->SetConcentrationLineIntensity(concentrationLineIntensity);
+	PostEffect::GetInstance()->SetConcentrationLineCenter(concentrationLineCenter);
+	PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
+	PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
+	PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
+	// ピンチエフェクト
+	PostEffect::GetInstance()->SetPinch(isPinch);
+	PostEffect::GetInstance()->SetPinchStrength(pinchStrength);
+	PostEffect::GetInstance()->SetPinchCenter(pinchCenter);
+	PostEffect::GetInstance()->SetPinchRadius(pinchRadius);
+	// モノクロ
+	PostEffect::GetInstance()->SetTwoColor(isTwoColor);
+	PostEffect::GetInstance()->SetThreshold(threshold);
+	PostEffect::GetInstance()->SetContrast(contrast);
+	// アウトライン
+	PostEffect::GetInstance()->SetOutline(isOutline);
+	PostEffect::GetInstance()->SetOutlineThreshold(outlineThreshold);
+	PostEffect::GetInstance()->SetOutlineColor(outlineColor);
+	// 平滑化
+	PostEffect::GetInstance()->SetBoxFilter(isBoxFilter);
+	// ディゾルブ
+	PostEffect::GetInstance()->SetDissolve(isDissolve);
+	PostEffect::GetInstance()->SetDissolveThreshold(dissolveThreshold);
+	PostEffect::GetInstance()->SetDissolveEdgeWidth(dissolveEdgeWidth);
+	PostEffect::GetInstance()->SetDissolveNoiseScale(dissolveNoiseScale);
+	PostEffect::GetInstance()->SetDissolveNoiseColor(dissolveNoiseColor);
+	PostEffect::GetInstance()->SetDissolveEdgeColor(dissolveEdgeColor);
+	// ランダムノイズ
+	PostEffect::GetInstance()->SetRandomNoise(isRandomNoise);
+
 
 #pragma endregion
 
@@ -519,6 +576,14 @@ void TitleScene::Update() {
 		// グレースケール
 		if (ImGui::TreeNode("grayscale")) {
 			ImGui::Checkbox("OnOff", &isGrayscale);
+			if (isGrayscale) {
+				// モノクロ
+				ImGui::Checkbox("isTwoColor", &isTwoColor);
+				if (isTwoColor) {
+					ImGui::DragFloat("threshold", &threshold, 0.01f, 0.0f, 1.0f);
+					ImGui::DragFloat("contrast", &contrast, 0.01f, 0.0f, 10.0f);
+				}
+			}
 
 			ImGui::TreePop();
 		}
@@ -602,6 +667,84 @@ void TitleScene::Update() {
 				ImGui::DragFloat("motionBlurScale", &motionBlurScale, 0.01f, 0.0f, 10.0f);
 			}
 
+			ImGui::TreePop();
+		}
+		// 色収差
+		if (ImGui::TreeNode("FullScreenCA")) {
+			ImGui::Checkbox("OnOff", &isFullScreenCA);
+			if (isFullScreenCA) {
+				ImGui::DragFloat("chromaticAberrationIntensity", &fullScreenCAIntensity, 0.001f, 0.0f, 10.0f);
+			}
+			ImGui::TreePop();
+		}
+		// ビネット
+		if (ImGui::TreeNode("Vignette")) {
+			ImGui::Checkbox("OnOff", &isVignette);
+			if (isVignette) {
+				ImGui::DragFloat("vignetteIntensity", &vignetteIntensity, 0.001f, 0.0f, 1.0f);
+				ImGui::ColorEdit3("vignetteColor", &vignetteColor.x);
+			}
+			ImGui::TreePop();
+		}
+		// スピードディストーション
+		if (ImGui::TreeNode("SpeedDistortion")) {
+			ImGui::Checkbox("OnOff", &isSpeedDistortion);
+			if (isSpeedDistortion) {
+				ImGui::DragFloat("speedDistortionIntensity", &speedDistortionStrength, 0.001f, 0.0f, 10.0f);
+			}
+			ImGui::TreePop();
+		}
+		// 集中線
+		if (ImGui::TreeNode("ConcentrationLines")) {
+			ImGui::Checkbox("OnOff", &isConcentrationLines);
+			if (isConcentrationLines) {
+				ImGui::DragFloat("concentrationLineIntensity", &concentrationLineIntensity, 0.001f, 0.0f, 10.0f);
+				ImGui::DragFloat3("concentrationLineCenter", &concentrationLineCenter.x, 0.01f, -1.0f, 1.0f);
+				ImGui::DragFloat("concentrationLineDensity", &concentrationLineDensity, 1.0f, 0.0f, 500.0f);
+				ImGui::DragFloat("concentrationLineLength", &concentrationLineLength, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("concentrationLineSpeed", &concentrationLineSpeed, 0.01f, 0.0f, 10.0f);
+			}
+			ImGui::TreePop();
+		}
+		// ピンチエフェクト
+		if (ImGui::TreeNode("isPinch")) {
+			ImGui::Checkbox("OnOff", &isPinch);
+			if (isPinch) {
+				ImGui::DragFloat("pinchStrength", &pinchStrength, 0.001f, -10.0f, 10.0f);
+				ImGui::DragFloat2("pinchCenter", &pinchCenter.x, 0.01f, -1.0f, 1.0f);
+				ImGui::DragFloat("pinchRadius", &pinchRadius, 0.01f, 0.0f, 100.0f);
+			}
+			ImGui::TreePop();
+		}
+		// アウトライン
+		if (ImGui::TreeNode("isOutline")) {
+			ImGui::Checkbox("OnOff", &isOutline);
+			if (isOutline) {
+				ImGui::DragFloat("outlineThreshold", &outlineThreshold, 0.01f, 0.0f, 1.0f);
+				ImGui::ColorEdit4("outlineColor", &outlineColor.x);
+			}
+			ImGui::TreePop();
+		}
+		// 平滑化
+		if (ImGui::TreeNode("isBoxFilter")) {
+			ImGui::Checkbox("OnOff", &isBoxFilter);
+			ImGui::TreePop();
+		}
+		// ディゾルブ
+		if (ImGui::TreeNode("isDissolve")) {
+			ImGui::Checkbox("OnOff", &isDissolve);
+			if (isDissolve) {
+				ImGui::DragFloat("dissolveThreshold", &dissolveThreshold, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("dissolveEdgeWidth", &dissolveEdgeWidth, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("dissolveNoiseScale", &dissolveNoiseScale, 0.01f, 0.0f, 100.0f);
+				ImGui::ColorEdit3("dissolveNoiseColor", &dissolveNoiseColor.x);
+				ImGui::ColorEdit3("dissolveEdgeColor", &dissolveEdgeColor.x);
+			}
+			ImGui::TreePop();
+		}
+		// ランダムノイズ
+		if (ImGui::TreeNode("isRandomNoise")) {
+			ImGui::Checkbox("OnOff", &isRandomNoise);
 			ImGui::TreePop();
 		}
 
@@ -701,7 +844,7 @@ void TitleScene::Update() {
 				}
 				ImGui::EndPopup();
 			}
-		};
+			};
 		for (const std::string& groupName : level->GetLevelData()->groups) {
 			const bool groupOpen = ImGui::TreeNodeEx(
 				groupName.c_str(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth);
@@ -721,6 +864,26 @@ void TitleScene::Update() {
 				ImGui::EndPopup();
 			}
 			if (groupOpen) {
+				ImGui::PushID(groupName.c_str());
+				const bool isActiveRailGroup = activeRailGroupName_ == groupName;
+				if (ImGui::Button(isActiveRailGroup ? "Active Rail Camera" : "Use as Rail Camera")) {
+					activeRailGroupName_ = groupName;
+					level->GetLevelData()->activeRailCameraGroup = groupName;
+					railCamera->StopRail();
+				}
+				if (isActiveRailGroup) {
+					RailCameraGroupData& railSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), groupName);
+					int directionMode = static_cast<int>(railSettings.directionMode);
+					const char* directionModes[] = { "Follow Path", "Look At Target", "Use Point Rotation" };
+					if (ImGui::Combo("Camera Direction", &directionMode, directionModes, IM_ARRAYSIZE(directionModes))) {
+						railSettings.directionMode = static_cast<RailCameraDirectionMode>(directionMode);
+					}
+					if (railSettings.directionMode == RailCameraDirectionMode::LookAtTarget) {
+						ImGui::DragFloat3("Look At Target", &railSettings.targetPosition.x, 0.1f);
+					}
+					ImGui::TextDisabled("Only Rail Camera Point objects in this group are used.");
+				}
+				ImGui::PopID();
 				for (size_t index = 0; index < levelObjects.size(); ++index) {
 					if (level->GetLevelData()->objects[index].groupName == groupName) {
 						drawHierarchyObject(index);
@@ -730,6 +893,25 @@ void TitleScene::Update() {
 			}
 		}
 		if (ImGui::TreeNodeEx("Ungrouped", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::PushID("UngroupedRailCamera");
+			const bool isActiveRailGroup = activeRailGroupName_.empty();
+			if (ImGui::Button(isActiveRailGroup ? "Active Rail Camera" : "Use as Rail Camera")) {
+				activeRailGroupName_.clear();
+				level->GetLevelData()->activeRailCameraGroup.clear();
+				railCamera->StopRail();
+			}
+			if (isActiveRailGroup) {
+				RailCameraGroupData& railSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), "");
+				int directionMode = static_cast<int>(railSettings.directionMode);
+				const char* directionModes[] = { "Follow Path", "Look At Target", "Use Point Rotation" };
+				if (ImGui::Combo("Camera Direction", &directionMode, directionModes, IM_ARRAYSIZE(directionModes))) {
+					railSettings.directionMode = static_cast<RailCameraDirectionMode>(directionMode);
+				}
+				if (railSettings.directionMode == RailCameraDirectionMode::LookAtTarget) {
+					ImGui::DragFloat3("Look At Target", &railSettings.targetPosition.x, 0.1f);
+				}
+			}
+			ImGui::PopID();
 			for (size_t index = 0; index < levelObjects.size(); ++index) {
 				if (level->GetLevelData()->objects[index].groupName.empty()) {
 					drawHierarchyObject(index);
@@ -738,11 +920,19 @@ void TitleScene::Update() {
 			ImGui::TreePop();
 		}
 		if (!groupToDelete.empty()) {
+			if (activeRailGroupName_ == groupToDelete) {
+				activeRailGroupName_.clear();
+				level->GetLevelData()->activeRailCameraGroup.clear();
+				railCamera->StopRail();
+			}
 			for (auto& objectData : level->GetLevelData()->objects) {
 				if (objectData.groupName == groupToDelete) objectData.groupName.clear();
 			}
 			auto& groups = level->GetLevelData()->groups;
 			groups.erase(std::remove(groups.begin(), groups.end(), groupToDelete), groups.end());
+			auto& railGroups = level->GetLevelData()->railCameraGroups;
+			railGroups.erase(std::remove_if(railGroups.begin(), railGroups.end(),
+				[&groupToDelete](const RailCameraGroupData& group) { return group.groupName == groupToDelete; }), railGroups.end());
 		}
 		if (objectToDuplicate >= 0) {
 			ObjectData copyData = level->GetLevelData()->objects[objectToDuplicate];
@@ -1962,7 +2152,7 @@ void TitleScene::GizmoUpdate(bool showEditorControls) {
 			// 動かした「差分」を受け取るための行列を用意
 			Matrix4x4 deltaMat;
 			bool isEditingTextMesh = false;
-#ifdef TEXT_MESH_EDITOR_OVERLAY
+		#ifdef TEXT_MESH_EDITOR_OVERLAY
 			if (isSpriteObject) {
 				if (auto* textRenderer = selectedObject->GetComponent<TextRendererComponent>()) {
 					isEditingTextMesh = selectedTextMeshVertex_ >= 0;
@@ -1977,55 +2167,55 @@ void TitleScene::GizmoUpdate(bool showEditorControls) {
 					}
 				}
 			}
-#endif
+		#endif
 
 			// 3. ギズモの操作と行列の更新
 			if (!isEditingTextMesh) {
-			ImGuizmo::Manipulate(
-				&viewMat.m[0][0],        // View行列のfloatポインタ
-				&projMat.m[0][0],        // Projection行列のfloatポインタ
-				currentGizmoOperation,   // 操作モード
-				ImGuizmo::LOCAL,         // 座標系 (LOCAL or WORLD)
-				&worldMat.m[0][0],       // World行列のfloatポインタ
-				&deltaMat.m[0][0]       // 差分行列のfloatポインタ
-			);
+				ImGuizmo::Manipulate(
+					&viewMat.m[0][0],        // View行列のfloatポインタ
+					&projMat.m[0][0],        // Projection行列のfloatポインタ
+					currentGizmoOperation,   // 操作モード
+					ImGuizmo::LOCAL,         // 座標系 (LOCAL or WORLD)
+					&worldMat.m[0][0],       // World行列のfloatポインタ
+					&deltaMat.m[0][0]       // 差分行列のfloatポインタ
+				);
 
-			// 4. ギズモによって操作が行われたら、TransformComponent に反映
-			if (ImGuizmo::IsUsing()) {
-				float translation[3] = { 0.0f };
-				float rotation[3] = { 0.0f };
-				float scale[3] = { 0.0f };
+				// 4. ギズモによって操作が行われたら、TransformComponent に反映
+				if (ImGuizmo::IsUsing()) {
+					float translation[3] = { 0.0f };
+					float rotation[3] = { 0.0f };
+					float scale[3] = { 0.0f };
 
-				if (isSpriteObject) {
-					if (currentGizmoOperation == ImGuizmo::ROTATE) {
-						ImGuizmo::DecomposeMatrixToComponents(&deltaMat.m[0][0], translation, rotation, scale);
-						rectTransform->rotation += rotation[2] * (3.14159265f / 180.0f);
-					} else {
-						ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
-						if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
-							rectTransform->position = { translation[0], translation[1] };
-						} else if (currentGizmoOperation == ImGuizmo::SCALE) {
-							rectTransform->scale = { scale[0], scale[1] };
+					if (isSpriteObject) {
+						if (currentGizmoOperation == ImGuizmo::ROTATE) {
+							ImGuizmo::DecomposeMatrixToComponents(&deltaMat.m[0][0], translation, rotation, scale);
+							rectTransform->rotation += rotation[2] * (3.14159265f / 180.0f);
+						} else {
+							ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
+							if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
+								rectTransform->position = { translation[0], translation[1] };
+							} else if (currentGizmoOperation == ImGuizmo::SCALE) {
+								rectTransform->scale = { scale[0], scale[1] };
+							}
 						}
-					}
-				} else if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
-					// 移動は今まで通り全体の行列から取り出す
-					ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
-					transformComp->transform.translate = { translation[0], translation[1], translation[2] };
-				} else if (currentGizmoOperation == ImGuizmo::ROTATE) {
-					// ★回転の時だけ、全体の行列ではなく「差分(deltaMat)」を分解する！
-					ImGuizmo::DecomposeMatrixToComponents(&deltaMat.m[0][0], translation, rotation, scale);
+					} else if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
+						// 移動は今まで通り全体の行列から取り出す
+						ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
+						transformComp->transform.translate = { translation[0], translation[1], translation[2] };
+					} else if (currentGizmoOperation == ImGuizmo::ROTATE) {
+						// ★回転の時だけ、全体の行列ではなく「差分(deltaMat)」を分解する！
+						ImGuizmo::DecomposeMatrixToComponents(&deltaMat.m[0][0], translation, rotation, scale);
 
-					// 差分(このフレームで動かした量)を、現在の角度に「足し算(+=)」する
-					transformComp->transform.rotate.x += rotation[0] * (3.14159265f / 180.0f);
-					transformComp->transform.rotate.y += rotation[1] * (3.14159265f / 180.0f);
-					transformComp->transform.rotate.z += rotation[2] * (3.14159265f / 180.0f);
-				} else if (currentGizmoOperation == ImGuizmo::SCALE) {
-					// 拡縮も今まで通り全体の行列から取り出す
-					ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
-					transformComp->transform.scale = { scale[0], scale[1], scale[2] };
+						// 差分(このフレームで動かした量)を、現在の角度に「足し算(+=)」する
+						transformComp->transform.rotate.x += rotation[0] * (3.14159265f / 180.0f);
+						transformComp->transform.rotate.y += rotation[1] * (3.14159265f / 180.0f);
+						transformComp->transform.rotate.z += rotation[2] * (3.14159265f / 180.0f);
+					} else if (currentGizmoOperation == ImGuizmo::SCALE) {
+						// 拡縮も今まで通り全体の行列から取り出す
+						ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
+						transformComp->transform.scale = { scale[0], scale[1], scale[2] };
+					}
 				}
-			}
 			}
 		}
 	}

@@ -228,6 +228,19 @@ struct SpawnData {
     std::vector<Vector3> controlPoints;   // パス移動用の制御点リスト
 };
 
+// レールカメラの向きの決め方。グループ単位でレベルファイルに保存する。
+enum class RailCameraDirectionMode : int {
+	FollowPath = 0,
+	LookAtTarget = 1,
+	UsePointRotation = 2,
+};
+
+struct RailCameraGroupData {
+	std::string groupName;
+	RailCameraDirectionMode directionMode = RailCameraDirectionMode::FollowPath;
+	Vector3 targetPosition = { 0.0f, 0.0f, 0.0f };
+};
+
 struct ObjectData {
     std::string type;
     std::string name;

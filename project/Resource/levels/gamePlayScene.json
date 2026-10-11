@@ -1,4 +1,5 @@
 {
+    "active_rail_camera_group": "RailPoint",
     "groups": [
         "city",
         "RailPoint",
@@ -8,6 +9,7 @@
     "name": "scene",
     "objects": [
         {
+            "active": true,
             "components": [
                 "Camera"
             ],
@@ -15,9 +17,9 @@
             "name": "MainCamera",
             "transform": {
                 "rotation": [
+                    0.33500024676322937,
                     0.0,
-                    0.0,
-                    0.0
+                    -0.07500068098306656
                 ],
                 "scaling": [
                     1.0,
@@ -25,20 +27,39 @@
                     1.0
                 ],
                 "translation": [
-                    0.0,
-                    -5.0,
-                    0.0
+                    2005.696044921875,
+                    -180.49240112304688,
+                    160.41549682617188
                 ]
             },
             "type": "EMPTY"
         },
         {
+            "active": true,
             "components": [
                 "EnemySpawner",
                 "ModelRenderer"
             ],
             "file_name": "cube.gltf",
             "group": "Enemies",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "EnemyWave_01_Entry",
             "spawnDataList": [
                 {
@@ -95,12 +116,31 @@
             "type": "SPAWNER"
         },
         {
+            "active": true,
             "components": [
                 "EnemySpawner",
                 "ModelRenderer"
             ],
             "file_name": "cube.gltf",
             "group": "Enemies",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "EnemyWave_02_Crossing",
             "spawnDataList": [
                 {
@@ -157,12 +197,31 @@
             "type": "SPAWNER"
         },
         {
+            "active": true,
             "components": [
                 "EnemySpawner",
                 "ModelRenderer"
             ],
             "file_name": "cube.gltf",
             "group": "Enemies",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "EnemyWave_03_NorthArc",
             "spawnDataList": [
                 {
@@ -219,12 +278,31 @@
             "type": "SPAWNER"
         },
         {
+            "active": true,
             "components": [
                 "EnemySpawner",
                 "ModelRenderer"
             ],
             "file_name": "cube.gltf",
             "group": "Enemies",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "EnemyWave_04_Return",
             "spawnDataList": [
                 {
@@ -281,12 +359,31 @@
             "type": "SPAWNER"
         },
         {
+            "active": true,
             "components": [
                 "EnemySpawner",
                 "ModelRenderer"
             ],
             "file_name": "cube.gltf",
             "group": "Enemies",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "EnemyWave_05_FinalApproach",
             "spawnDataList": [
                 {
@@ -343,6 +440,7 @@
             "type": "SPAWNER"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -350,6 +448,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_01_Approach",
             "transform": {
                 "rotation": [
@@ -371,6 +487,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -378,6 +495,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_02_Entry",
             "transform": {
                 "rotation": [
@@ -399,6 +534,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -406,6 +542,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_03_Descent",
             "transform": {
                 "rotation": [
@@ -427,6 +581,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -434,6 +589,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_04_CityGate",
             "transform": {
                 "rotation": [
@@ -455,6 +628,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -462,6 +636,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_05_Crossing",
             "transform": {
                 "rotation": [
@@ -483,6 +675,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -490,6 +683,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_06_EastArc",
             "transform": {
                 "rotation": [
@@ -511,6 +722,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -518,6 +730,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_07_TurnNorth",
             "transform": {
                 "rotation": [
@@ -539,6 +769,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -546,6 +777,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_08_NorthSweep",
             "transform": {
                 "rotation": [
@@ -567,6 +816,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -574,6 +824,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_09_WestPass",
             "transform": {
                 "rotation": [
@@ -595,6 +863,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -602,6 +871,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_10_WestArc",
             "transform": {
                 "rotation": [
@@ -623,6 +910,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -630,6 +918,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_11_SouthTurn",
             "transform": {
                 "rotation": [
@@ -651,6 +957,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -658,6 +965,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_12_ExitLine",
             "transform": {
                 "rotation": [
@@ -679,6 +1004,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -686,6 +1012,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_13_Climb",
             "transform": {
                 "rotation": [
@@ -707,6 +1051,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer",
                 "RailPoint"
@@ -714,6 +1059,24 @@
             "file_name": "rail/rail.obj",
             "group": "RailPoint",
             "max_draw_distance": 900.0,
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
             "name": "RailRoute_14_Departure",
             "transform": {
                 "rotation": [
@@ -735,6 +1098,7 @@
             "type": "RAIL"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -746,6 +1110,24 @@
                 "low_model": "city/Low/building22.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building22.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_2",
             "transform": {
@@ -768,6 +1150,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -779,6 +1162,24 @@
                 "low_model": "city/Low/building04.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building04.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_3",
             "transform": {
@@ -801,6 +1202,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -812,6 +1214,24 @@
                 "low_model": "city/Low/building12.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building12.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_4",
             "transform": {
@@ -834,6 +1254,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -845,6 +1266,24 @@
                 "low_model": "city/Low/building11.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building11.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_5",
             "transform": {
@@ -867,6 +1306,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -878,6 +1318,24 @@
                 "low_model": "city/Low/building14.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building14.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_6",
             "transform": {
@@ -900,6 +1358,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -911,6 +1370,24 @@
                 "low_model": "city/Low/building10.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building10.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_7",
             "transform": {
@@ -933,6 +1410,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -944,6 +1422,24 @@
                 "low_model": "city/Low/building13.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building13.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_8",
             "transform": {
@@ -966,6 +1462,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -977,6 +1474,24 @@
                 "low_model": "city/Low/building23.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building23.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_9",
             "transform": {
@@ -999,6 +1514,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1010,6 +1526,24 @@
                 "low_model": "city/Low/building21.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building21.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_10",
             "transform": {
@@ -1032,6 +1566,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1043,6 +1578,24 @@
                 "low_model": "city/Low/building07.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building07.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_11",
             "transform": {
@@ -1065,6 +1618,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1076,6 +1630,24 @@
                 "low_model": "city/Low/building05.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building05.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_12",
             "transform": {
@@ -1098,6 +1670,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1109,6 +1682,24 @@
                 "low_model": "city/Low/building.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_13",
             "transform": {
@@ -1131,6 +1722,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1142,6 +1734,24 @@
                 "low_model": "city/Low/building19.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building19.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_14",
             "transform": {
@@ -1164,6 +1774,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1175,6 +1786,24 @@
                 "low_model": "city/Low/building22.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building22.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_15",
             "transform": {
@@ -1197,6 +1826,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1208,6 +1838,24 @@
                 "low_model": "city/Low/building01.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building01.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_16",
             "transform": {
@@ -1230,6 +1878,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1241,6 +1890,24 @@
                 "low_model": "city/Low/building06.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building06.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_17",
             "transform": {
@@ -1263,6 +1930,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1274,6 +1942,24 @@
                 "low_model": "city/Low/building22.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building22.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_18",
             "transform": {
@@ -1296,6 +1982,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1307,6 +1994,24 @@
                 "low_model": "city/Low/building22.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building22.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_19",
             "transform": {
@@ -1329,6 +2034,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1340,6 +2046,24 @@
                 "low_model": "city/Low/building06.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building06.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_20",
             "transform": {
@@ -1362,6 +2086,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1373,6 +2098,24 @@
                 "low_model": "city/Low/building24.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building24.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_21",
             "transform": {
@@ -1395,6 +2138,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1406,6 +2150,24 @@
                 "low_model": "city/Low/building11.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building11.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_22",
             "transform": {
@@ -1428,6 +2190,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1439,6 +2202,24 @@
                 "low_model": "city/Low/building09.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building09.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_23",
             "transform": {
@@ -1461,6 +2242,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1472,6 +2254,24 @@
                 "low_model": "city/Low/building24.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building24.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_24",
             "transform": {
@@ -1494,6 +2294,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1505,6 +2306,24 @@
                 "low_model": "city/Low/building22.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building22.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_25",
             "transform": {
@@ -1527,6 +2346,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1538,6 +2358,24 @@
                 "low_model": "city/Low/building.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_26",
             "transform": {
@@ -1560,6 +2398,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1571,6 +2410,24 @@
                 "low_model": "city/Low/building13.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building13.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_27",
             "transform": {
@@ -1593,6 +2450,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1604,6 +2462,24 @@
                 "low_model": "city/Low/building06.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building06.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_28",
             "transform": {
@@ -1626,6 +2502,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1637,6 +2514,24 @@
                 "low_model": "city/Low/building19.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building19.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_29",
             "transform": {
@@ -1659,6 +2554,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1670,6 +2566,24 @@
                 "low_model": "city/Low/building01.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building01.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_30",
             "transform": {
@@ -1692,6 +2606,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1703,6 +2618,24 @@
                 "low_model": "city/Low/building20.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building20.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_31",
             "transform": {
@@ -1725,6 +2658,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1736,6 +2670,24 @@
                 "low_model": "city/Low/building23.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building23.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_32",
             "transform": {
@@ -1758,6 +2710,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1769,6 +2722,24 @@
                 "low_model": "city/Low/building05.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building05.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_33",
             "transform": {
@@ -1791,6 +2762,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1802,6 +2774,24 @@
                 "low_model": "city/Low/building03.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building03.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_34",
             "transform": {
@@ -1824,6 +2814,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1835,6 +2826,24 @@
                 "low_model": "city/Low/building06.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building06.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_35",
             "transform": {
@@ -1857,6 +2866,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1868,6 +2878,24 @@
                 "low_model": "city/Low/building22.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building22.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_36",
             "transform": {
@@ -1890,6 +2918,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1901,6 +2930,24 @@
                 "low_model": "city/Low/building16.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building16.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_37",
             "transform": {
@@ -1923,6 +2970,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1934,6 +2982,24 @@
                 "low_model": "city/Low/building02.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building02.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_38",
             "transform": {
@@ -1956,6 +3022,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -1967,6 +3034,24 @@
                 "low_model": "city/Low/building21.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building21.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_39",
             "transform": {
@@ -1989,6 +3074,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2000,6 +3086,24 @@
                 "low_model": "city/Low/building06.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building06.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_40",
             "transform": {
@@ -2022,6 +3126,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2033,6 +3138,24 @@
                 "low_model": "city/Low/building07.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building07.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_41",
             "transform": {
@@ -2055,6 +3178,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2066,6 +3190,24 @@
                 "low_model": "city/Low/building21.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building21.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_42",
             "transform": {
@@ -2088,6 +3230,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2099,6 +3242,24 @@
                 "low_model": "city/Low/building18.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building18.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_43",
             "transform": {
@@ -2121,6 +3282,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2132,6 +3294,24 @@
                 "low_model": "city/Low/building15.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building15.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_44",
             "transform": {
@@ -2154,6 +3334,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2165,6 +3346,24 @@
                 "low_model": "city/Low/building21.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building21.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_45",
             "transform": {
@@ -2187,6 +3386,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2198,6 +3398,24 @@
                 "low_model": "city/Low/building01.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building01.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_46",
             "transform": {
@@ -2220,6 +3438,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2231,6 +3450,24 @@
                 "low_model": "city/Low/building01.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building01.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_47",
             "transform": {
@@ -2253,6 +3490,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2264,6 +3502,24 @@
                 "low_model": "city/Low/building12.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building12.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_48",
             "transform": {
@@ -2286,6 +3542,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2297,6 +3554,24 @@
                 "low_model": "city/Low/building25.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building25.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_49",
             "transform": {
@@ -2319,6 +3594,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2330,6 +3606,24 @@
                 "low_model": "city/Low/building13.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building13.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_50",
             "transform": {
@@ -2352,6 +3646,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2363,6 +3658,24 @@
                 "low_model": "city/Low/building04.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building04.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_51",
             "transform": {
@@ -2385,6 +3698,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2396,6 +3710,24 @@
                 "low_model": "city/Low/building14.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building14.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_52",
             "transform": {
@@ -2418,6 +3750,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2429,6 +3762,24 @@
                 "low_model": "city/Low/building03.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building03.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_53",
             "transform": {
@@ -2451,6 +3802,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2462,6 +3814,24 @@
                 "low_model": "city/Low/building23.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building23.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_54",
             "transform": {
@@ -2484,6 +3854,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2495,6 +3866,24 @@
                 "low_model": "city/Low/building01.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building01.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_55",
             "transform": {
@@ -2517,6 +3906,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2528,6 +3918,24 @@
                 "low_model": "city/Low/building19.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building19.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_56",
             "transform": {
@@ -2550,6 +3958,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2561,6 +3970,24 @@
                 "low_model": "city/Low/building18.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building18.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_57",
             "transform": {
@@ -2583,6 +4010,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2594,6 +4022,24 @@
                 "low_model": "city/Low/building.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_58",
             "transform": {
@@ -2616,6 +4062,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2627,6 +4074,24 @@
                 "low_model": "city/Low/building12.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building12.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_59",
             "transform": {
@@ -2649,6 +4114,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2660,6 +4126,24 @@
                 "low_model": "city/Low/building05.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building05.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_60",
             "transform": {
@@ -2682,6 +4166,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2693,6 +4178,24 @@
                 "low_model": "city/Low/building.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_61",
             "transform": {
@@ -2715,6 +4218,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2726,6 +4230,24 @@
                 "low_model": "city/Low/building10.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building10.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_62",
             "transform": {
@@ -2748,6 +4270,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2759,6 +4282,24 @@
                 "low_model": "city/Low/building25.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building25.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_63",
             "transform": {
@@ -2781,6 +4322,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2792,6 +4334,24 @@
                 "low_model": "city/Low/building15.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building15.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_64",
             "transform": {
@@ -2814,6 +4374,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2825,6 +4386,24 @@
                 "low_model": "city/Low/building03.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building03.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_65",
             "transform": {
@@ -2847,6 +4426,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2858,6 +4438,24 @@
                 "low_model": "city/Low/building23.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building23.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_66",
             "transform": {
@@ -2880,6 +4478,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2891,6 +4490,24 @@
                 "low_model": "city/Low/building05.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building05.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_67",
             "transform": {
@@ -2913,6 +4530,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2924,6 +4542,24 @@
                 "low_model": "city/Low/building05.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building05.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_68",
             "transform": {
@@ -2946,6 +4582,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2957,6 +4594,24 @@
                 "low_model": "city/Low/building25.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building25.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_69",
             "transform": {
@@ -2979,6 +4634,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -2990,6 +4646,24 @@
                 "low_model": "city/Low/building15.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building15.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_70",
             "transform": {
@@ -3012,6 +4686,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3023,6 +4698,24 @@
                 "low_model": "city/Low/building18.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building18.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_71",
             "transform": {
@@ -3045,6 +4738,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3056,6 +4750,24 @@
                 "low_model": "city/Low/building09.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building09.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_72",
             "transform": {
@@ -3078,6 +4790,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3089,6 +4802,24 @@
                 "low_model": "city/Low/building12.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building12.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_73",
             "transform": {
@@ -3111,6 +4842,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3122,6 +4854,24 @@
                 "low_model": "city/Low/building21.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building21.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_74",
             "transform": {
@@ -3144,6 +4894,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3155,6 +4906,24 @@
                 "low_model": "city/Low/building04.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building04.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_75",
             "transform": {
@@ -3177,6 +4946,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3188,6 +4958,24 @@
                 "low_model": "city/Low/building23.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building23.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_76",
             "transform": {
@@ -3210,6 +4998,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3221,6 +5010,24 @@
                 "low_model": "city/Low/building14.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building14.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_77",
             "transform": {
@@ -3243,6 +5050,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3254,6 +5062,24 @@
                 "low_model": "city/Low/building06.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building06.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_78",
             "transform": {
@@ -3276,6 +5102,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3287,6 +5114,24 @@
                 "low_model": "city/Low/building03.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building03.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_79",
             "transform": {
@@ -3309,6 +5154,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3320,6 +5166,24 @@
                 "low_model": "city/Low/building20.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building20.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_80",
             "transform": {
@@ -3342,6 +5206,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3353,6 +5218,24 @@
                 "low_model": "city/Low/building16.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building16.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_81",
             "transform": {
@@ -3375,6 +5258,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3386,6 +5270,24 @@
                 "low_model": "city/Low/building07.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building07.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_82",
             "transform": {
@@ -3408,6 +5310,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3419,6 +5322,24 @@
                 "low_model": "city/Low/building25.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building25.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_83",
             "transform": {
@@ -3441,6 +5362,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3452,6 +5374,24 @@
                 "low_model": "city/Low/building04.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building04.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_84",
             "transform": {
@@ -3474,6 +5414,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3485,6 +5426,24 @@
                 "low_model": "city/Low/building25.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building25.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_85",
             "transform": {
@@ -3507,6 +5466,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3518,6 +5478,24 @@
                 "low_model": "city/Low/building10.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building10.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_86",
             "transform": {
@@ -3540,6 +5518,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3551,6 +5530,24 @@
                 "low_model": "city/Low/building09.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building09.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_87",
             "transform": {
@@ -3573,6 +5570,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3584,6 +5582,24 @@
                 "low_model": "city/Low/building21.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building21.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_88",
             "transform": {
@@ -3606,6 +5622,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3617,6 +5634,24 @@
                 "low_model": "city/Low/building02.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building02.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_89",
             "transform": {
@@ -3639,6 +5674,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3650,6 +5686,24 @@
                 "low_model": "city/Low/building03.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building03.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_90",
             "transform": {
@@ -3672,6 +5726,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3683,6 +5738,24 @@
                 "low_model": "city/Low/building22.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building22.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_91",
             "transform": {
@@ -3705,6 +5778,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3716,6 +5790,24 @@
                 "low_model": "city/Low/building09.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building09.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_92",
             "transform": {
@@ -3738,6 +5830,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3749,6 +5842,24 @@
                 "low_model": "city/Low/building24.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building24.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_93",
             "transform": {
@@ -3771,6 +5882,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3782,6 +5894,24 @@
                 "low_model": "city/Low/building21.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building21.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_94",
             "transform": {
@@ -3804,6 +5934,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3815,6 +5946,24 @@
                 "low_model": "city/Low/building04.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building04.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_95",
             "transform": {
@@ -3837,6 +5986,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3848,6 +5998,24 @@
                 "low_model": "city/Low/building14.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building14.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_96",
             "transform": {
@@ -3870,6 +6038,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3881,6 +6050,24 @@
                 "low_model": "city/Low/building25.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building25.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_97",
             "transform": {
@@ -3903,6 +6090,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3914,6 +6102,24 @@
                 "low_model": "city/Low/building07.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building07.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_98",
             "transform": {
@@ -3936,6 +6142,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3947,6 +6154,24 @@
                 "low_model": "city/Low/building18.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building18.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_99",
             "transform": {
@@ -3969,6 +6194,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -3980,6 +6206,24 @@
                 "low_model": "city/Low/building19.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building19.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_100",
             "transform": {
@@ -4002,6 +6246,7 @@
             "type": "MESH"
         },
         {
+            "active": true,
             "components": [
                 "ModelRenderer"
             ],
@@ -4013,6 +6258,24 @@
                 "low_model": "city/Low/building21.obj",
                 "medium_distance": 300.0,
                 "medium_model": "city/Medium/building21.obj"
+            },
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
             },
             "name": "CityBuilding_101",
             "transform": {
@@ -4033,6 +6296,290 @@
                 ]
             },
             "type": "MESH"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer"
+            ],
+            "file_name": "Queen Elizabeth.obj",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
+            "name": "Empty_121",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    20.0,
+                    20.0,
+                    20.0
+                ],
+                "translation": [
+                    2000.0,
+                    0.0,
+                    91.07393646240234
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer"
+            ],
+            "file_name": "F-15C_Eagle.dat.obj",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
+            "name": "Empty_122",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.0
+                ],
+                "scaling": [
+                    0.5,
+                    0.5,
+                    0.5
+                ],
+                "translation": [
+                    2019.907470703125,
+                    -42.48347854614258,
+                    111.76100158691406
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer"
+            ],
+            "file_name": "F-15C_Eagle.dat.obj",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
+            "name": "Empty_122 Copy",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.0
+                ],
+                "scaling": [
+                    0.5,
+                    0.5,
+                    0.5
+                ],
+                "translation": [
+                    2020.1983642578125,
+                    -50.54014205932617,
+                    111.76100158691406
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer"
+            ],
+            "file_name": "F-15C_Eagle.dat.obj",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
+            "name": "Empty_122 Copy Copy",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.0
+                ],
+                "scaling": [
+                    0.5,
+                    0.5,
+                    0.5
+                ],
+                "translation": [
+                    2020.6529541015625,
+                    -59.347347259521484,
+                    111.76100158691406
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer"
+            ],
+            "file_name": "F-15C_Eagle.dat.obj",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
+            "name": "Empty_122 Copy Copy Copy",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.0
+                ],
+                "scaling": [
+                    0.5,
+                    0.5,
+                    0.5
+                ],
+                "translation": [
+                    2020.8992919921875,
+                    -67.13885498046875,
+                    111.76100158691406
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer"
+            ],
+            "file_name": "F-15C_Eagle.dat.obj",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582
+            },
+            "name": "Empty_122 Copy Copy Copy Copy",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.0
+                ],
+                "scaling": [
+                    0.5,
+                    0.5,
+                    0.5
+                ],
+                "translation": [
+                    2021.0692138671875,
+                    -74.48393249511719,
+                    111.76100158691406
+                ]
+            },
+            "type": "EMPTY"
+        }
+    ],
+    "rail_camera_groups": [
+        {
+            "direction_mode": 0,
+            "name": "",
+            "target_position": [
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "direction_mode": 0,
+            "name": "RailPoint",
+            "target_position": [
+                0.0,
+                0.0,
+                0.0
+            ]
         }
     ]
 }

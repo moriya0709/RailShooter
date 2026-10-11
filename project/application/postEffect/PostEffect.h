@@ -24,92 +24,131 @@ struct RenderTarget {
 
 // C++側の構造体 (PostEffect.h など)
 struct EffectData {
-	// [16 bytes] 基本フラグ群
-	int32_t isInversion;
-	int32_t isGrayscale;
-	int32_t isRadialBlur;
-	int32_t isDistanceFog;
+	int isInversion; // 色反転
+	int isGrayscale; // グレースケール
+	int isRadialBlur; // 放射状ブラー
+	int isDistanceFog; // ディスタンスフォグ
 
-	// [16 bytes] DOF・ハイトフォグフラグ等
-	int32_t isDOF;
-	int32_t isHeightFog;
-	float intensity;
+	int isDoF; // 被写界深度
+	int isHeightFog; // ハイトフォグ
+	float intensity; // 全体のエフェクト強度
 	float pad0;
 
-	// [16 bytes] ブラー設定
-	Vector2 blurCenter; // 8 bytes
-	float blurWidth;    // 4 bytes
-	int32_t blurSamples;// 4 bytes
+	Vector2 blurCenter; // 放射状ブラーの中心 (0.0〜1.0)
+	float blurWidth; // 放射状ブラーの幅
+	int blurSamples; // 放射状ブラーのサンプル数
 
-	// [16 bytes] 距離フォグ設定1
-	Vector3 distanceFogColor; // 12 bytes
-	float distanceFogStart;   // 4 bytes
+	Vector3 distanceFogColor; // ディスタンスフォグの色
+	float distanceFogStart; // ディスタンスフォグの開始距離
 
-	// [16 bytes] 距離フォグ設定2 & カメラ設定
-	float distanceFogEnd; // 4 bytes
-	float zNear;          // 4 bytes
-	float zFar;           // 4 bytes
-	float pad1;           // 4 bytes
+	float distanceFogEnd; // ディスタンスフォグの終了距離
+	float zNear; // 深度の線形化に必要なカメラの近クリップ面
+	float zFar; // 深度の線形化に必要なカメラの遠クリップ面
+	float pad1;
 
-	// [16 bytes] ハイトフォグ設定1
-	Vector3 heightFogColor; // 12 bytes
-	float heightFogTop;     // 4 bytes
+	// *ハイトフォグ* //
+	Vector3 heightFogColor; // 色
+	float heightFogTop; // 高さ(最上値)
 
-	// [16 bytes] ハイトフォグ設定2
-	float heightFogBottom;  // 4 bytes
-	float heightFogDensity; // 4 bytes
-	Vector2 pad2;           // 8 bytes
+	float heightFogBottom; // 高さ(最下値)
+	float heightFogDensity; // ハイトフォグの密度（高さによる減衰の強さ）
+	Vector2 pad2;
 
-	// [64 bytes] 行列
-	Matrix4x4 matInverseViewProjection;
+	Matrix4x4 matInverseViewProjection; // ハイトフォグのワールド位置計算に必要な逆行列
 
-	// [16 bytes] DOF設定
-	float focusDistance;
-	float focusRange;
-	float bokehRadius;
+	// *DoF* //
+	float focusDistance; // ピントの距離
+	float focusRange; // ピントの範囲（この距離内は完全にピントが合う）
+	float bokehRadius; // ボケの半径（大きいほど大きくボケる）
 	float pad3;
 
-	// [16 bytes] ブルーム設定
-	float bloomThreshold;
-	float bloomIntensity;
-	float bloomBlurRadius;
+	// *ブルーム* //
+	float bloomThreshold; // 光らせる明るさの閾値
+	float bloomIntensity; // ブルームの強さ
+	float bloomBlurRadius; // ブルームのぼかし半径（広がり具合）
 	float pad4;
 
-	// [16 bytes] レンズフレア設定
-	int32_t isLensFlare;
-	int32_t lensFlareGhostCount;
-	float lensFlareGhostDispersal;
-	float lensFlareHaloWidth;
+	// *レンズフレア* //
+	int isLensFlare; // レンズフレアのON/OFF
+	int lensFlareGhostCount; // ゴーストの数
+	float lensFlareGhostDispersal; // ゴーストの広がり具合
+	float lensFlareHaloWidth; // ヘイローの大きさ
 
-	// [16 bytes] ACES・色収差設定
-	int32_t isACES;
-	float caIntensity;
-	Vector2 pad5;           // 8 bytes
+	int isACES; // ACESトーンマッピングのON/OFF
+	float caIntensity; // 色収差の強さ (0.001f とかが綺麗)
+	Vector2 pad5;
 
-	// [16 bytes] モーションブラー設定
-	int32_t isMotionBlur;
-	int32_t motionBlurSamples; // ★正常な回数が読み込まれ、GPUクラッシュが直ります
-	float motionBlurScale;
+	// *モーションブラー* //
+	int isMotionBlur; // モーションブラーのON/OFF
+	int motionBlurSamples; // モーションブラーのサンプル数
+	float motionBlurScale; // モーションブラーの強さ（速度に対するスケール）
 	float pad6;
 
-	// [16 bytes] 画面エフェクトフラグ群
-	int32_t isFullScreenCA;
-	float fullScreenCAIntensity;
-	int32_t isVignette;
-	float vignetteIntensity;
+	// 色収差
+	int isFullScreenCA; // 画面全体の色収差ON/OFF
+	float fullScreenCAIntensity; // 画面全体の色収差の強さ
+	// ビネット
+	int isVignette; // ビネットのON/OFF
+	float vignetteIntensity; // ビネットの強さ
 
-	// [16 bytes] ビネット色 & ガウシアンフラグ
-	Vector3 vignetteColor;    // 12 bytes
-	int32_t isGaussianFilter; // 4 bytes
+	Vector3 vignetteColor;   // 色
+	float pad7;
 
-	// [16 bytes] ガウシアン設定 & アウトライン設定
-	float gaussianSigma;    // 4 bytes
-	int32_t isOutline;      // 4 bytes
-	float outlineThreshold; // 4 bytes
-	float pad7;             // 4 bytes (隙間をピッタリ埋めるパディング)
 
-	// [16 bytes] アウトライン色
-	Vector4 outlineColor;   // 16 bytes
+	// スピードディストーション
+	int isSpeedDistortion; // スピードディストーションのON/OFF
+	float speedDistortionStrength; // 歪みの強さ
+	Vector2 pad8; // アライメント調整用
+
+	// 集中線
+	int isConcentrationLines; // ON/OFF
+	float concentrationLineIntensity; // 線の濃さ
+	Vector2 concentrationLineCenter; // 中心座標 (通常 0.5, 0.5)
+
+	float concentrationLineDensity; // 線の密度（本数）
+	float concentrationLineLength; // 線の長さ（中心からの開始距離 0.0〜1.0）
+	float concentrationLineSpeed; // アニメーション速度
+	float time;
+
+	// ピンチエフェクト
+	int isPinch; // ON/OFF
+	float pinchStrength; // 歪みの強さ（正の値で吸い込み、負の値で膨張）
+	Vector2 pinchCenter; // 歪みの中心 (通常 0.5, 0.5)
+
+	float pinchRadius; // 歪みが影響する半径
+	Vector3 pad9;
+
+	// モノクロ
+	int isTwoColor; // 二値化
+	float threshold; // 白と黒の境界値 (0.0~1.0)
+	float contrast; // コントラストの強さ
+	float pad10;
+
+	// アウトライン
+	int isOutline;  // ON/OFF
+	float outlineThreshold; // 境界値
+	Vector2 pad11;
+
+	Vector4 outlineColor;    // 色
+
+	// 平滑化
+	int isBoxFilter;   // ON/OFF
+	Vector3 pad12;
+
+	// ディゾルブ
+	int isDissolve;     // ON/OFF
+	float dissolveThreshold;    // 境界値
+	float dissolveEdgeWidth;    // エッジの幅
+	float dissolveNoiseScale;   // ノイズの細かさ
+
+	Vector3 dissolveNoiseColor; // ノイズの色
+	float pad14;
+	Vector3 dissolveEdgeColor;   // エッジの色
+	float pad15;
+
+	// ランダムノイズ
+	int isRandomNoise;  // ON/OFF
+	Vector3 pad16;
 
 };
 
@@ -167,7 +206,7 @@ public:
 	void HightFogUpdate(Camera* camera); // カメラの位置からハイトフォグ用の逆行列を計算してセットする関数
 
 	// DOF
-	void SetDOF(bool isDOF) { effectData->isDOF = isDOF; }
+	void SetDOF(bool isDoF) { effectData->isDoF = isDoF; }
 	void SetFocusDistance(float distance) { effectData->focusDistance = distance; }
 	void SetFocusRange(float range) { effectData->focusRange = range; }
 	void SetBokehRadius(float radius) { effectData->bokehRadius = radius; }
@@ -194,13 +233,41 @@ public:
 	void SetVignette(bool isVignette) { effectData->isVignette = isVignette; }
 	void SetVignetteIntensity(float intensity) { effectData->vignetteIntensity = intensity; }
 	void SetVignetteColor(const Vector3& color) { effectData->vignetteColor = color; }
-	// ガウシアンフィルタ
-	void SetGaussianFilter(bool isGaussianFilter) { effectData->isGaussianFilter = isGaussianFilter; }
-	void SetGaussianSigma(float gaussianSigma) { effectData->gaussianSigma = gaussianSigma; }
+	// スピードディストーション
+	void SetSpeedDistortion(bool isSpeedDistortion) { effectData->isSpeedDistortion = isSpeedDistortion; }
+	void SetSpeedDistortionStrength(float strength) { effectData->speedDistortionStrength = strength; }
+	// 集中線
+	void SetConcentrationLines(bool isConcentrationLines) { effectData->isConcentrationLines = isConcentrationLines; }
+	void SetConcentrationLineIntensity(float intensity) { effectData->concentrationLineIntensity = intensity; }
+	void SetConcentrationLineCenter(const Vector2& center) { effectData->concentrationLineCenter = center; }
+	void SetConcentrationLineDensity(float density) { effectData->concentrationLineDensity = density; }
+	void SetConcentrationLineLength(float length) { effectData->concentrationLineLength = length; }
+	void SetConcentrationLineSpeed(float speed) { effectData->concentrationLineSpeed = speed; }
+	// ピンチエフェクト
+	void SetPinch(bool isPinch) { effectData->isPinch = isPinch; }
+	void SetPinchStrength(float strength) { effectData->pinchStrength = strength; }
+	void SetPinchCenter(const Vector2& center) { effectData->pinchCenter = center; }
+	void SetPinchRadius(float radius) { effectData->pinchRadius = radius; }
+	// モノクロ
+	void SetTwoColor(bool isTwoColor) { effectData->isTwoColor = isTwoColor; }
+	void SetThreshold(float threshold) { effectData->threshold = threshold; }
+	void SetContrast(float contrast) { effectData->contrast = contrast; }
 	// アウトライン
 	void SetOutline(bool isOutline) { effectData->isOutline = isOutline; }
 	void SetOutlineThreshold(float outlineThreshold) { effectData->outlineThreshold = outlineThreshold; }
 	void SetOutlineColor(const Vector4& color) { effectData->outlineColor = color; }
+	// 平滑化
+	void SetBoxFilter(bool isBoxFilter) { effectData->isBoxFilter = isBoxFilter; }
+	// ディゾルブ
+	void SetDissolve(bool isDissolve) { effectData->isDissolve = isDissolve; }
+	void SetDissolveThreshold(float dissolveThreshold) { effectData->dissolveThreshold = dissolveThreshold; }
+	void SetDissolveEdgeWidth(float dissolveEdgeWidth) { effectData->dissolveEdgeWidth = dissolveEdgeWidth; }
+	void SetDissolveNoiseScale(float dissolveNoiseScale) { effectData->dissolveNoiseScale = dissolveNoiseScale; }
+	void SetDissolveNoiseColor(const Vector3& color) { effectData->dissolveNoiseColor = color; }
+	void SetDissolveEdgeColor(const Vector3& color) { effectData->dissolveEdgeColor = color; }
+	// ランダムノイズ
+	void SetRandomNoise(bool isRandomNoise) { effectData->isRandomNoise = isRandomNoise; }
+
 
 
 	// ダメージエフェクト

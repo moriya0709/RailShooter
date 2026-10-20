@@ -29,7 +29,7 @@ void RailCamera::Update() {
 	// Catmull-Rom 補間には 4 点必要。Empty を制御点にした場合も、
 	// 4 点未満ではプレビュー線だけを表示し、無効な添字アクセスはしない。
 	if (isRail && points.size() >= 4) {
-		const float tEnd = static_cast<float>(points.size() - 3);
+		const float tEnd = static_cast<float>(points.size() - 1);
 
 		// tを進める
 		railT += railSpeed * deltaTime;
@@ -65,7 +65,7 @@ void RailCamera::StartRail() {
 	++startRevision_;
 }
 
-void RailCamera::EditorUpdate() { 
+void RailCamera::EditorUpdate() {
 #ifdef USE_IMGUI 
 	if (ImGui::Begin("RailEditor")) {
 		if (ImGui::Button("Add Point")) {
@@ -86,7 +86,7 @@ void RailCamera::EditorUpdate() {
 			}
 		}
 
-		ImGui::DragFloat("time", &railT,0.01f);
+		ImGui::DragFloat("time", &railT, 0.01f);
 		const bool canStart = CanStartRail();
 		if (!canStart) {
 			ImGui::TextDisabled("Add %d more Rail Camera Point(s) to start.", 4 - static_cast<int>(points.size()));
@@ -140,29 +140,40 @@ void RailCamera::EditorDraw() {
 #endif 
 }
 
-Vector3 RailCamera::Evaluate(float distance) 
-{
-	if (points.size() < 4)
-	{
-		return Vector3{ 0,0,0 };
-	} 
-	float maxT = (float)(points.size() - 3);
+Vector3 RailCamera::Evaluate(float distance) {
+	// 2点以上あれば補間可能
+	if (points.size() < 2) {
+		return (points.size() == 1) ? points[0].position : Vector3{ 0, 0, 0 };
+	}
+
+	// 最大距離を「点の数 - 1」にする（これで最後の点まで到達する）
+	float maxT = (float)(points.size() - 1);
+
 	// distance制限 
 	if (distance < 0.0f) distance = 0.0f;
 	if (distance > maxT - 0.001f) distance = maxT - 0.001f;
+
 	int i = (int)distance;
 	float localT = distance - i;
-	Vector3 p0 = points[i].position;
-	Vector3 p1 = points[i + 1].position;
-	Vector3 p2 = points[i + 2].position;
-	Vector3 p3 = points[i + 3].position;
-	return CatmullRom(p0, p1, p2, p3, localT); 
+
+	// 通過する区間の始点(p1)と終点(p2)
+	Vector3 p1 = points[i].position;
+	Vector3 p2 = points[(std::min)(i + 1, (int)points.size() - 1)].position;
+
+	// p0 (手前の点がない場合は、p1から逆算して仮想点をでっち上げる)
+	Vector3 p0 = (i - 1 >= 0) ? points[i - 1].position : (p1 - (p2 - p1));
+
+	// p3 (奥の点がない場合は、p2から延長して仮想点をでっち上げる)
+	Vector3 p3 = (i + 2 < points.size()) ? points[i + 2].position : (p2 + (p2 - p1));
+
+	return CatmullRom(p0, p1, p2, p3, localT);
 }
 Vector3 RailCamera::EvaluateRotate(float distance) {
-	if (points.size() < 4) {
-		return Vector3{ 0, 0, 0 };
+	if (points.size() < 2) {
+		return (points.size() == 1) ? points[0].rotate : Vector3{ 0, 0, 0 };
 	}
-	float maxT = (float)(points.size() - 3);
+
+	float maxT = (float)(points.size() - 1);
 
 	// distance制限 
 	if (distance < 0.0f) distance = 0.0f;
@@ -171,38 +182,43 @@ Vector3 RailCamera::EvaluateRotate(float distance) {
 	int i = (int)distance;
 	float localT = distance - i;
 
-	Vector3 r0 = points[i].rotate;
-	Vector3 r1 = points[i + 1].rotate;
-	Vector3 r2 = points[i + 2].rotate;
-	Vector3 r3 = points[i + 3].rotate;
+	Vector3 r1 = points[i].rotate;
+	Vector3 r2 = points[(std::min)(i + 1, (int)points.size() - 1)].rotate;
 
-	// 位置と同様に CatmullRom で補間
+	// 回転の仮想点
+	Vector3 r0 = (i - 1 >= 0) ? points[i - 1].rotate : (r1 - (r2 - r1));
+	Vector3 r3 = (i + 2 < points.size()) ? points[i + 2].rotate : (r2 + (r2 - r1));
+
 	return CatmullRom(r0, r1, r2, r3, localT);
 }
 
 
-Vector3 RailCamera::GetForward(float distance) 
-{
+Vector3 RailCamera::GetForward(float distance) {
 	float look = 0.01f;
 	Vector3 p0 = Evaluate(distance);
 	Vector3 p1 = Evaluate(distance + look);
 	return Normalize(p1 - p0);
-} 
+}
 
-void RailCamera::AddPoint(Vector3 pos,Vector3 rotate)
-{ 
-	RailPoint p{}; 
+void RailCamera::AddPoint(Vector3 pos, Vector3 rotate) {
+	RailPoint p{};
 
 	p.position = pos;
 	p.rotate = rotate;
-	points.push_back(p); 
+	points.push_back(p);
 	auto obj = std::make_unique<Object>();
 	obj->Initialize(camera.get());
 	obj->SetModel("cube.gltf");
-	obj->SetScale(Vector3(0.5f, 0.5f, 0.5f)); 
+	obj->SetScale(Vector3(0.5f, 0.5f, 0.5f));
 	obj->SetTranslate(pos);
 	obj->SetRotate(rotate);
-	spheres.push_back(std::move(obj)); 
+	spheres.push_back(std::move(obj));
+}
+
+void RailCamera::ClearPoints() {
+	points.clear();
+	spheres.clear();
+	selectedPoint = -1;
 }
 
 void RailCamera::DrawRailLine() {
@@ -224,7 +240,7 @@ void RailCamera::DrawRailLine() {
 	}
 
 	const float tStart = 0.0f;
-	const float tEnd = static_cast<float>(points.size() - 3);
+	const float tEnd = static_cast<float>(points.size() - 1);
 
 	// 線の分割数（数値を大きくするほど滑らかになります）
 	int segmentCount = 200;
@@ -328,9 +344,9 @@ void RailCamera::SelectPointByMouse() {
 #endif 
 }
 
-Vector3 RailCamera::CatmullRom(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t) { 
+Vector3 RailCamera::CatmullRom(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t) {
 	float t2 = t * t; float t3 = t2 * t;
-	return( (p1 * 2.0f) + (-p0 + p2) * t + (p0 * 2 - p1 * 5 + p2 * 4 - p3)* t2 + (-p0 + p1 * 3 - p2 * 3 + p3) * t3 ) * 0.5f;
+	return((p1 * 2.0f) + (-p0 + p2) * t + (p0 * 2 - p1 * 5 + p2 * 4 - p3) * t2 + (-p0 + p1 * 3 - p2 * 3 + p3) * t3) * 0.5f;
 }
 
 void RailCamera::UpdateCameraDirection() {
@@ -349,9 +365,9 @@ void RailCamera::UpdateCameraTarget() {
 	Vector3 forward = Normalize(targetPosition - cameraTransform.translate);
 
 	// forwardからオイラー角を計算
-	float yaw = atan2f(forward.x, forward.z); 
-		float pitch = atan2f(-forward.y, sqrtf(forward.x * forward.x + forward.z * forward.z));
-		cameraTransform.rotate = { pitch, yaw ,0.0f };
+	float yaw = atan2f(forward.x, forward.z);
+	float pitch = atan2f(-forward.y, sqrtf(forward.x * forward.x + forward.z * forward.z));
+	cameraTransform.rotate = { pitch, yaw ,0.0f };
 	// カメラ回転を更新
 	camera->SetRotate(cameraTransform.rotate);
 }

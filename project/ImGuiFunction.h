@@ -58,9 +58,11 @@ private:
 	std::vector<DockWindowInfo> dockWindowInfos;
 	std::vector<std::string> mergedWindowTabs;
 	std::string activeMergedWindow;
+	std::string dockLayoutScope;
 	bool isDockLayoutLoaded = false;
 
 	// ImGui 標準の位置・サイズ保存とは別に、結合タブの構成を保存する。
+	void SetDockLayoutScope(const char* scope);
 	void EnsureDockLayoutLoaded();
 	void SaveDockLayout() const;
 

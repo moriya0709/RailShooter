@@ -49,8 +49,8 @@ private:
 
 	Transform cameraTransform{
 	   { 1.0f, 1.0f, 1.0f }, // scale
-	   { 0.0f, 0.0f, 0.0f }, // rotate
-	   { 0.0f, 0.0f, -5.0f } // translate
+		{ 0.005f, -6.395f, 0.0f }, // rotate
+		{ 1998.308f, 113.211f, -91.868f  } // translate
 	};
 	// パーティクル
 	Transform transformParticle
@@ -67,7 +67,7 @@ private:
 	bool isDirectionalLight = false;
 	Vector4 DirectionalLightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector3 DirectionalLightDirection = { 0.0f, -1.0f, 0.0f };
-	float DirectionalLightIntensity = 1.0f;
+	float DirectionalLightIntensity = 0.0f;
 	// 環境光
 	bool isAmbientLight = true;
 	Vector4 AmbientLightColor = { 0.2f, 0.2f, 0.2f,1.0f };
@@ -98,7 +98,7 @@ private:
 	// 放射線ブラー
 	bool isRadialBlur = false;
 	Vector2 blurCenter = { 0.5f,0.5f };
-	float blurWidth = 0.01f;
+	float blurWidth = 0.0f;
 	int blurSamples = 10;
 
 	// ディスタンスフォグ
@@ -121,7 +121,7 @@ private:
 	float bokehRadius = 5.0f;
 
 	// ブルーム
-	float bloomThreshold = 1.0f;
+	float bloomThreshold = 2.0f;
 	float bloomIntensity = 2.0f;
 	float bloomBlurRadius = 1.0f;
 
@@ -137,16 +137,18 @@ private:
 	int motionBlurSamples = 16; // サンプル数（例：8〜16）
 	float motionBlurScale = 1.0f;   // ブラーの強さ
 
+	float intensity = 1.0f; // エフェクトの強さ
+
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
-	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
-	float rayMarchingCloudCoverage = 0.00f;
-	float rayMarchingCloudBottom = -90.0f;
-	float rayMarchingCloudTop = 2900.0f;
+	Vector3 rayMarchingSunDir = { -0.13f, -0.16f, -1.0f };
+	float rayMarchingCloudCoverage = 0.16f;
+	float rayMarchingCloudBottom = 5000.0f;
+	float rayMarchingCloudTop = 4000.0f;
 	bool rayMarchingIsRialLight = false;
 	bool rayMarchingIsAnimeLight = true;
 	bool  rayMarchingIsMotionBlur = false;
-	float  rayMarchingCloudOpacity = 0.04f;
+	float  rayMarchingCloudOpacity = 0.002f;
 	bool isStorm = false;
 	float thunderFrequency = 0.3f;
 	float thunderBrightness = 120.0f;
@@ -221,9 +223,20 @@ private:
 	float width = 0.1f; // 弾の幅
 	float trailMaxLifeTime = 1.0f; // トレイルの寿命
 
+	// スタート演出
+	bool isStartAction = true;
+	bool isFadeIn = true;
+
 	// レベルデータからオブジェクト生成、配置
 	void CreateLevel();
 	void ResetEnemySpawning();
+	// レールカメラのプリセットを作成する
+	void CreateRailPresetFromGroup(const std::string& groupName, const std::string& presetName);
+	// プリセットの接続・生成ロジック
+	void AppendRailPreset(const RailPresetData& preset);
+	// プリセットの順番をレールカメラグループに反映する
+	void RebuildRailGroupFromSequence(const std::string& groupName);
+
 	// Gizmo
 	void GizmoUpdate(bool showEditorControls);
 

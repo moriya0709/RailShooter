@@ -44,7 +44,7 @@ void Player::Update(float deltaTime) {
 void Player::Draw() {
 	for (int i = 0; i < 3; ++i) {
 		reticle[i]->Draw();
-	}
+	}	
 }
 
 void Player::UpdateReticle() {
@@ -53,7 +53,7 @@ void Player::UpdateReticle() {
 	reticleRotation[1] = rotate_.z * reticleRotationMultiplier[1];
 	reticleRotation[2] = rotate_.z * reticleRotationMultiplier[2];
 
-	Vector2 targetReticlePos = { 960.0f, 540.0f };
+	Vector2 targetReticlePos = { 960.0f, 440.0f };
 	Vector2 targetReticleSize = { 700.0f, 700.0f };
 
 	if (lockedTarget && !lockedTarget->IsDead()) {
@@ -321,7 +321,10 @@ void Player::UpdateNormal(float deltaTime) {
 	}
 	previousLockedTarget = lockedTarget;
 
-	Move();
+	// 移動処理
+	if (isMoveEnabled_) {
+		Move();
+	}
 
 	// ▼▼▼ 左右交互の6連射ミサイル発射処理 ▼▼▼
 	if (remainingMissiles > 0) {

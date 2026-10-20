@@ -111,5 +111,5 @@ private:
 	PointLight* pointLightData_ = nullptr;
 	SpotLight* spotLightData_ = nullptr;
 
-	bool isSunLight_ = false;
+	bool isSunLight_ = true;
 };

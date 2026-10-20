@@ -117,6 +117,7 @@ void ModelRendererComponent::Draw() {
 
 	// 3Dモデルが割り当てられていれば描画する
 	if (model_) {
+		model_->SetToonShading(toonShadingEnabled_);
 		model_->Draw(activeTextureOverridePath_);
 	}
 
@@ -130,7 +131,7 @@ void ModelRendererComponent::DrawOutline() {
 	// SetOutlinePipelineState() はシーン側で一度だけ設定済み。
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(3, outlineResource->GetGPUVirtualAddress());
-	model_->Draw(activeTextureOverridePath_);
+	model_->Draw(activeTextureOverridePath_, false);
 }
 
 void ModelRendererComponent::SetOutlineThickness(float thickness) {

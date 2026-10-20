@@ -23,12 +23,16 @@ struct TransformationMatrix {
 struct MaterialData {
 	std::string textureFilePath;
 	uint32_t textureIndex = 0;
+	// テクスチャの有無にかかわらず使うマテリアル固有の基本色（MTL の Kd）。
+	// テクスチャ無しでは白テクスチャと組み合わせ、単色として描画する。
+	Vector4 baseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	std::string normalTextureFilePath = "__pbr_flat_normal";
 	std::string roughnessTextureFilePath = "__pbr_roughness";
 	std::string metallicTextureFilePath = "__pbr_metallic";
 	std::string emissionTextureFilePath = "__pbr_black";
 	Vector3 emissive = { 0.0f, 0.0f, 0.0f };
 	bool isGlass = false;
+	bool isTransparent = false;
 };
 // 1つのメッシュを描画するための、インデックス範囲と使用マテリアルの対応
 struct MaterialRange {
@@ -235,10 +239,39 @@ enum class RailCameraDirectionMode : int {
 	UsePointRotation = 2,
 };
 
+// シーケンス項目の構造体を新設
+struct TrackSequenceItem {
+    std::string presetName;
+    Vector3 localRotate = { 0.0f, 0.0f, 0.0f }; // このブロックの追加回転（主にY軸:Yawを使う）
+};
+
 struct RailCameraGroupData {
 	std::string groupName;
 	RailCameraDirectionMode directionMode = RailCameraDirectionMode::FollowPath;
 	Vector3 targetPosition = { 0.0f, 0.0f, 0.0f };
+    std::vector<TrackSequenceItem> presetSequence;
+};
+
+// EasingComponent が保持する、レベル保存可能なアニメーション設定。
+// ベジェ曲線の端点は常に (0, 0) と (1, 1) で、編集対象は 2 つの制御点だけ。
+struct EasingData {
+	bool animatePosition = true;
+	bool animateRotation = false;
+	bool animateScale = false;
+	bool animateColor = false;
+	Vector3 startPosition = { 0.0f, 0.0f, 0.0f };
+	Vector3 goalPosition = { 0.0f, 0.0f, 0.0f };
+	Vector3 startRotation = { 0.0f, 0.0f, 0.0f };
+	Vector3 goalRotation = { 0.0f, 0.0f, 0.0f };
+	Vector3 startScale = { 1.0f, 1.0f, 1.0f };
+	Vector3 goalScale = { 1.0f, 1.0f, 1.0f };
+	Vector4 startColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	Vector4 goalColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	Vector2 controlPoint1 = { 0.25f, 0.25f };
+	Vector2 controlPoint2 = { 0.75f, 0.75f };
+	float duration = 1.0f;
+	bool loop = false;
+	bool playOnStart = true;
 };
 
 struct ObjectData {
@@ -250,6 +283,8 @@ struct ObjectData {
 	std::string groupName;
 	std::string file_name;
 	std::string sprite_file_name;
+	// SpriteRenderer の元サイズ。RectTransform の scale とは別に保存する。
+	Vector2 spriteSize = { 128.0f, 128.0f };
 	Vector3 spriteEmissiveColor = { 1.0f, 1.0f, 1.0f };
 	float spriteEmissiveIntensity = 0.0f;
 	std::string text = "New Text";
@@ -289,6 +324,8 @@ struct ObjectData {
 	bool modelColorOverrideEnabled = false;
 	Vector4 modelColorOverride = { 1.0f, 1.0f, 1.0f, 1.0f };
 	bool modelColorOverrideUnlit = false;
+	// true: セル調、false: 通常のライティング。既存レベルとの互換性のため既定はセル調。
+	bool modelToonShading = true;
 	// ModelRenderer ごとのベースカラーテクスチャ上書き。空文字列ならモデル定義を使用。
 	std::string modelTextureOverride;
 	// Unity のように複数の機能を 1 つの GameObject に追加するための型一覧。
@@ -301,6 +338,8 @@ struct ObjectData {
 	bool objectRailOrientToPath = true;
 	bool objectRailUsePointRotations = false;
 	bool objectRailPlayOnStart = true;
+	// EasingComponent 専用。
+	EasingData easing;
 
     // スポナー専用の敵配置データリスト
     std::vector<SpawnData> spawnDataList;

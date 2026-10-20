@@ -5,6 +5,7 @@
 #include <cassert>
 #include <algorithm>
 #include <vector>
+#include <filesystem>
 
 #include "Calc.h"
 #include "CommonStructs.h"
@@ -34,12 +35,23 @@ inline RailCameraGroupData& GetOrCreateRailCameraGroup(LevelData& levelData, con
 	return *it;
 }
 
+// レールカメラのプリセット
+struct RailPresetData {
+	std::string presetName;
+	std::vector<Transform> localTransforms; // 始点を原点(0,0,0)、無回転とした時の各制御点のローカル姿勢
+};
+
 class Level {
 public:
 	// JSONファイル読み込み
 	void LoadJson(const std::string fileName);
 	// JSONファイル書き込み
 	void SaveJson(const std::string fileName);
+
+	// プリセット用の保存・読み込み・取得
+	void LoadRailPresetsJson(const std::string fileName = "rail_presets");
+	void SaveRailPresetsJson(const std::string fileName = "rail_presets");
+	std::vector<RailPresetData>& GetRailPresets() { return railPresets; }
 
 	// getter
 	ObjectData GetObjectData() const { return objectData; }
@@ -51,6 +63,9 @@ public:
 private:
 	ObjectData objectData;
 	LevelData* levelData;
+
+	// プリセットのリスト
+	std::vector<RailPresetData> railPresets;
 
 };
 

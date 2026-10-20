@@ -32,7 +32,9 @@ public:
 	// 描画
 	// textureOverride が指定されている場合は、全マテリアルのベースカラー
 	// テクスチャだけをそのパスで描画する。共有 Model のマテリアルは変更しない。
-	void Draw(const std::string& textureOverride = {});
+	void Draw(const std::string& textureOverride = {}, bool useMaterialBlend = true);
+	// モデルは共有されるため、描画直前にこのレンダラーで使うライティング方式を設定する。
+	void SetToonShading(bool enabled);
 
 	// 骨の線更新
 	void BoneLineUpdate(Line* line, const Vector3& scale, const Vector3& rotate, const Vector3& translate);

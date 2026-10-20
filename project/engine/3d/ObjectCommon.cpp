@@ -37,6 +37,14 @@ void ObjectCommon::SetAnimationPipelineState() {
 	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
+void ObjectCommon::SetMaterialBlendPipelineState(bool isSkinning, bool isTransparent) {
+	// RootSignature を再設定しないため、すでにバインド済みの CBV/SRV を維持できる。
+	ID3D12PipelineState* pipelineState = isSkinning
+		? (isTransparent ? transparentAnimationPipelineState.Get() : animationPipelineState.Get())
+		: (isTransparent ? transparentGraphicsPipelineState.Get() : graphicsPipelineState.Get());
+	dxCommon_->GetCommandList()->SetPipelineState(pipelineState);
+}
+
 // 共通描画設定(アウトライン)
 void ObjectCommon::SetOutlinePipelineState() {
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
@@ -490,6 +498,21 @@ void ObjectCommon::CreateGraphicsPipeline() {
 	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
+
+	// glTF alphaMode: BLEND。透明面は後で合成し、深度バッファを更新しない。
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC transparentDesc = graphicsPipelineStateDesc;
+	transparentDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	transparentDesc.BlendState.RenderTarget[0].BlendEnable = TRUE;
+	transparentDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	transparentDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	transparentDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	transparentDesc.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	transparentDesc.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+	transparentDesc.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	transparentDesc.BlendState.RenderTarget[1].RenderTargetWriteMask = 0;
+	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&transparentDesc,
+		IID_PPV_ARGS(&transparentGraphicsPipelineState));
+	assert(SUCCEEDED(hr));
 }
 
 void ObjectCommon::CreateGraphicsAnimationPipeline() {
@@ -543,6 +566,20 @@ void ObjectCommon::CreateGraphicsAnimationPipeline() {
 	// 実際に生成
 	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&animationPipelineState));
+	assert(SUCCEEDED(hr));
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC transparentDesc = graphicsPipelineStateDesc;
+	transparentDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	transparentDesc.BlendState.RenderTarget[0].BlendEnable = TRUE;
+	transparentDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	transparentDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	transparentDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	transparentDesc.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	transparentDesc.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+	transparentDesc.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	transparentDesc.BlendState.RenderTarget[1].RenderTargetWriteMask = 0;
+	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&transparentDesc,
+		IID_PPV_ARGS(&transparentAnimationPipelineState));
 	assert(SUCCEEDED(hr));
 }
 

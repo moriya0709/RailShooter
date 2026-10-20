@@ -9,6 +9,8 @@
 #include "Line.h"
 #include "SrvManager.h"
 #include "ObjectCommon.h"
+#include <assimp/matrix3x3.h>
+#include <assimp/GltfMaterial.h>
 #include <assimp/vector3.h>
 #include <assimp/matrix4x4.h>
 #include <assimp/quaternion.h>
@@ -41,6 +43,24 @@ struct OutlineNormalKeyHash {
 		return h1 ^ (h2 << 1) ^ (h3 << 2);
 	}
 };
+
+// glTF ではメッシュ本体を複数のノードから参照でき、位置・回転・拡縮は
+// ノード階層に保存される。静的モデルではこれを頂点へ焼き込む。
+struct StaticMeshInstance {
+	uint32_t meshIndex;
+	aiMatrix4x4 transform;
+};
+
+void CollectStaticMeshInstances(const aiNode* node, const aiMatrix4x4& parentTransform,
+	std::vector<StaticMeshInstance>& instances) {
+	const aiMatrix4x4 worldTransform = parentTransform * node->mTransformation;
+	for (uint32_t meshSlot = 0; meshSlot < node->mNumMeshes; ++meshSlot) {
+		instances.push_back({ node->mMeshes[meshSlot], worldTransform });
+	}
+	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex) {
+		CollectStaticMeshInstances(node->mChildren[childIndex], worldTransform, instances);
+	}
+}
 
 OutlineNormalKey MakeOutlineNormalKey(const Vector4& position) {
 	constexpr float kPositionTolerance = 0.0001f;
@@ -135,7 +155,9 @@ bool IsGlassMaterialName(const std::string& materialName) {
 
 void EnsurePbrFallbackTextures() {
 	TextureManager* textureManager = TextureManager::GetInstance();
+	// ベースカラーは白にして、テクスチャ無しのマテリアルでも Kd をそのまま表示する。
 	// 法線は (0.5, 0.5, 1.0)、粗さは 1、メタリックと発光は 0 が標準の無効値。
+	textureManager->LoadTextureFromRGBA8("__pbr_white", 1, 1, { 255, 255, 255, 255 }, true);
 	textureManager->LoadTextureFromRGBA8("__pbr_flat_normal", 1, 1, { 128, 128, 255, 255 }, false);
 	textureManager->LoadTextureFromRGBA8("__pbr_roughness", 1, 1, { 255, 255, 255, 255 }, false);
 	textureManager->LoadTextureFromRGBA8("__pbr_metallic", 1, 1, { 0, 0, 0, 255 }, false);
@@ -212,7 +234,7 @@ void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, SrvMan
 		materialResources[materialIndex] = dxCommon_->CreateBufferResource(sizeof(Material));
 		materialResources[materialIndex]->Map(0, nullptr, reinterpret_cast<void**>(&materialDatas[materialIndex]));
 		Material* currentMaterial = materialDatas[materialIndex];
-		currentMaterial->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+		currentMaterial->color = modelData.materials[materialIndex].baseColor;
 		currentMaterial->enableLighting = true;
 		currentMaterial->enableToonShading = true;
 		currentMaterial->uvTransform = MakeIdentity4x4();
@@ -222,8 +244,13 @@ void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, SrvMan
 		currentMaterial->fresnelPower = 4.0f;
 		currentMaterial->rimColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		currentMaterial->rimThreshold = 0.5f;
-		// 反射は粗さ／金属度マップで制御し、ガラスと窓面にはフレネル反射を強めに適用する。
-		currentMaterial->environmentCoefficient = modelData.materials[materialIndex].isGlass ? 1.0f : 0.18f;
+		// 黒いゴムや塗装面まで空を強く反射すると、斜めを向いたコックピットの
+		// フレームが白く見える。明度が低い非金属は反射を抑え、ガラスだけ強くする。
+		const Vector4& baseColor = modelData.materials[materialIndex].baseColor;
+		const float maxBaseColor = (std::max)({ baseColor.x, baseColor.y, baseColor.z });
+		currentMaterial->environmentCoefficient = modelData.materials[materialIndex].isGlass
+			? 1.0f
+			: (maxBaseColor < 0.08f ? 0.01f : 0.06f);
 		currentMaterial->useNoise = modelData.materials[materialIndex].isGlass ? 1 : 0;
 	}
 	// 環境マップ用テクスチャ
@@ -322,7 +349,17 @@ void Model::Update() {
 	}
 }
 
-void Model::Draw(const std::string& textureOverride) {
+void Model::SetToonShading(bool enabled) {
+	// materialResources は Model 共有だが、Draw の直前に毎回設定することで
+	// 同じモデルを別々のライティング方式で描くこともできる。
+	for (Material* material : materialDatas) {
+		if (material) {
+			material->enableToonShading = enabled;
+		}
+	}
+}
+
+void Model::Draw(const std::string& textureOverride, bool useMaterialBlend) {
 	// RootSignatureを設定。PSOに設定しているけど別途設定が必要
 	if (IsSkinning()) {
 		D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
@@ -351,7 +388,7 @@ void Model::Draw(const std::string& textureOverride) {
 	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(10, TextureManager::GetInstance()->GetSrvHandleGPU(enviromentTexture));
 
 	// メッシュ範囲ごとに対応するテクスチャをセットして描画する
-	for (const MaterialRange& range : modelData.materialRanges) {
+	const auto drawMaterialRange = [this, &textureOverride](const MaterialRange& range) {
 		assert(range.materialIndex < materialResources.size());
 		const MaterialData& material = modelData.materials[range.materialIndex];
 		const std::string& baseColorTexture = textureOverride.empty()
@@ -370,6 +407,34 @@ void Model::Draw(const std::string& textureOverride) {
 		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(
 			14, TextureManager::GetInstance()->GetSrvHandleGPU(material.emissionTextureFilePath));
 		dxCommon_->GetCommandList()->DrawIndexedInstanced(range.indexCount, 1, range.indexOffset, 0, 0);
+	};
+
+	// アウトライン用PSOでは通常の不透明／透明PSOに切り替えない。
+	// ここで切り替えると、透明マテリアルを持つモデルのアウトラインが
+	// 通常シェーダーで描画されてしまう。
+	if (!useMaterialBlend) {
+		for (const MaterialRange& range : modelData.materialRanges) {
+			drawMaterialRange(range);
+		}
+		return;
+	}
+
+	for (const MaterialRange& range : modelData.materialRanges) {
+		if (!modelData.materials[range.materialIndex].isTransparent) {
+			drawMaterialRange(range);
+		}
+	}
+
+	const bool hasTransparentMaterial = std::any_of(modelData.materialRanges.begin(), modelData.materialRanges.end(),
+		[this](const MaterialRange& range) { return modelData.materials[range.materialIndex].isTransparent; });
+	if (hasTransparentMaterial) {
+		ObjectCommon::GetInstance()->SetMaterialBlendPipelineState(IsSkinning(), true);
+		for (const MaterialRange& range : modelData.materialRanges) {
+			if (modelData.materials[range.materialIndex].isTransparent) {
+				drawMaterialRange(range);
+			}
+		}
+		ObjectCommon::GetInstance()->SetMaterialBlendPipelineState(IsSkinning(), false);
 	}
 }
 
@@ -413,6 +478,7 @@ void Model::BoneLineUpdate(Line* line, const Vector3& scale, const Vector3& rota
 // .mtlファイルの読み込み
 MaterialData Model::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
 	MaterialData materialData; // 構築するMaterialData
+	materialData.textureFilePath = "__pbr_white";
 	std::string line; // ファイルから読んだ１行を格納するもの
 	std::ifstream file(directoryPath + "/" + filename); // ファイルを開く
 	assert(file.is_open()); // とりあえず聞けなかったら止める
@@ -422,6 +488,23 @@ MaterialData Model::LoadMaterialTemplateFile(const std::string& directoryPath, c
 		std::istringstream s(line);
 		s >> identifier;
 
+		// MTL の拡散色。テクスチャがなくても白テクスチャと乗算して表示する。
+		if (identifier == "Kd") {
+			s >> materialData.baseColor.x
+				>> materialData.baseColor.y
+				>> materialData.baseColor.z;
+		}
+		// MTL の不透明度。d は不透明度、Tr は透明度を表す。
+		else if (identifier == "d") {
+			s >> materialData.baseColor.w;
+			materialData.isTransparent = materialData.baseColor.w < 0.999f;
+		}
+		else if (identifier == "Tr") {
+			float transparency = 0.0f;
+			s >> transparency;
+			materialData.baseColor.w = 1.0f - transparency;
+			materialData.isTransparent = materialData.baseColor.w < 0.999f;
+		}
 		// 拡散テクスチャ
 		if (identifier == "map_Kd") {
 			std::string textureFilename;
@@ -434,6 +517,11 @@ MaterialData Model::LoadMaterialTemplateFile(const std::string& directoryPath, c
 			s >> materialData.emissive.x
 				>> materialData.emissive.y
 				>> materialData.emissive.z;
+		}
+		else if (identifier == "map_Ke") {
+			std::string textureFilename;
+			s >> textureFilename;
+			materialData.emissionTextureFilePath = directoryPath + "/" + textureFilename;
 		}
 
 
@@ -482,8 +570,9 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 	assert(scene != nullptr && "ファイルの読み込みに失敗しました。");
 	assert(scene->HasMeshes());
 
-	// シーンの全マテリアルを先に読み込む。テクスチャがない場合はチェッカーテクスチャを使う。
-	constexpr const char* kFallbackTexture = "Resource/axis/uvChecker.png";
+	// シーンの全マテリアルを先に読み込む。テクスチャがない場合は白を使い、
+	// MTL の Kd（基本色）だけで正しく描画できるようにする。
+	constexpr const char* kFallbackTexture = "__pbr_white";
 	modelData.materials.resize(scene->mNumMaterials);
 	for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; ++materialIndex) {
 		aiMaterial* material = scene->mMaterials[materialIndex];
@@ -493,6 +582,34 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 		if (material->Get(AI_MATKEY_NAME, materialName) == AI_SUCCESS) {
 			materialData.isGlass = IsGlassMaterialName(materialName.C_Str());
 		}
+		// glTF の baseColorFactor は RGBA。aiColor3D で取得すると alpha を捨てて
+		// GaugeGlass（alpha = 0.005）のような透明面が不透明になってしまう。
+		aiColor4D baseColor(1.0f, 1.0f, 1.0f, 1.0f);
+		if (isOBJ) {
+			// OBJ/MTL は Kd が色そのもの。Assimp の版によっては BASE_COLOR に
+			// 既定値の白が入るため、OBJ では必ず Kd を優先する。
+			aiColor3D diffuseColor(1.0f, 1.0f, 1.0f);
+			if (material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor) == AI_SUCCESS) {
+				baseColor = { diffuseColor.r, diffuseColor.g, diffuseColor.b, 1.0f };
+			}
+		}
+		else if (material->Get(AI_MATKEY_BASE_COLOR, baseColor) != AI_SUCCESS) {
+			aiColor3D diffuseColor(1.0f, 1.0f, 1.0f);
+			material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor);
+			baseColor = { diffuseColor.r, diffuseColor.g, diffuseColor.b, 1.0f };
+		}
+		float opacity = baseColor.a;
+		float materialOpacity = 1.0f;
+		if (material->Get(AI_MATKEY_OPACITY, materialOpacity) == AI_SUCCESS) {
+			// glTF では baseColorFactor.a と同じ値として報告されることがあるため、
+			// 二重に掛けず、より透明な値だけを採用する。
+			opacity = (std::min)(opacity, materialOpacity);
+		}
+		aiString alphaMode;
+		const bool isBlendMaterial = material->Get(AI_MATKEY_GLTF_ALPHAMODE, alphaMode) == AI_SUCCESS &&
+			std::string(alphaMode.C_Str()) == "BLEND";
+		materialData.baseColor = { baseColor.r, baseColor.g, baseColor.b, opacity };
+		materialData.isTransparent = opacity < 0.999f || isBlendMaterial;
 		materialData.textureFilePath = FindMaterialTexturePath(material, directoryPath,
 			{ aiTextureType_BASE_COLOR, aiTextureType_DIFFUSE }, kFallbackTexture);
 		materialData.normalTextureFilePath = FindMaterialTexturePath(material, directoryPath,
@@ -515,28 +632,55 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 		}
 	}
 
-	// メッシュを解析する
+	// OBJ は従来どおりメッシュをそのまま読む。静的 glTF はノード階層の
+	// 変換を頂点に適用し、Blender 上で組み立てたパーツ配置を再現する。
+	bool hasSkinning = false;
 	for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex) {
-		aiMesh* mesh = scene->mMeshes[meshIndex];
+		hasSkinning = hasSkinning || scene->mMeshes[meshIndex]->HasBones();
+	}
+
+	std::vector<StaticMeshInstance> meshInstances;
+	if (isGLTF && !hasSkinning) {
+		CollectStaticMeshInstances(scene->mRootNode, aiMatrix4x4(), meshInstances);
+	}
+	if (meshInstances.empty()) {
+		meshInstances.reserve(scene->mNumMeshes);
+		for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex) {
+			meshInstances.push_back({ meshIndex, aiMatrix4x4() });
+		}
+	}
+
+	// メッシュを解析する
+	for (const StaticMeshInstance& instance : meshInstances) {
+		aiMesh* mesh = scene->mMeshes[instance.meshIndex];
 		assert(mesh->HasNormals());
 		assert(mesh->HasTextureCoords(0));
+		const aiMatrix3x3 linearTransform(instance.transform);
+		aiMatrix3x3 normalTransform(linearTransform);
+		if (std::abs(normalTransform.Determinant()) > 1.0e-8f) {
+			normalTransform.Inverse().Transpose();
+		}
 
 		const uint32_t baseVertex = static_cast<uint32_t>(modelData.vertices.size());
 		modelData.vertices.resize(baseVertex + mesh->mNumVertices);   // 追記する
 
 		for (uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex) {
-			aiVector3D& position = mesh->mVertices[vertexIndex];
-			aiVector3D& normal = mesh->mNormals[vertexIndex];
+			const aiVector3D& position = mesh->mVertices[vertexIndex];
+			const aiVector3D& normal = mesh->mNormals[vertexIndex];
 			aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
 			auto& v = modelData.vertices[baseVertex + vertexIndex];
-			v.position = { -position.x, position.y, position.z, 1.0f };
-			v.normal = { -normal.x, normal.y, normal.z };
+			const aiVector3D transformedPosition = instance.transform * position;
+			const aiVector3D transformedNormal = normalTransform * normal;
+			v.position = { -transformedPosition.x, transformedPosition.y, transformedPosition.z, 1.0f };
+			v.normal = Normalize(Vector3{ -transformedNormal.x, transformedNormal.y, transformedNormal.z });
 			v.texcoord = { texcoord.x, texcoord.y };
 			if (mesh->HasTangentsAndBitangents()) {
 				const aiVector3D& tangent = mesh->mTangents[vertexIndex];
 				const aiVector3D& bitangent = mesh->mBitangents[vertexIndex];
-				const Vector3 convertedTangent = { -tangent.x, tangent.y, tangent.z };
-				const Vector3 convertedBitangent = { -bitangent.x, bitangent.y, bitangent.z };
+				const aiVector3D transformedTangent = linearTransform * tangent;
+				const aiVector3D transformedBitangent = linearTransform * bitangent;
+				const Vector3 convertedTangent = Normalize(Vector3{ -transformedTangent.x, transformedTangent.y, transformedTangent.z });
+				const Vector3 convertedBitangent = Normalize(Vector3{ -transformedBitangent.x, transformedBitangent.y, transformedBitangent.z });
 				const float handedness = Dot(Cross(v.normal, convertedTangent), convertedBitangent) < 0.0f ? -1.0f : 1.0f;
 				v.tangent = { convertedTangent.x, convertedTangent.y, convertedTangent.z, handedness };
 			} else {

@@ -21,9 +21,9 @@
                     1.0
                 ],
                 "translation": [
-                    0.05000000819563866,
+                    0.0,
                     -60.0,
-                    0.8500001430511475
+                    1.0
                 ]
             },
             "type": "EMPTY"
@@ -51,7 +51,8 @@
                     1.0
                 ],
                 "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
             },
             "name": "logoAnimation",
             "object_rail_movement": {
@@ -147,7 +148,8 @@
                     1.0
                 ],
                 "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
             },
             "name": "transition",
             "object_rail_movement": {
@@ -769,6 +771,7 @@
         {
             "direction_mode": 0,
             "name": "",
+            "preset_sequence": [],
             "target_position": [
                 0.0,
                 0.0,

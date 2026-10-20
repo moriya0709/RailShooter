@@ -24,6 +24,8 @@ public:
 	void SetEmissive(const Vector3& color, float intensity);
 	const Vector3& GetEmissiveColor() const { return emissiveColor_; }
 	float GetEmissiveIntensity() const { return emissiveIntensity_; }
+	void SetColor(const Vector4& color) { color_ = color; }
+	const Vector4& GetColor() const { return color_; }
 
 private:
 	// 初期化後にのみ有効。GameObject の寿命とともに Sprite も破棄される。
@@ -32,4 +34,5 @@ private:
 	Vector2 size_ = { 128.0f, 128.0f };
 	Vector3 emissiveColor_ = { 1.0f, 1.0f, 1.0f };
 	float emissiveIntensity_ = 0.0f;
+	Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f };
 };

@@ -43,7 +43,7 @@ public:
 	// 制御点の取得
 	const std::vector<RailPoint>& GetPoints() const { return points; }
 	bool IsRailActive() const { return isRail; }
-	bool CanStartRail() const { return points.size() >= 4; }
+	bool CanStartRail() const { return points.size() >= 2; }
 	// StartRail が成功した回数。再スタートも含めて外部イベントを検出するために使う。
 	uint64_t GetStartRevision() const { return startRevision_; }
 	// 先頭からレール移動を開始する。Catmull-Rom のため制御点は 4 個以上必要。
@@ -60,6 +60,9 @@ public:
     // 制御点追加
     void AddPoint(Vector3 pos, Vector3 rotate);
 
+	// ポイントをリセットする関数
+    void ClearPoints();
+
 private:
 	enum class CameraMode {
 		Direction = static_cast<int>(RailCameraDirectionMode::FollowPath),
@@ -71,8 +74,8 @@ private:
     Transform cameraTransform
     {
         { 1.0f, 1.0f, 1.0f }, // scale
-        { 0.0f, 0.0f, 0.0f }, // rotate
-        { 0.0f, 0.0f, -10.0f } // translate
+        { 0.005f, -6.395f, 0.0f }, // rotate
+        { 1998.308f, 113.211f, -91.868f  } // translate
     };
 
 	float t = 1.0f; // レール上の位置

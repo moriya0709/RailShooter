@@ -267,7 +267,8 @@ public:
 	void SetDissolveEdgeColor(const Vector3& color) { effectData->dissolveEdgeColor = color; }
 	// ランダムノイズ
 	void SetRandomNoise(bool isRandomNoise) { effectData->isRandomNoise = isRandomNoise; }
-
+	// エフェクトの強さ
+	void SetIntensity(float intensity) { effectData->intensity = intensity; }
 
 
 	// ダメージエフェクト

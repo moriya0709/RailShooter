@@ -50,7 +50,7 @@ private:
 	Transform cameraTransform{
 	   { 1.0f, 1.0f, 1.0f }, // scale
 	   { 0.0f, 0.0f, 0.0f }, // rotate
-	   { 0.0f, 0.0f, -5.0f } // translate
+	   { 0.0f, 1.0f, -60.0f } // translate
 	};
 	// パーティクル
 	Transform transformParticle
@@ -137,16 +137,19 @@ private:
 	int motionBlurSamples = 16; // サンプル数（例：8〜16）
 	float motionBlurScale = 1.0f;   // ブラーの強さ
 
+	// エフェクトの強さ
+	float intensity = 1.0f;
+
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
-	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
-	float rayMarchingCloudCoverage = 0.00f;
-	float rayMarchingCloudBottom = -90.0f;
-	float rayMarchingCloudTop = 2900.0f;
+	Vector3 rayMarchingSunDir = { 0.33f, -0.1f, -1.0f };
+	float rayMarchingCloudCoverage = 0.22f;
+	float rayMarchingCloudBottom = -330.0f;
+	float rayMarchingCloudTop = -1000.0f;
 	bool rayMarchingIsRialLight = false;
 	bool rayMarchingIsAnimeLight = true;
 	bool  rayMarchingIsMotionBlur = false;
-	float  rayMarchingCloudOpacity = 0.04f;
+	float  rayMarchingCloudOpacity = 0.002f;
 	bool isStorm = false;
 	float thunderFrequency = 0.3f;
 	float thunderBrightness = 120.0f;

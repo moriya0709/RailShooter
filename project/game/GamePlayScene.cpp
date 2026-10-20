@@ -9,6 +9,7 @@
 #include "RailPointComponent.h"
 #include "ObjectRailMovementComponent.h"
 #include "EnemySpawnerComponent.h"
+#include "EasingComponent.h"
 #include "EnemyNormal.h"
 #include "SpriteRendererComponent.h"
 #include "TextRendererComponent.h"
@@ -22,6 +23,7 @@
 #include <cstring>
 #include <cctype>
 #include <filesystem>
+#include <iterator>
 
 void GamePlayScene::Initialize() {
 
@@ -31,8 +33,11 @@ void GamePlayScene::Initialize() {
 	// レベル
 	level = std::make_unique<Level>();
 	level->LoadJson("gamePlayScene");
+	// プリセットの読み込み
+	level->LoadRailPresetsJson();
 	activeRailGroupName_ = level->GetLevelData()->activeRailCameraGroup;
 	CreateLevel();
+
 	// Use an EMPTY + CameraComponent from the level. Keep the previous behavior
 	// as a fallback for old levels without a Camera component.
 	if (!camera) {
@@ -42,6 +47,10 @@ void GamePlayScene::Initialize() {
 		fallbackCameraObject->Initialize();
 		cameraObject = fallbackCameraObject.get();
 	}
+
+	// シーンで定義した初期位置・回転
+	camera->SetTranslate(cameraTransform.translate);
+	camera->SetRotate(cameraTransform.rotate);
 
 	// カメラマネージャ登録
 	CameraManager::GetInstance()->AddCamera("main", camera->GetCamera());
@@ -69,6 +78,7 @@ void GamePlayScene::Initialize() {
 	playerObject = defaultPlayerObject.get();
 	player = playerObject->AddComponent<Player>();
 	playerObject->Initialize();
+	player->SetMoveEnabled(false); // プレイヤーの移動を無効化
 
 	// 当たり判定の線
 	debugLineNormal = std::make_unique<Line>();
@@ -116,15 +126,6 @@ void GamePlayScene::Update() {
 			}
 		}
 
-		// Release builds do not include the Rail Editor, which is normally the
-		// only place StartRail() can be invoked. Start playback as soon as the
-		// level has supplied a valid path so the runtime camera does not remain
-		// at RailCamera's default transform.
-#ifndef USE_IMGUI
-		if (!railCamera->IsRailActive() && railCamera->CanStartRail()) {
-			railCamera->StartRail();
-		}
-#endif
 	}
 
 	// 3. その後、RailCamera自身の更新処理を呼ぶ
@@ -155,6 +156,8 @@ void GamePlayScene::Update() {
 	player->SetTranslate(basePos);
 	player->SetRotate(baseRot);
 
+
+
 	// ロックオン処理の為に敵のポインタをまとめて渡す
 	std::vector<Enemy*> enemyTargets;
 	enemyTargets.reserve(enemies.size() + levelObjects.size());
@@ -172,7 +175,6 @@ void GamePlayScene::Update() {
 	}
 	player->SetDeltaTime(deltaTime);
 	playerObject->Update();
-	
 
 	// デバックカメラ処理
 	#ifdef USE_IMGUI
@@ -235,6 +237,9 @@ void GamePlayScene::Update() {
 		if (auto* railMovement = object->GetComponent<ObjectRailMovementComponent>()) {
 			railMovement->SetDeltaTime(deltaTime);
 		}
+		if (auto* easing = object->GetComponent<EasingComponent>()) {
+			easing->SetDeltaTime(deltaTime);
+		}
 		if (object.get() == playerObject) {
 			continue; // 操作対象プレイヤーは上で一度だけ更新する。
 		}
@@ -252,23 +257,12 @@ void GamePlayScene::Update() {
 	player->UpdateLockOn(enemyTargets);
 	player->UpdateReticle();
 
-	// ENTERキーを押したら
-	//if (input->TriggerKey(DIK_RETURN)) {
-	//	// ゲームプレイシーン(次シーン)を生成
-	//	SceneManager::GetInstance()->ChangeScene("TITLE");
-	//}
-
-	// 数字の０キーが押されていたら
-	if (input->TriggerKey(DIK_0)) {
-		OutputDebugStringA("Hit 0\n"); // 出力ウィンドウに「Hit ０」と表示
-
-		// エフェクト有効化(色反転)
-		PostEffect::GetInstance()->SetInversion(true);
-	}
-
-	// * 3Dオブジェクト* //
-	for (int i = 0; i < 2; i++) {
-		object[i]->Update();
+	// コックピット
+	auto* cockpit = GameObject::FindByName("cockpit");
+	if (cockpit) {
+		auto* cockpitModel = cockpit ? cockpit->GetComponent<TransformComponent>() : nullptr;
+		cockpitModel->SetTranslate(player->GetTranslate());
+		cockpitModel->SetRotate(player->GetRotate());
 	}
 
 	// 当たり判定
@@ -339,6 +333,85 @@ void GamePlayScene::Update() {
 	}
 
 #endif
+
+	// スタート演出
+
+	// HUDの演出
+	if (isStartAction && !isFadeIn) {
+		auto* reticle_1 = GameObject::FindByName("reticle_1");
+		auto* reticle_2 = GameObject::FindByName("reticle_2");
+		auto* reticle_3 = GameObject::FindByName("reticle_3");
+		auto* monitor_1 = GameObject::FindByName("monitor_1");
+		auto* monitorAction_1 = GameObject::FindByName("monitorAction_1");
+
+		auto* reticle_1Easing = reticle_1->GetComponent<EasingComponent>();
+		auto* reticle_2Easing = reticle_2->GetComponent<EasingComponent>();
+		auto* reticle_3Easing = reticle_3->GetComponent<EasingComponent>();
+		auto* monitorActionEasing = monitorAction_1->GetComponent<EasingComponent>();
+
+		reticle_1->SetActive(true);
+		if (reticle_1Easing && !reticle_1Easing->IsPlaying()) {
+			reticle_2->SetActive(true);
+		}
+		if (reticle_2Easing && !reticle_2Easing->IsPlaying()) {
+			reticle_3->SetActive(true);
+		}
+		if (reticle_3Easing && !reticle_3Easing->IsPlaying()) {
+			monitor_1->SetActive(false);
+			monitorAction_1->SetActive(true);
+		}
+		if (monitorActionEasing && !monitorActionEasing->IsPlaying() && !railCamera->IsRailActive()) {
+			railCamera->StartRail();
+			isRadialBlur = true;
+		}
+
+		const std::string& groupName = level->GetLevelData()->activeRailCameraGroup;
+
+		if (groupName == "StartRailCamera") {
+			if (railCamera->IsRailActive()) {
+				// 放射線ブラー
+				blurWidth = (std::max)(0.0f, blurWidth + 0.002f / 60.0f);
+			}
+
+			if (railCamera->GetRailT() >= 3.5f) {
+				// フェードアウト
+				intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
+				PostEffect::GetInstance()->SetIntensity(intensity);
+
+				if (intensity <= 0.0f) {
+					// そのままステージに切り換え
+					activeRailGroupName_ = "StageRailCamera";
+					level->GetLevelData()->activeRailCameraGroup = activeRailGroupName_;
+					railCamera->StopRail();
+
+					railCamera->StartRail();
+					player->SetMoveEnabled(true); // プレイヤーの移動を有効化
+					isStartAction = false;
+					isFadeIn = true;
+					isRadialBlur = false;
+
+					// プレイ会用にセレクトシーンに飛ばす
+					SceneManager::GetInstance()->ChangeScene("SELECT");
+
+					// HUDの演出を非表示にする
+					reticle_1->SetActive(false);
+					reticle_2->SetActive(false);
+					reticle_3->SetActive(false);
+					monitorAction_1->SetActive(false);
+				}
+			}
+		}
+	}
+
+	// フェードイン
+	if (isFadeIn) {
+		if (intensity < 1.0f) {
+			intensity += 1.0f / 30.0f;
+			PostEffect::GetInstance()->SetIntensity(intensity);
+		} else {
+			isFadeIn = false;
+		}
+	}
 
 
 #pragma region ライティング
@@ -650,6 +723,154 @@ void GamePlayScene::Update() {
 	ImGui::End();
 	}
 
+	// --- レールプリセットウィンドウ ---
+	if (ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Rail Presets")) {
+		ImGui::Begin("Rail Presets");
+		ImGuiFunction::GetInstance()->TrackDockableWindow("Rail Presets");
+		ImGuiFunction::GetInstance()->DrawMergedWindowTabs("Rail Presets");
+
+		static char newPresetName[128] = "";
+		ImGui::InputTextWithHint("##NewPreset", "Preset Name", newPresetName, IM_ARRAYSIZE(newPresetName));
+		ImGui::SameLine();
+		if (ImGui::Button("Save Active Group as Preset") && newPresetName[0] != '\0') {
+			CreateRailPresetFromGroup(activeRailGroupName_, newPresetName);
+			newPresetName[0] = '\0';
+			level->SaveRailPresetsJson();
+		}
+
+		if (ImGui::Button("Reload Presets")) {
+			level->LoadRailPresetsJson();
+		}
+
+		ImGui::Separator();
+		ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "Track Editor");
+
+		if (!activeRailGroupName_.empty()) {
+			RailCameraGroupData& activeGroupSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), activeRailGroupName_);
+			bool sequenceChanged = false;
+
+			ImGui::Text("Sequence for [%s]", activeRailGroupName_.c_str());
+			ImGui::Indent();
+
+			// 配置済みプリセットのリスト表示・置き換え・並び替え
+			for (size_t i = 0; i < activeGroupSettings.presetSequence.size(); ++i) {
+				ImGui::PushID(static_cast<int>(i));
+
+				auto& item = activeGroupSettings.presetSequence[i];
+
+				// コンボボックスで別のプリセットに置き換え
+				ImGui::SetNextItemWidth(150.0f);
+				if (ImGui::BeginCombo("##ChangePreset", item.presetName.c_str())) {
+					for (const auto& preset : level->GetRailPresets()) {
+						bool isSelected = (item.presetName == preset.presetName);
+						if (ImGui::Selectable(preset.presetName.c_str(), isSelected)) {
+							item.presetName = preset.presetName;
+							sequenceChanged = true;
+						}
+						if (isSelected) ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+
+				// Y軸回転（Yaw）の調整ドラッグバーを追加
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(80.0f);
+				if (ImGui::DragFloat("Yaw", &item.localRotate.y, 1.0f, -360.0f, 360.0f, "%.0f deg")) {
+					sequenceChanged = true;
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button("Up") && i > 0) {
+					std::swap(activeGroupSettings.presetSequence[i], activeGroupSettings.presetSequence[i - 1]);
+					sequenceChanged = true;
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Down") && i < activeGroupSettings.presetSequence.size() - 1) {
+					std::swap(activeGroupSettings.presetSequence[i], activeGroupSettings.presetSequence[i + 1]);
+					sequenceChanged = true;
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Delete")) {
+					activeGroupSettings.presetSequence.erase(activeGroupSettings.presetSequence.begin() + i);
+					sequenceChanged = true;
+				}
+
+				ImGui::PopID();
+
+				if (sequenceChanged) break; // リスト操作後は安全のためループを抜ける
+			}
+			ImGui::Unindent();
+
+			ImGui::Spacing();
+			ImGui::Text("Append Preset:");
+			for (const auto& preset : level->GetRailPresets()) {
+				if (ImGui::Button(("+ " + preset.presetName).c_str())) {
+					// 文字列の代わりに TrackSequenceItem を作成して追加する
+					TrackSequenceItem newItem;
+					newItem.presetName = preset.presetName;
+					newItem.localRotate = { 0.0f, 0.0f, 0.0f };
+
+					activeGroupSettings.presetSequence.push_back(newItem);
+					sequenceChanged = true;
+				}
+				ImGui::SameLine();
+			}
+			ImGui::NewLine();
+
+			// シーケンスに変更があった場合、自動的にレールを再構築する
+			if (sequenceChanged) {
+				RebuildRailGroupFromSequence(activeRailGroupName_);
+				railCamera->StopRail(); // 再構築されたのでプレビューを停止
+			}
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Text("Preview Controls");
+
+			// 再生ボタン
+			if (ImGui::Button("Play Rail Camera")) {
+				if (!activeRailGroupName_.empty()) {
+					// 1. アクティブなグループのポイントデータを収集する
+					std::vector<ObjectData*> groupPoints;
+					for (auto& objData : level->GetLevelData()->objects) {
+						if (objData.groupName == activeRailGroupName_ &&
+							std::find(objData.components.begin(), objData.components.end(), "RailPoint") != objData.components.end()) {
+							groupPoints.push_back(&objData);
+						}
+					}
+
+					// 2. Catmull-Rom 補間には最低4点必要なためチェック
+					if (groupPoints.size() >= 4) {
+						// 既存のカメラポイントをリセット
+						railCamera->ClearPoints();
+
+						// 収集したポイントの座標と回転をカメラにセット
+						for (auto* p : groupPoints) {
+							railCamera->AddPoint(p->transform.translate, p->transform.rotate);
+						}
+
+						// 再生開始
+						railCamera->StartRail();
+					} else {
+						// ポイントが4つ未満の場合は警告を出す
+						OutputDebugStringA("RailCamera requires at least 4 points to start!\n");
+					}
+				}
+			}
+
+			ImGui::SameLine();
+
+			// 停止ボタン
+			if (ImGui::Button("Stop")) {
+				railCamera->StopRail();
+			}
+
+		} else {
+			ImGui::TextDisabled("Select an active Rail Camera Group to use Track Editor.");
+		}
+		ImGui::End();
+	}
+
 	// --- Unity 風 Hierarchy ウィンドウ ---
 	if (ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Hierarchy")) {
 		ImGui::SetNextWindowPos(ImVec2(0.0f, editorTopBarHeight), ImGuiCond_FirstUseEver);
@@ -852,6 +1073,7 @@ void GamePlayScene::Update() {
 			renderer->SetColorOverrideEnabled(copyData.modelColorOverrideEnabled);
 			renderer->SetColorOverride(copyData.modelColorOverride);
 			renderer->SetColorOverrideUnlit(copyData.modelColorOverrideUnlit);
+			renderer->SetToonShadingEnabled(copyData.modelToonShading);
 			renderer->SetTextureOverride(copyData.modelTextureOverride);
 		}
 		if (sourceObject->GetComponent<RectTransformComponent>()) {
@@ -869,6 +1091,7 @@ void GamePlayScene::Update() {
 			if (!copyObject->GetComponent<RectTransformComponent>()) copyObject->AddComponent<RectTransformComponent>();
 			auto* spriteRenderer = copyObject->AddComponent<SpriteRendererComponent>();
 			spriteRenderer->SetTexture(copyData.sprite_file_name.empty() ? "Resource/title/title.png" : copyData.sprite_file_name);
+			spriteRenderer->SetSize(copyData.spriteSize);
 			spriteRenderer->SetEmissive(copyData.spriteEmissiveColor, copyData.spriteEmissiveIntensity);
 		}
 		if (sourceObject->GetComponent<TextRendererComponent>()) {
@@ -893,6 +1116,9 @@ void GamePlayScene::Update() {
 			railMovement->Configure(copyData.objectRailPoints, copyData.objectRailSpeed,
 				copyData.objectRailLoop, copyData.objectRailOrientToPath, copyData.objectRailPlayOnStart,
 				copyData.objectRailPointRotations, copyData.objectRailUsePointRotations);
+		}
+		if (sourceObject->GetComponent<EasingComponent>()) {
+			copyObject->AddComponent<EasingComponent>()->Configure(copyData.easing);
 		}
 		if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
 			auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
@@ -1260,6 +1486,13 @@ void GamePlayScene::Update() {
 					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].modelColorOverrideUnlit = colorOverrideUnlit;
 				}
 				ImGui::EndDisabled();
+				int lightingStyle = renderer->IsToonShadingEnabled() ? 0 : 1;
+				if (ImGui::Combo("Lighting Style##ModelRenderer", &lightingStyle, "Toon\0Realistic\0")) {
+					renderer->SetToonShadingEnabled(lightingStyle == 0);
+					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+						level->GetLevelData()->objects[selectedIndex].modelToonShading = renderer->IsToonShadingEnabled();
+					}
+				}
 
 				char modelPath[260]{};
 				strncpy_s(modelPath, renderer->GetModelPath().c_str(), _TRUNCATE);
@@ -1348,6 +1581,7 @@ void GamePlayScene::Update() {
 				Vector2 spriteSize = spriteRenderer->GetSize();
 				if (ImGui::DragFloat2("Size", &spriteSize.x, 1.0f, 1.0f, 4096.0f)) {
 					spriteRenderer->SetSize(spriteSize);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].spriteSize = spriteSize;
 				}
 				Vector3 emissiveColor = spriteRenderer->GetEmissiveColor();
 				float emissiveIntensity = spriteRenderer->GetEmissiveIntensity();
@@ -1483,6 +1717,14 @@ void GamePlayScene::Update() {
 			}
 		}
 
+		if (auto* easing = selectedObject->GetComponent<EasingComponent>()) {
+			if (ImGui::CollapsingHeader("Easing", ImGuiTreeNodeFlags_DefaultOpen)) {
+				if (DrawEasingComponentInspector(*easing) && selectedIndex != -1) {
+					level->GetLevelData()->objects[selectedIndex].easing = easing->GetSettings();
+				}
+			}
+		}
+
 		if (auto* animatorComponent = selectedObject->GetComponent<AnimatorComponent>()) {
 			if (ImGui::CollapsingHeader("Animator")) {
 				bool enabled = animatorComponent->IsEnabled();
@@ -1612,6 +1854,7 @@ void GamePlayScene::Update() {
 				auto* spriteRenderer = selectedObject->AddComponent<SpriteRendererComponent>();
 				spriteRenderer->SetTexture("Resource/title/title.png");
 				objectData.sprite_file_name = "Resource/title/title.png";
+				objectData.spriteSize = spriteRenderer->GetSize();
 				objectData.spriteEmissiveColor = { 1.0f, 1.0f, 1.0f };
 				objectData.spriteEmissiveIntensity = 0.0f;
 				objectData.rectPosition = rectTransform->position;
@@ -1667,6 +1910,29 @@ void GamePlayScene::Update() {
 				objectData.objectRailUsePointRotations = false;
 				objectData.objectRailPlayOnStart = true;
 				addSerializedComponent("ObjectRailMovement");
+			}
+			if (!selectedObject->GetComponent<EasingComponent>() && ImGui::Button("Easing")) {
+				EasingData easingData{};
+				if (auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>()) {
+					easingData.startPosition = easingData.goalPosition = { rectTransform->position.x, rectTransform->position.y, 0.0f };
+					easingData.startRotation = easingData.goalRotation = { 0.0f, 0.0f, rectTransform->rotation };
+					easingData.startScale = easingData.goalScale = { rectTransform->scale.x, rectTransform->scale.y, 1.0f };
+				} else {
+					const Transform& transform = selectedObject->GetTransform()->transform;
+					easingData.startPosition = easingData.goalPosition = transform.translate;
+					easingData.startRotation = easingData.goalRotation = transform.rotate;
+					easingData.startScale = easingData.goalScale = transform.scale;
+				}
+				if (auto* textRenderer = selectedObject->GetComponent<TextRendererComponent>()) {
+					easingData.startColor = easingData.goalColor = textRenderer->GetColor();
+				} else if (auto* spriteRenderer = selectedObject->GetComponent<SpriteRendererComponent>()) {
+					easingData.startColor = easingData.goalColor = spriteRenderer->GetColor();
+				} else if (auto* modelRenderer = selectedObject->GetComponent<ModelRendererComponent>(); modelRenderer && modelRenderer->IsColorOverrideEnabled()) {
+					easingData.startColor = easingData.goalColor = modelRenderer->GetColorOverride();
+				}
+				objectData.easing = easingData;
+				selectedObject->AddComponent<EasingComponent>()->Configure(objectData.easing);
+				addSerializedComponent("Easing");
 			}
 			if ((objectData.type == "EMPTY" || objectData.type == "empty") &&
 				!selectedObject->GetComponent<CameraComponent>() && ImGui::Button("Camera")) {
@@ -1866,8 +2132,12 @@ void GamePlayScene::Draw2D() {
 	// 2Dオブジェクトの描画準備
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
+	// プレイヤーレティクル
+	if (!isStartAction) {
+		playerObject->Draw();
+	}
+
 	// スプライト描画
-	playerObject->Draw();
 	for (const auto& levelObject : levelObjects) {
 		if (auto* spriteRenderer = levelObject->GetComponent<SpriteRendererComponent>()) {
 			if (levelObject->IsActive() && spriteRenderer->IsEnabled()) {
@@ -1959,7 +2229,249 @@ void GamePlayScene::ResetEnemySpawning() {
 	enemies.clear();
 }
 
+void GamePlayScene::CreateRailPresetFromGroup(const std::string& groupName, const std::string& presetName) {
+#ifdef USE_IMGUI
+	RailPresetData preset;
+	preset.presetName = presetName;
+
+	// グループに属するレールポイントを抽出
+	std::vector<Transform> groupTransforms;
+	for (size_t i = 0; i < levelObjects.size(); ++i) {
+		if (level->GetLevelData()->objects[i].groupName == groupName) {
+			if (levelObjects[i]->GetComponent<RailPointComponent>()) {
+				groupTransforms.push_back(levelObjects[i]->GetTransform()->transform);
+			}
+		}
+	}
+
+	if (groupTransforms.empty()) return;
+
+	// 始点のワールド行列とその逆行列を計算
+	Matrix4x4 startMat = MakeRotateMatrix(groupTransforms[0].rotate) * MakeTranslateMatrix(groupTransforms[0].translate);
+	Matrix4x4 invStartMat = Inverse(startMat);
+
+	// 始点を基準としたローカル座標に変換して保存
+	for (const auto& worldTransform : groupTransforms) {
+		Matrix4x4 worldMat = MakeRotateMatrix(worldTransform.rotate) * MakeTranslateMatrix(worldTransform.translate);
+		Matrix4x4 localMat = worldMat * invStartMat;
+
+		Transform localTransform;
+		// ※ localMatから translate と rotate を抽出する処理（ImGuizmo::DecomposeMatrixToComponents 等を使用）
+		float translation[3], rotation[3], scale[3];
+		ImGuizmo::DecomposeMatrixToComponents(&localMat.m[0][0], translation, rotation, scale);
+
+		localTransform.translate = { translation[0], translation[1], translation[2] };
+		localTransform.rotate = {
+			rotation[0] * (3.14159265f / 180.0f),
+			rotation[1] * (3.14159265f / 180.0f),
+			rotation[2] * (3.14159265f / 180.0f)
+		};
+		localTransform.scale = { 1.0f, 1.0f, 1.0f };
+		preset.localTransforms.push_back(localTransform);
+	}
+
+	level->GetRailPresets().push_back(preset);
+
+#endif
+}
+
+void GamePlayScene::AppendRailPreset(const RailPresetData& preset) {
+#ifdef USE_IMGUI
+	if (preset.localTransforms.empty()) return;
+
+	Transform baseTransform;
+	baseTransform.translate = { 0,0,0 };
+	baseTransform.rotate = { 0,0,0 };
+	baseTransform.scale = { 1,1,1 };
+
+	// アクティブなレールグループの終端ポイントを検索
+	for (auto it = levelObjects.rbegin(); it != levelObjects.rend(); ++it) {
+		auto* obj = it->get();
+		// インデックス取得用（LevelDataとの同期のため）
+		int64_t idx = std::distance(levelObjects.begin(), it.base()) - 1;
+		if (level->GetLevelData()->objects[idx].groupName == activeRailGroupName_ &&
+			obj->GetComponent<RailPointComponent>()) {
+			baseTransform = obj->GetTransform()->transform;
+			break;
+		}
+	}
+
+	Matrix4x4 baseMat = MakeRotateMatrix(baseTransform.rotate) * MakeTranslateMatrix(baseTransform.translate);
+
+	// プリセットの始点は baseTransform と重なるため、インデックス1から生成する
+	for (size_t i = 1; i < preset.localTransforms.size(); ++i) {
+		Matrix4x4 localMat = MakeRotateMatrix(preset.localTransforms[i].rotate) * MakeTranslateMatrix(preset.localTransforms[i].translate);
+		Matrix4x4 newWorldMat = localMat * baseMat;
+
+		float translation[3], rotation[3], scale[3];
+		ImGuizmo::DecomposeMatrixToComponents(&newWorldMat.m[0][0], translation, rotation, scale);
+
+		// 新しいGameObjectの生成（GamePlaySceneの「Add Rail Point」相当の処理）
+		const std::string objectName = "RailPoint_" + preset.presetName + "_" + std::to_string(levelObjects.size() + 1);
+		auto newObject = std::make_unique<GameObject>(objectName);
+		auto transformComp = newObject->AddComponent<TransformComponent>();
+
+		transformComp->transform.translate = { translation[0], translation[1], translation[2] };
+		transformComp->transform.rotate = {
+			rotation[0] * (3.14159265f / 180.0f),
+			rotation[1] * (3.14159265f / 180.0f),
+			rotation[2] * (3.14159265f / 180.0f)
+		};
+		transformComp->transform.scale = { 1.0f, 1.0f, 1.0f };
+
+		auto modelRenderer = newObject->AddComponent<ModelRendererComponent>();
+		modelRenderer->SetModel("rail.obj");
+		newObject->AddComponent<RailPointComponent>();
+		newObject->Initialize();
+
+		// LevelDataへの登録
+		ObjectData newObjectData;
+		newObjectData.type = "RAIL";
+		newObjectData.name = objectName;
+		newObjectData.file_name = "rail.obj";
+		newObjectData.groupName = activeRailGroupName_;
+		newObjectData.transform = transformComp->transform;
+		newObjectData.components = { "ModelRenderer", "RailPoint" };
+
+		level->GetLevelData()->objects.push_back(newObjectData);
+		levelObjects.push_back(std::move(newObject));
+	}
+#endif
+
+}
+
+void GamePlayScene::RebuildRailGroupFromSequence(const std::string& groupName) {
+#ifdef USE_IMGUI	
+if (groupName.empty()) return;
+
+	// 1. 指定グループの RailPoint をすべて収集し、インデックスを記録[cite: 10]
+	std::vector<int> groupPointIndices;
+	for (size_t i = 0; i < level->GetLevelData()->objects.size(); ++i) { //[cite: 10]
+		auto& objData = level->GetLevelData()->objects[i]; //[cite: 10]
+		if (objData.groupName == groupName &&
+			std::find(objData.components.begin(), objData.components.end(), "RailPoint") != objData.components.end()) { //[cite: 10]
+			groupPointIndices.push_back(static_cast<int>(i)); //[cite: 10]
+		}
+	}
+
+	if (groupPointIndices.empty()) return; // 基準となる開始ポイントがない場合は何もしない[cite: 10]
+
+	// 2. 最初のポイント(基準点)の Transform を保存[cite: 10]
+	Transform baseStartTransform = level->GetLevelData()->objects[groupPointIndices[0]].transform; //[cite: 10]
+
+	// 3. 基準点(0番目) 以外の古いポイントを後ろから削除（インデックスずれ防止）[cite: 10]
+	for (int i = static_cast<int>(groupPointIndices.size()) - 1; i >= 1; --i) { //[cite: 10]
+		int deleteIdx = groupPointIndices[i]; //[cite: 10]
+		if (selectedObject == levelObjects[deleteIdx].get()) { //[cite: 10]
+			selectedObject = nullptr; // 削除対象を選択中なら解除[cite: 10]
+		}
+		level->GetLevelData()->objects.erase(level->GetLevelData()->objects.begin() + deleteIdx); //[cite: 10]
+		levelObjects.erase(levelObjects.begin() + deleteIdx); //[cite: 10]
+	}
+
+	// 4. シーケンスに従ってプリセットを再生成
+	RailCameraGroupData& railSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), groupName);
+	Transform currentEndTransform = baseStartTransform;
+
+	constexpr float deg2rad = 3.14159265f / 180.0f;
+
+	// 一番最初のプリセットかどうかを判定するフラグ
+	bool isFirstPreset = true;
+
+	for (const auto& item : railSettings.presetSequence) {
+		const RailPresetData* targetPreset = nullptr;
+		for (const auto& p : level->GetRailPresets()) {
+			if (p.presetName == item.presetName) {
+				targetPreset = &p;
+				break;
+			}
+		}
+		if (!targetPreset || targetPreset->localTransforms.empty()) continue;
+
+		// 追加回転角（度数法→ラジアン）を加算した基準姿勢を作成
+		Vector3 sectionRotate = {
+			currentEndTransform.rotate.x + item.localRotate.x * deg2rad,
+			currentEndTransform.rotate.y + item.localRotate.y * deg2rad,
+			currentEndTransform.rotate.z + item.localRotate.z * deg2rad
+		};
+
+		// ★追加: 一番最初のプリセットの場合、グループの基準点（0番目の制御点）の回転もこれに合わせて上書きする
+		if (isFirstPreset) {
+			level->GetLevelData()->objects[groupPointIndices[0]].transform.rotate = sectionRotate;
+			if (auto* transformComp = levelObjects[groupPointIndices[0]]->GetComponent<TransformComponent>()) {
+				transformComp->transform.rotate = sectionRotate;
+			}
+			isFirstPreset = false;
+		}
+
+		Matrix4x4 baseMat = MakeRotateMatrix(sectionRotate) * MakeTranslateMatrix(currentEndTransform.translate);
+
+		// インデックス1以降のポイントをワールド座標に変換して追加
+		for (size_t i = 1; i < targetPreset->localTransforms.size(); ++i) {
+			Matrix4x4 localMat = MakeRotateMatrix(targetPreset->localTransforms[i].rotate) * MakeTranslateMatrix(targetPreset->localTransforms[i].translate);
+			Matrix4x4 newWorldMat = localMat * baseMat;
+
+			float translation[3], rotation[3], scale[3];
+			ImGuizmo::DecomposeMatrixToComponents(&newWorldMat.m[0][0], translation, rotation, scale);
+
+			Transform newTrans;
+			newTrans.translate = { translation[0], translation[1], translation[2] };
+			newTrans.rotate = {
+				rotation[0] * deg2rad,
+				rotation[1] * deg2rad,
+				rotation[2] * deg2rad
+			};
+			newTrans.scale = { 1.0f, 1.0f, 1.0f };
+
+			// 新規 GameObject の生成
+			const std::string objectName = "RailPoint_" + targetPreset->presetName + "_" + std::to_string(levelObjects.size() + 1);
+			auto newObject = std::make_unique<GameObject>(objectName);
+			auto transformComp = newObject->AddComponent<TransformComponent>();
+			transformComp->transform = newTrans;
+
+			auto modelRenderer = newObject->AddComponent<ModelRendererComponent>();
+			modelRenderer->SetModel("rail.obj");
+			newObject->AddComponent<RailPointComponent>();
+			newObject->Initialize();
+
+			// LevelData に登録
+			ObjectData newObjectData;
+			newObjectData.type = "RAIL";
+			newObjectData.name = objectName;
+			newObjectData.file_name = "rail.obj";
+			newObjectData.groupName = groupName;
+			newObjectData.transform = newTrans;
+			newObjectData.components = { "ModelRenderer", "RailPoint" };
+
+			level->GetLevelData()->objects.push_back(newObjectData);
+			levelObjects.push_back(std::move(newObject));
+
+			// 繋いだ最後のポイントを、次のプリセットの基準点として更新
+			currentEndTransform = newTrans;
+		}
+	}
+#endif
+}
+
 void GamePlayScene::CreateLevel() {
+	auto configureEasing = [](GameObject& gameObject, const ObjectData& objectData) {
+		if (std::find(objectData.components.begin(), objectData.components.end(), "Easing") != objectData.components.end()) {
+			gameObject.AddComponent<EasingComponent>()->Configure(objectData.easing);
+		}
+	};
+	auto hideEditorOnlyModelInRelease = [](ModelRendererComponent& renderer, const ObjectData& objectData) {
+#ifndef USE_IMGUI
+		const bool isRail = objectData.type == "RAIL" || objectData.type == "rail";
+		const bool isRailPoint = std::find(objectData.components.begin(), objectData.components.end(), "RailPoint") != objectData.components.end();
+		if (isRail || isRailPoint) {
+			renderer.SetEnabled(false);
+		}
+#else
+		(void)renderer;
+		(void)objectData;
+#endif
+	};
+
 	for (auto& objectData : level->GetLevelData()->objects) {
 		if (objectData.type == "MESH" || objectData.type == "mesh") {
 			// 1. GameObject の生成
@@ -1984,7 +2496,9 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
 			modelRenderer->SetColorOverride(objectData.modelColorOverride);
 			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+			modelRenderer->SetToonShadingEnabled(objectData.modelToonShading);
 			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
+			hideEditorOnlyModelInRelease(*modelRenderer, objectData);
 			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
 				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
 				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
@@ -1993,6 +2507,7 @@ void GamePlayScene::CreateLevel() {
 			}
 
 			// 4. アタッチされたコンポーネントを一括初期化
+			configureEasing(*gameObject, objectData);
 			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 
@@ -2023,7 +2538,9 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
 			modelRenderer->SetColorOverride(objectData.modelColorOverride);
 			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+			modelRenderer->SetToonShadingEnabled(objectData.modelToonShading);
 			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
+			hideEditorOnlyModelInRelease(*modelRenderer, objectData);
 			gameObject->AddComponent<RailPointComponent>();
 			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
 				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
@@ -2032,6 +2549,7 @@ void GamePlayScene::CreateLevel() {
 					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
 			}
 
+			configureEasing(*gameObject, objectData);
 			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
@@ -2054,6 +2572,7 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
 			modelRenderer->SetColorOverride(objectData.modelColorOverride);
 			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+			modelRenderer->SetToonShadingEnabled(objectData.modelToonShading);
 			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
 
 			// ゲームロジック用のスポナーも同じ GameObject にアタッチする。
@@ -2066,6 +2585,7 @@ void GamePlayScene::CreateLevel() {
 					objectData.objectRailPointRotations, objectData.objectRailUsePointRotations);
 			}
 
+			configureEasing(*gameObject, objectData);
 			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
@@ -2090,7 +2610,9 @@ void GamePlayScene::CreateLevel() {
 				renderer->SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
 				renderer->SetColorOverride(objectData.modelColorOverride);
 				renderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+				renderer->SetToonShadingEnabled(objectData.modelToonShading);
 				renderer->SetTextureOverride(objectData.modelTextureOverride);
+				hideEditorOnlyModelInRelease(*renderer, objectData);
 			}
 			if (hasComponent("RectTransform")) {
 				auto* rectTransform = gameObject->AddComponent<RectTransformComponent>();
@@ -2109,6 +2631,7 @@ void GamePlayScene::CreateLevel() {
 				}
 				auto* spriteRenderer = gameObject->AddComponent<SpriteRendererComponent>();
 				spriteRenderer->SetTexture(objectData.sprite_file_name.empty() ? "Resource/title/title.png" : objectData.sprite_file_name);
+				spriteRenderer->SetSize(objectData.spriteSize);
 				spriteRenderer->SetEmissive(objectData.spriteEmissiveColor, objectData.spriteEmissiveIntensity);
 			}
 			if (hasComponent("TextRenderer")) {
@@ -2159,6 +2682,7 @@ void GamePlayScene::CreateLevel() {
 				auto* enemy = gameObject->AddComponent<EnemyNormal>();
 				enemy->SetTransform(objectData.transform);
 			}
+			configureEasing(*gameObject, objectData);
 			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));

@@ -35,11 +35,12 @@ public:
 
     void SetRotate(const Vector3& rotate) { baseRot = rotate; }
     void SetTranslate(const Vector3& translate) { basePos = translate; }
+    void SetMoveEnabled(bool isMoveEnabled) { isMoveEnabled_ = isMoveEnabled; }
     Vector3 GetRotate() const { return rotate_; }
     Vector3 GetTranslate() const { return translate_; }
     bool IsHit() const { return isHit; }
 
-	const std::list<PlayerBullet*>& GetBullets() const { return bullets_; }
+    const std::list<PlayerBullet*>& GetBullets() const { return bullets_; }
 
     void OnCollision();
 
@@ -101,7 +102,7 @@ private:
 
     // レティクル
     std::unique_ptr <Sprite> reticle[3]{};
-	Vector2 reticlePosition[3] = { {960.0f, 540.0f}, {960.0f, 540.0f}, {960.0f, 540.0f} };
+	Vector2 reticlePosition[3] = { {960.0f, 440.0f}, {960.0f, 440.0f}, {960.0f, 440.0f} };
     Vector2 reticleSize[3] = { {800.0f, 800.0f}, {800.0f, 800.0f}, {700.0f, 700.0f} };
 	float reticleRotation[3] = { 0.0f, 0.0f, 0.0f };
 	float reticleRotationMultiplier[3] = { 5.0f, 1.0f, 3.0f }; // レティクルの回転角度に対する倍率
@@ -127,6 +128,9 @@ private:
 	bool isNextRight = true;         // 次に撃つ位置（true: 右肩, false: 左肩）
 	Enemy* burstTarget = nullptr;    // 連射対象の敵ポインタ
 	float deltaTime_ = 1.0f / 60.0f;
+
+    // 操作不可
+	bool isMoveEnabled_ = true;
 
     // 移動
     void Move();

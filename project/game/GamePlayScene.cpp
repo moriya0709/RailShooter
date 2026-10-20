@@ -2459,6 +2459,18 @@ void GamePlayScene::CreateLevel() {
 			gameObject.AddComponent<EasingComponent>()->Configure(objectData.easing);
 		}
 	};
+	auto hideEditorOnlyModelInRelease = [](ModelRendererComponent& renderer, const ObjectData& objectData) {
+#ifndef USE_IMGUI
+		const bool isRail = objectData.type == "RAIL" || objectData.type == "rail";
+		const bool isRailPoint = std::find(objectData.components.begin(), objectData.components.end(), "RailPoint") != objectData.components.end();
+		if (isRail || isRailPoint) {
+			renderer.SetEnabled(false);
+		}
+#else
+		(void)renderer;
+		(void)objectData;
+#endif
+	};
 
 	for (auto& objectData : level->GetLevelData()->objects) {
 		if (objectData.type == "MESH" || objectData.type == "mesh") {
@@ -2486,6 +2498,7 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
 			modelRenderer->SetToonShadingEnabled(objectData.modelToonShading);
 			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
+			hideEditorOnlyModelInRelease(*modelRenderer, objectData);
 			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
 				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
 				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
@@ -2527,6 +2540,7 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
 			modelRenderer->SetToonShadingEnabled(objectData.modelToonShading);
 			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
+			hideEditorOnlyModelInRelease(*modelRenderer, objectData);
 			gameObject->AddComponent<RailPointComponent>();
 			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
 				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
@@ -2598,6 +2612,7 @@ void GamePlayScene::CreateLevel() {
 				renderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
 				renderer->SetToonShadingEnabled(objectData.modelToonShading);
 				renderer->SetTextureOverride(objectData.modelTextureOverride);
+				hideEditorOnlyModelInRelease(*renderer, objectData);
 			}
 			if (hasComponent("RectTransform")) {
 				auto* rectTransform = gameObject->AddComponent<RectTransformComponent>();

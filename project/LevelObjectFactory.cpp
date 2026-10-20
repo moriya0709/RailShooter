@@ -37,6 +37,15 @@ void ConfigureModelRenderer(ModelRendererComponent& renderer, ObjectData& object
 	renderer.SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
 	renderer.SetToonShadingEnabled(objectData.modelToonShading);
 	renderer.SetTextureOverride(objectData.modelTextureOverride);
+
+	// レールカメラ制御点のモデルはエディタでのみ可視にする。
+	// Release では GameObject 自体を無効化せず、レールやカメラの制御には使い続ける。
+#ifndef USE_IMGUI
+	const bool isRail = objectData.type == "RAIL" || objectData.type == "rail";
+	if (isRail || HasComponent(objectData, "RailPoint")) {
+		renderer.SetEnabled(false);
+	}
+#endif
 }
 
 void ConfigureRailMovement(GameObject& gameObject, const ObjectData& objectData) {

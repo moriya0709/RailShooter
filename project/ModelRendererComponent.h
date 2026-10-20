@@ -47,6 +47,8 @@ public:
 	const Vector4& GetColorOverride() const { return colorOverride_; }
 	void SetColorOverrideUnlit(bool unlit);
 	bool IsColorOverrideUnlit() const { return colorOverrideUnlit_; }
+	void SetToonShadingEnabled(bool enabled) { toonShadingEnabled_ = enabled; }
+	bool IsToonShadingEnabled() const { return toonShadingEnabled_; }
 
 private:
 	// バッファリソース
@@ -95,6 +97,8 @@ private:
 	bool colorOverrideEnabled_ = false;
 	Vector4 colorOverride_ = { 1.0f, 1.0f, 1.0f, 1.0f };
 	bool colorOverrideUnlit_ = false;
+	// true はセル調、false は通常の NdotL ライティング。
+	bool toonShadingEnabled_ = true;
 	bool IsCulledByDistance() const;
 	void UpdateColorOverrideData();
 };

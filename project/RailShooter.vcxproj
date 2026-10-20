@@ -29,6 +29,7 @@
     <ClCompile Include="EnemyNormal.cpp" />
     <ClCompile Include="EnemyNormalBullet.cpp" />
     <ClCompile Include="EnemySpawner.cpp" />
+	<ClCompile Include="EasingComponent.cpp" />
     <ClCompile Include="engine\3d\AnimationManager.cpp" />
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
     <ClCompile Include="application\rayMarching\RayMarching.cpp" />
@@ -303,6 +304,7 @@
     <ClInclude Include="EnemyNormalBullet.h" />
     <ClInclude Include="EnemySpawner.h" />
     <ClInclude Include="EnemySpawnerComponent.h" />
+	<ClInclude Include="EasingComponent.h" />
     <ClInclude Include="engine\3d\AnimationManager.h" />
     <ClInclude Include="application\railCamera\RailCamera.h" />
     <ClInclude Include="application\rayMarching\RayMarching.h" />

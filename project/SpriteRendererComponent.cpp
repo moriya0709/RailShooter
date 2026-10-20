@@ -29,6 +29,7 @@ void SpriteRendererComponent::Update() {
 	}
 	sprite_->SetEmissive({ emissiveColor_.x * emissiveIntensity_, emissiveColor_.y * emissiveIntensity_,
 		emissiveColor_.z * emissiveIntensity_ });
+	sprite_->SetColor(color_);
 	sprite_->Update();
 }
 

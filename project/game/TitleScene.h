@@ -50,7 +50,7 @@ private:
 	Transform cameraTransform{
 	   { 1.0f, 1.0f, 1.0f }, // scale
 	   { 0.0f, 0.0f, 0.0f }, // rotate
-	   { 0.0f, 0.0f, -5.0f } // translate
+	   { 0.0f, 1.0f, -60.0f } // translate
 	};
 	// パーティクル
 	Transform transformParticle
@@ -64,7 +64,7 @@ private:
 	// *ライティング* //
 
 	// 平行光
-	bool isDirectionalLight = false;
+	bool isDirectionalLight = true;
 	Vector4 DirectionalLightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector3 DirectionalLightDirection = { 0.0f, -1.0f, 0.0f };
 	float DirectionalLightIntensity = 1.0f;

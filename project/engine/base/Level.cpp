@@ -1,6 +1,5 @@
 ﻿#include "Level.h"
 #include "Logger.h"
-#include <filesystem>
 
 void Level::LoadJson(const std::string fileName) {
 	// jsonファイルのデシリアライズ化
@@ -8,7 +7,7 @@ void Level::LoadJson(const std::string fileName) {
 	// 連結してフルパスを得る
 	const std::string fullpath = "Resource/levels/" + fileName + ".json";
 
-	// ファイルストリーム
+	// ファイルストリームa
 	std::ifstream file;
 
 	// ファイルを開く
@@ -49,6 +48,25 @@ void Level::LoadJson(const std::string fileName) {
 			if (group.contains("target_position") && group["target_position"].is_array() && group["target_position"].size() == 3) {
 				settings.targetPosition = { group["target_position"][0].get<float>(), group["target_position"][1].get<float>(), group["target_position"][2].get<float>() };
 			}
+			// プリセットシーケンスの読み込み
+			if (group.contains("preset_sequence") && group["preset_sequence"].is_array()) {
+				for (const auto& p : group["preset_sequence"]) {
+					TrackSequenceItem item{};
+					if (p.is_string()) {
+						// 文字列のみの旧フォーマット対策
+						item.presetName = p.get<std::string>();
+					} else if (p.is_object()) {
+						item.presetName = p.value("name", std::string{});
+						if (p.contains("rotate") && p["rotate"].is_array() && p["rotate"].size() == 3) {
+							item.localRotate = { p["rotate"][0].get<float>(), p["rotate"][1].get<float>(), p["rotate"][2].get<float>() };
+						}
+					}
+					if (!item.presetName.empty()) {
+						settings.presetSequence.push_back(item);
+					}
+				}
+			}
+
 			levelData->railCameraGroups.push_back(settings);
 		}
 	}
@@ -88,6 +106,7 @@ void Level::LoadJson(const std::string fileName) {
 				newData.modelOutlineThickness = object["model_renderer"].value("outline_thickness", newData.modelOutlineThickness);
 				newData.modelColorOverrideEnabled = object["model_renderer"].value("color_override_enabled", newData.modelColorOverrideEnabled);
 				newData.modelColorOverrideUnlit = object["model_renderer"].value("color_override_unlit", newData.modelColorOverrideUnlit);
+				newData.modelToonShading = object["model_renderer"].value("toon_shading", newData.modelToonShading);
 				newData.modelTextureOverride = object["model_renderer"].value("texture_override", newData.modelTextureOverride);
 				const auto& modelRenderer = object["model_renderer"];
 				if (modelRenderer.contains("outline_color") && modelRenderer["outline_color"].is_array() && modelRenderer["outline_color"].size() == 4) {
@@ -113,6 +132,9 @@ void Level::LoadJson(const std::string fileName) {
 			if (object.contains("sprite_renderer")) {
 				const auto& spriteRenderer = object["sprite_renderer"];
 				newData.spriteEmissiveIntensity = spriteRenderer.value("emissive_intensity", newData.spriteEmissiveIntensity);
+				if (spriteRenderer.contains("size") && spriteRenderer["size"].is_array() && spriteRenderer["size"].size() == 2) {
+					newData.spriteSize = { spriteRenderer["size"][0].get<float>(), spriteRenderer["size"][1].get<float>() };
+				}
 				if (spriteRenderer.contains("emissive_color") && spriteRenderer["emissive_color"].is_array() && spriteRenderer["emissive_color"].size() == 3) {
 					newData.spriteEmissiveColor = { spriteRenderer["emissive_color"][0].get<float>(), spriteRenderer["emissive_color"][1].get<float>(),
 						spriteRenderer["emissive_color"][2].get<float>() };
@@ -215,6 +237,41 @@ void Level::LoadJson(const std::string fileName) {
 					}
 				}
 			}
+			if (object.contains("easing") && object["easing"].is_object()) {
+				const auto& easing = object["easing"];
+				newData.easing.animatePosition = easing.value("position", newData.easing.animatePosition);
+				newData.easing.animateRotation = easing.value("rotation", newData.easing.animateRotation);
+				newData.easing.animateScale = easing.value("scale", newData.easing.animateScale);
+				newData.easing.animateColor = easing.value("color", newData.easing.animateColor);
+				newData.easing.duration = easing.value("duration", newData.easing.duration);
+				newData.easing.loop = easing.value("loop", newData.easing.loop);
+				newData.easing.playOnStart = easing.value("play_on_start", newData.easing.playOnStart);
+				auto readVector3 = [&easing](const char* key, Vector3& value) {
+					if (easing.contains(key) && easing[key].is_array() && easing[key].size() == 3) {
+						value = { easing[key][0].get<float>(), easing[key][1].get<float>(), easing[key][2].get<float>() };
+					}
+				};
+				auto readVector4 = [&easing](const char* key, Vector4& value) {
+					if (easing.contains(key) && easing[key].is_array() && easing[key].size() == 4) {
+						value = { easing[key][0].get<float>(), easing[key][1].get<float>(), easing[key][2].get<float>(), easing[key][3].get<float>() };
+					}
+				};
+				auto readVector2 = [&easing](const char* key, Vector2& value) {
+					if (easing.contains(key) && easing[key].is_array() && easing[key].size() == 2) {
+						value = { easing[key][0].get<float>(), easing[key][1].get<float>() };
+					}
+				};
+				readVector3("start_position", newData.easing.startPosition);
+				readVector3("goal_position", newData.easing.goalPosition);
+				readVector3("start_rotation", newData.easing.startRotation);
+				readVector3("goal_rotation", newData.easing.goalRotation);
+				readVector3("start_scale", newData.easing.startScale);
+				readVector3("goal_scale", newData.easing.goalScale);
+				readVector4("start_color", newData.easing.startColor);
+				readVector4("goal_color", newData.easing.goalColor);
+				readVector2("control_point_1", newData.easing.controlPoint1);
+				readVector2("control_point_2", newData.easing.controlPoint2);
+			}
 
 			// 新形式では複数コンポーネントを保存する。既存レベルは type から補完する。
 			if (object.contains("components")) {
@@ -296,11 +353,23 @@ void Level::SaveJson(const std::string fileName) {
 	deserialized["groups"] = levelData->groups;
 	deserialized["active_rail_camera_group"] = levelData->activeRailCameraGroup;
 	deserialized["rail_camera_groups"] = nlohmann::json::array();
+
 	for (const RailCameraGroupData& group : levelData->railCameraGroups) {
+		// TrackSequenceItem の配列を nlohmann::json の配列に変換する
+		nlohmann::json seqArray = nlohmann::json::array();
+		for (const auto& item : group.presetSequence) {
+			seqArray.push_back({
+				{ "name", item.presetName },
+				{ "rotate", { item.localRotate.x, item.localRotate.y, item.localRotate.z } }
+			});
+		}
+
+		// preset_sequence に上記の seqArray をセットする
 		deserialized["rail_camera_groups"].push_back({
 			{ "name", group.groupName },
 			{ "direction_mode", static_cast<int>(group.directionMode) },
-			{ "target_position", { group.targetPosition.x, group.targetPosition.y, group.targetPosition.z } }
+			{ "target_position", { group.targetPosition.x, group.targetPosition.y, group.targetPosition.z }},
+			{ "preset_sequence", seqArray } // ← ここを変更
 		});
 	}
 	deserialized["objects"] = nlohmann::json::array();
@@ -328,6 +397,7 @@ void Level::SaveJson(const std::string fileName) {
 			newObjJson["model_renderer"]["color_override_enabled"] = obj.modelColorOverrideEnabled;
 			newObjJson["model_renderer"]["color_override"] = { obj.modelColorOverride.x, obj.modelColorOverride.y, obj.modelColorOverride.z, obj.modelColorOverride.w };
 			newObjJson["model_renderer"]["color_override_unlit"] = obj.modelColorOverrideUnlit;
+			newObjJson["model_renderer"]["toon_shading"] = obj.modelToonShading;
 			if (!obj.modelTextureOverride.empty()) {
 				newObjJson["model_renderer"]["texture_override"] = obj.modelTextureOverride;
 			}
@@ -343,6 +413,7 @@ void Level::SaveJson(const std::string fileName) {
 			newObjJson["sprite_file_name"] = obj.sprite_file_name;
 		}
 		if (std::find(obj.components.begin(), obj.components.end(), "SpriteRenderer") != obj.components.end()) {
+			newObjJson["sprite_renderer"]["size"] = { obj.spriteSize.x, obj.spriteSize.y };
 			newObjJson["sprite_renderer"]["emissive_color"] = { obj.spriteEmissiveColor.x, obj.spriteEmissiveColor.y, obj.spriteEmissiveColor.z };
 			newObjJson["sprite_renderer"]["emissive_intensity"] = obj.spriteEmissiveIntensity;
 		}
@@ -389,6 +460,26 @@ void Level::SaveJson(const std::string fileName) {
 			for (const Vector3& rotation : obj.objectRailPointRotations) {
 				railMovement["point_rotations"].push_back({ rotation.x, rotation.y, rotation.z });
 			}
+		}
+		if (std::find(obj.components.begin(), obj.components.end(), "Easing") != obj.components.end()) {
+			auto& easing = newObjJson["easing"];
+			easing["position"] = obj.easing.animatePosition;
+			easing["rotation"] = obj.easing.animateRotation;
+			easing["scale"] = obj.easing.animateScale;
+			easing["color"] = obj.easing.animateColor;
+			easing["duration"] = obj.easing.duration;
+			easing["loop"] = obj.easing.loop;
+			easing["play_on_start"] = obj.easing.playOnStart;
+			easing["start_position"] = { obj.easing.startPosition.x, obj.easing.startPosition.y, obj.easing.startPosition.z };
+			easing["goal_position"] = { obj.easing.goalPosition.x, obj.easing.goalPosition.y, obj.easing.goalPosition.z };
+			easing["start_rotation"] = { obj.easing.startRotation.x, obj.easing.startRotation.y, obj.easing.startRotation.z };
+			easing["goal_rotation"] = { obj.easing.goalRotation.x, obj.easing.goalRotation.y, obj.easing.goalRotation.z };
+			easing["start_scale"] = { obj.easing.startScale.x, obj.easing.startScale.y, obj.easing.startScale.z };
+			easing["goal_scale"] = { obj.easing.goalScale.x, obj.easing.goalScale.y, obj.easing.goalScale.z };
+			easing["start_color"] = { obj.easing.startColor.x, obj.easing.startColor.y, obj.easing.startColor.z, obj.easing.startColor.w };
+			easing["goal_color"] = { obj.easing.goalColor.x, obj.easing.goalColor.y, obj.easing.goalColor.z, obj.easing.goalColor.w };
+			easing["control_point_1"] = { obj.easing.controlPoint1.x, obj.easing.controlPoint1.y };
+			easing["control_point_2"] = { obj.easing.controlPoint2.x, obj.easing.controlPoint2.y };
 		}
 		if (!obj.components.empty()) {
 			newObjJson["components"] = obj.components;
@@ -453,4 +544,78 @@ void Level::SaveJson(const std::string fileName) {
 	outFile.close();
 
 	OutputDebugStringA("★★ [SUCCESS] : File saved with newly spawned objects!\n");
+}
+
+void Level::LoadRailPresetsJson(const std::string fileName) {
+	const std::string fullpath = "Resource/levels/" + fileName + ".json";
+	std::ifstream inFile(fullpath);
+	if (!inFile.is_open()) {
+		return; // ファイルが存在しない場合はスキップ
+	}
+
+	nlohmann::json root;
+	inFile >> root;
+
+	if (!root.is_array()) return;
+
+	railPresets.clear();
+	for (const auto& presetJson : root) {
+		RailPresetData preset;
+		preset.presetName = presetJson.value("name", "Unknown");
+
+		if (presetJson.contains("transforms") && presetJson["transforms"].is_array()) {
+			for (const auto& tJson : presetJson["transforms"]) {
+				Transform localTransform;
+				localTransform.scale = { 1.0f, 1.0f, 1.0f };
+
+				if (tJson.contains("translate") && tJson["translate"].is_array()) {
+					localTransform.translate = {
+						tJson["translate"][0].get<float>(),
+						tJson["translate"][1].get<float>(),
+						tJson["translate"][2].get<float>()
+					};
+				}
+				if (tJson.contains("rotate") && tJson["rotate"].is_array()) {
+					localTransform.rotate = {
+						tJson["rotate"][0].get<float>(),
+						tJson["rotate"][1].get<float>(),
+						tJson["rotate"][2].get<float>()
+					};
+				}
+				preset.localTransforms.push_back(localTransform);
+			}
+		}
+		railPresets.push_back(preset);
+	}
+	OutputDebugStringA("Rail presets loaded successfully.\n");
+}
+
+void Level::SaveRailPresetsJson(const std::string fileName) {
+	const std::string fullpath = "Resource/levels/" + fileName + ".json";
+	std::filesystem::path path(fullpath);
+	std::error_code error;
+	std::filesystem::create_directories(path.parent_path(), error);
+
+	nlohmann::json root = nlohmann::json::array();
+	for (const auto& preset : railPresets) {
+		nlohmann::json presetJson;
+		presetJson["name"] = preset.presetName;
+
+		nlohmann::json transformsJson = nlohmann::json::array();
+		for (const auto& t : preset.localTransforms) {
+			transformsJson.push_back({
+				{"translate", {t.translate.x, t.translate.y, t.translate.z}},
+				{"rotate", {t.rotate.x, t.rotate.y, t.rotate.z}}
+				});
+		}
+		presetJson["transforms"] = transformsJson;
+		root.push_back(presetJson);
+	}
+
+	std::ofstream outFile(fullpath);
+	if (outFile.is_open()) {
+		outFile << std::setw(4) << root << std::endl;
+		outFile.close();
+		OutputDebugStringA("Rail presets saved successfully.\n");
+	}
 }

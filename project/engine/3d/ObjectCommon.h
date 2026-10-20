@@ -18,6 +18,7 @@ public:
 	void SetCommonPipelineState(); // 通常
 	void SetAnimationPipelineState(); // アニメーション
 	void SetOutlinePipelineState(); // アウトライン
+	void SetMaterialBlendPipelineState(bool isSkinning, bool isTransparent);
 
 	// シングルトンインスタンスの取得
 	static ObjectCommon* GetInstance();
@@ -53,6 +54,8 @@ private:
 	// グラフィックスパイプライン
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState = nullptr;	// 通常
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> animationPipelineState = nullptr;	// アニメーション
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> transparentGraphicsPipelineState = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> transparentAnimationPipelineState = nullptr;
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> outlinePipelineState = nullptr;	// アウトライン用
 
 	// コンピュートパイプライン

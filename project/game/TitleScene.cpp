@@ -9,6 +9,7 @@
 #include "RailPointComponent.h"
 #include "ObjectRailMovementComponent.h"
 #include "EnemySpawnerComponent.h"
+#include "EasingComponent.h"
 #include "EnemyNormal.h"
 #include "SpriteRendererComponent.h"
 #include "TextRendererComponent.h"
@@ -41,6 +42,10 @@ void TitleScene::Initialize() {
 		fallbackCameraObject->Initialize();
 		cameraObject = fallbackCameraObject.get();
 	}
+	// レベルに配置された MainCamera も、シーンで定義した初期位置・回転から開始する。
+	// CameraComponent のセッター経由にして、GameObject の Transform と Camera 本体を同期する。
+	camera->SetTranslate(cameraTransform.translate);
+	camera->SetRotate(cameraTransform.rotate);
 
 	// カメラマネージャ登録
 	CameraManager::GetInstance()->AddCamera("main", camera->GetCamera());
@@ -130,7 +135,7 @@ void TitleScene::Update() {
 				if (auto* transition = GameObject::FindByName("transition"); transition && transition->IsActive()) {
 					auto* transitionAnimation = transition->GetComponent<ObjectRailMovementComponent>();
 					if (transitionAnimation && !transitionAnimation->IsPlaying()) {
-						//SceneManager::GetInstance()->ChangeScene("SELECT");
+						SceneManager::GetInstance()->ChangeScene("SELECT");
 					}
 				}
 			} else if (isStartLogo) {
@@ -267,6 +272,9 @@ void TitleScene::Update() {
 	for (auto& object : levelObjects) {
 		if (auto* railMovement = object->GetComponent<ObjectRailMovementComponent>()) {
 			railMovement->SetDeltaTime(deltaTime);
+		}
+		if (auto* easing = object->GetComponent<EasingComponent>()) {
+			easing->SetDeltaTime(deltaTime);
 		}
 		if (auto* enemy = object->GetComponent<Enemy>()) {
 			enemy->SetUpdateContext(camera->GetTranslate(), cameraProgress);
@@ -962,6 +970,7 @@ void TitleScene::Update() {
 				renderer->SetColorOverrideEnabled(copyData.modelColorOverrideEnabled);
 				renderer->SetColorOverride(copyData.modelColorOverride);
 				renderer->SetColorOverrideUnlit(copyData.modelColorOverrideUnlit);
+				renderer->SetToonShadingEnabled(copyData.modelToonShading);
 				renderer->SetTextureOverride(copyData.modelTextureOverride);
 			}
 			if (sourceObject->GetComponent<RectTransformComponent>()) {
@@ -979,6 +988,7 @@ void TitleScene::Update() {
 				if (!copyObject->GetComponent<RectTransformComponent>()) copyObject->AddComponent<RectTransformComponent>();
 				auto* spriteRenderer = copyObject->AddComponent<SpriteRendererComponent>();
 				spriteRenderer->SetTexture(copyData.sprite_file_name.empty() ? "Resource/title/title.png" : copyData.sprite_file_name);
+				spriteRenderer->SetSize(copyData.spriteSize);
 				spriteRenderer->SetEmissive(copyData.spriteEmissiveColor, copyData.spriteEmissiveIntensity);
 			}
 			if (sourceObject->GetComponent<TextRendererComponent>()) {
@@ -1003,6 +1013,9 @@ void TitleScene::Update() {
 				railMovement->Configure(copyData.objectRailPoints, copyData.objectRailSpeed,
 					copyData.objectRailLoop, copyData.objectRailOrientToPath, copyData.objectRailPlayOnStart,
 					copyData.objectRailPointRotations, copyData.objectRailUsePointRotations);
+			}
+			if (sourceObject->GetComponent<EasingComponent>()) {
+				copyObject->AddComponent<EasingComponent>()->Configure(copyData.easing);
 			}
 			if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
 				auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
@@ -1365,6 +1378,13 @@ void TitleScene::Update() {
 						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].modelColorOverrideUnlit = colorOverrideUnlit;
 					}
 					ImGui::EndDisabled();
+					int lightingStyle = renderer->IsToonShadingEnabled() ? 0 : 1;
+					if (ImGui::Combo("Lighting Style##ModelRenderer", &lightingStyle, "Toon\0Realistic\0")) {
+						renderer->SetToonShadingEnabled(lightingStyle == 0);
+						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+							level->GetLevelData()->objects[selectedIndex].modelToonShading = renderer->IsToonShadingEnabled();
+						}
+					}
 
 					char modelPath[260]{};
 					strncpy_s(modelPath, renderer->GetModelPath().c_str(), _TRUNCATE);
@@ -1453,6 +1473,7 @@ void TitleScene::Update() {
 					Vector2 spriteSize = spriteRenderer->GetSize();
 					if (ImGui::DragFloat2("Size", &spriteSize.x, 1.0f, 1.0f, 4096.0f)) {
 						spriteRenderer->SetSize(spriteSize);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].spriteSize = spriteSize;
 					}
 					Vector3 emissiveColor = spriteRenderer->GetEmissiveColor();
 					float emissiveIntensity = spriteRenderer->GetEmissiveIntensity();
@@ -1588,6 +1609,14 @@ void TitleScene::Update() {
 				}
 			}
 
+			if (auto* easing = selectedObject->GetComponent<EasingComponent>()) {
+				if (ImGui::CollapsingHeader("Easing", ImGuiTreeNodeFlags_DefaultOpen)) {
+					if (DrawEasingComponentInspector(*easing) && selectedIndex != -1) {
+						level->GetLevelData()->objects[selectedIndex].easing = easing->GetSettings();
+					}
+				}
+			}
+
 			if (auto* animatorComponent = selectedObject->GetComponent<AnimatorComponent>()) {
 				if (ImGui::CollapsingHeader("Animator")) {
 					bool enabled = animatorComponent->IsEnabled();
@@ -1703,6 +1732,7 @@ void TitleScene::Update() {
 					auto* spriteRenderer = selectedObject->AddComponent<SpriteRendererComponent>();
 					spriteRenderer->SetTexture("Resource/title/title.png");
 					objectData.sprite_file_name = "Resource/title/title.png";
+					objectData.spriteSize = spriteRenderer->GetSize();
 					objectData.spriteEmissiveColor = { 1.0f, 1.0f, 1.0f };
 					objectData.spriteEmissiveIntensity = 0.0f;
 					objectData.rectPosition = rectTransform->position;
@@ -1758,6 +1788,29 @@ void TitleScene::Update() {
 					objectData.objectRailUsePointRotations = false;
 					objectData.objectRailPlayOnStart = true;
 					addSerializedComponent("ObjectRailMovement");
+				}
+				if (!selectedObject->GetComponent<EasingComponent>() && ImGui::Button("Easing")) {
+					EasingData easingData{};
+					if (auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>()) {
+						easingData.startPosition = easingData.goalPosition = { rectTransform->position.x, rectTransform->position.y, 0.0f };
+						easingData.startRotation = easingData.goalRotation = { 0.0f, 0.0f, rectTransform->rotation };
+						easingData.startScale = easingData.goalScale = { rectTransform->scale.x, rectTransform->scale.y, 1.0f };
+					} else {
+						const Transform& transform = selectedObject->GetTransform()->transform;
+						easingData.startPosition = easingData.goalPosition = transform.translate;
+						easingData.startRotation = easingData.goalRotation = transform.rotate;
+						easingData.startScale = easingData.goalScale = transform.scale;
+					}
+					if (auto* textRenderer = selectedObject->GetComponent<TextRendererComponent>()) {
+						easingData.startColor = easingData.goalColor = textRenderer->GetColor();
+					} else if (auto* spriteRenderer = selectedObject->GetComponent<SpriteRendererComponent>()) {
+						easingData.startColor = easingData.goalColor = spriteRenderer->GetColor();
+					} else if (auto* modelRenderer = selectedObject->GetComponent<ModelRendererComponent>(); modelRenderer && modelRenderer->IsColorOverrideEnabled()) {
+						easingData.startColor = easingData.goalColor = modelRenderer->GetColorOverride();
+					}
+					objectData.easing = easingData;
+					selectedObject->AddComponent<EasingComponent>()->Configure(objectData.easing);
+					addSerializedComponent("Easing");
 				}
 				if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
 					auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();

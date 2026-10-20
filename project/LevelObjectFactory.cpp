@@ -6,6 +6,7 @@
 #include "ColliderComponent.h"
 #include "EnemyNormal.h"
 #include "EnemySpawnerComponent.h"
+#include "EasingComponent.h"
 #include "LevelEditorCommon.h"
 #include "ModelRendererComponent.h"
 #include "ObjectRailMovementComponent.h"
@@ -34,6 +35,7 @@ void ConfigureModelRenderer(ModelRendererComponent& renderer, ObjectData& object
 	renderer.SetColorOverrideEnabled(objectData.modelColorOverrideEnabled);
 	renderer.SetColorOverride(objectData.modelColorOverride);
 	renderer.SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
+	renderer.SetToonShadingEnabled(objectData.modelToonShading);
 	renderer.SetTextureOverride(objectData.modelTextureOverride);
 }
 
@@ -53,6 +55,13 @@ void ConfigureRectTransform(GameObject& gameObject, const ObjectData& objectData
 	rectTransform->position = objectData.rectPosition;
 	rectTransform->rotation = objectData.rectRotation;
 	rectTransform->scale = objectData.rectScale;
+}
+
+void ConfigureEasing(GameObject& gameObject, const ObjectData& objectData) {
+	if (!HasComponent(objectData, "Easing")) {
+		return;
+	}
+	gameObject.AddComponent<EasingComponent>()->Configure(objectData.easing);
 }
 
 } // namespace
@@ -109,6 +118,7 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 				}
 				auto* spriteRenderer = gameObject->AddComponent<SpriteRendererComponent>();
 				spriteRenderer->SetTexture(objectData.sprite_file_name.empty() ? "Resource/title/title.png" : objectData.sprite_file_name);
+				spriteRenderer->SetSize(objectData.spriteSize);
 				spriteRenderer->SetEmissive(objectData.spriteEmissiveColor, objectData.spriteEmissiveIntensity);
 			}
 			if (HasComponent(objectData, "TextRenderer")) {
@@ -149,6 +159,8 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 				enemy->SetTransform(objectData.transform);
 			}
 		}
+
+		ConfigureEasing(*gameObject, objectData);
 
 		gameObject->SetActive(objectData.active);
 		gameObject->Initialize();

@@ -22,6 +22,31 @@ std::unique_ptr <ImGuiFunction> ImGuiFunction::instance = nullptr;
 
 namespace {
 constexpr const char* kDockLayoutFilePath = "imgui_dock_layout.ini";
+
+std::string GetScopedDockLayoutFilePath(const std::string& scope) {
+	return scope.empty() ? kDockLayoutFilePath : "imgui_dock_layout_" + scope + ".ini";
+}
+}
+
+void ImGuiFunction::SetDockLayoutScope(const char* scope) {
+	const std::string requestedScope = scope ? scope : "";
+	if (dockLayoutScope == requestedScope) {
+		return;
+	}
+
+	if (isDockLayoutLoaded) {
+		SaveDockLayout();
+	}
+
+	dockLayoutScope = requestedScope;
+	isDockLayoutLoaded = false;
+	dockDragWindow.clear();
+	dockGuideTarget = DockGuideTarget::None;
+	isDockGuideVisible = false;
+	dockMergeTarget.clear();
+	dockWindowInfos.clear();
+	mergedWindowTabs.clear();
+	activeMergedWindow.clear();
 }
 
 void ImGuiFunction::EnsureDockLayoutLoaded() {
@@ -30,7 +55,13 @@ void ImGuiFunction::EnsureDockLayoutLoaded() {
 	}
 	isDockLayoutLoaded = true;
 
-	std::ifstream input(kDockLayoutFilePath);
+	const std::string scopedPath = GetScopedDockLayoutFilePath(dockLayoutScope);
+	std::ifstream input(scopedPath);
+	// 既存の GamePlayScene 用レイアウトは、初回だけ従来の共通ファイルから移行する。
+	// Rail Presets を持たない TITLE / SELECT シーンには引き継がない。
+	if (!input && dockLayoutScope == "gamePlayScene") {
+		input.open(kDockLayoutFilePath);
+	}
 	if (!input) {
 		return;
 	}
@@ -63,7 +94,7 @@ void ImGuiFunction::EnsureDockLayoutLoaded() {
 }
 
 void ImGuiFunction::SaveDockLayout() const {
-	std::ofstream output(kDockLayoutFilePath, std::ios::trunc);
+	std::ofstream output(GetScopedDockLayoutFilePath(dockLayoutScope), std::ios::trunc);
 	if (!output) {
 		return;
 	}
@@ -83,6 +114,7 @@ void ImGuiFunction::SaveDockLayout() const {
 SceneEditorLayout ImGuiFunction::BeginSceneEditor(Level& level,
 	std::vector<std::unique_ptr<GameObject>>& levelObjects, const char* defaultLevelName,
 	Vector2& gameViewPosition, Vector2& gameViewSize, bool& isGameViewHovered) {
+	SetDockLayoutScope(defaultLevelName);
 	SceneEditorLayout layout;
 	ImGuiIO& editorIO = ImGui::GetIO();
 	layout.hierarchyHeight = (std::max)(180.0f, (editorIO.DisplaySize.y - layout.topBarHeight) * 0.42f);

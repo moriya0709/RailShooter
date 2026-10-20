@@ -42,6 +42,10 @@ void SelectScene::Initialize() {
 		cameraObject = fallbackCameraObject.get();
 	}
 
+	// シーンで定義した初期位置・回転
+	camera->SetTranslate(cameraTransform.translate);
+	camera->SetRotate(cameraTransform.rotate);
+
 	// カメラマネージャ登録
 	CameraManager::GetInstance()->AddCamera("main", camera->GetCamera());
 	CameraManager::GetInstance()->SetActiveCamera("main");
@@ -101,114 +105,118 @@ void SelectScene::Update() {
 	if (modelAnimation) {
 		auto* rail = modelAnimation->GetComponent<ObjectRailMovementComponent>();
 		if (rail && !rail->IsPlaying()) {
-			if (auto* text1 = playTextObject1 ? playTextObject1->GetComponent<TextRendererComponent>() : nullptr) {
-				if (auto* text2 = settingTextObject1 ? settingTextObject1->GetComponent<TextRendererComponent>() : nullptr) {
-					if (auto* text3 = quitTextObject1 ? quitTextObject1->GetComponent<TextRendererComponent>() : nullptr) {
-						// ロゴテキストの色
-						Vector4 color = text1->GetColor();
-						float alpha = color.w;
+			auto* playText1 = playTextObject1 ? playTextObject1->GetComponent<TextRendererComponent>() : nullptr;
+			auto* playText2 = playTextObject2 ? playTextObject2->GetComponent<TextRendererComponent>() : nullptr;
+			auto* settingText1 = settingTextObject1 ? settingTextObject1->GetComponent<TextRendererComponent>() : nullptr;
+			auto* settingText2 = settingTextObject2 ? settingTextObject2->GetComponent<TextRendererComponent>() : nullptr;
+			auto* quitText1 = quitTextObject1 ? quitTextObject1->GetComponent<TextRendererComponent>() : nullptr;
+			auto* quitText2 = quitTextObject2 ? quitTextObject2->GetComponent<TextRendererComponent>() : nullptr;
+			auto setAlpha = [playText1, playText2, settingText1, settingText2, quitText1, quitText2](float alpha) {
 
-						if (isTransition) {
-							// ロゴテキストのアルファ値を徐々に減少させる
-							alpha = std::clamp(alpha - deltaTime * logoAlphaTime, 0.0f, 1.0f);
+				auto color = playText1->GetColor();
+				color.w = alpha;
+				playText1->SetColor(color);
 
-							color = text1->GetColor();
-							color.w = alpha;
-							text1->SetColor(color);
+				color = playText2->GetColor();
+				color.w = alpha;
+				playText2->SetColor(color);
 
-							color = text2->GetColor();
-							color.w = alpha;
-							text2->SetColor(color);
+				color = settingText1->GetColor();
+				color.w = alpha;
+				settingText1->SetColor(color);
 
-							color = text3->GetColor();
-							color.w = alpha;
-							text3->SetColor(color);
+				color = settingText2->GetColor();
+				color.w = alpha;
+				settingText2->SetColor(color);
 
-							if (auto* transition = GameObject::FindByName("transition"); transition && transition->IsActive()) {
-								// トランジションが終了したらシーン遷移
-								auto* transitionAnimation = transition->GetComponent<ObjectRailMovementComponent>();
-								if (transitionAnimation && !transitionAnimation->IsPlaying()) {
-									//if (selectedText_ == PLAY) {
-									//	SceneManager::GetInstance()->ChangeScene("TITLE");
-									//} else if (selectedText_ == SETTING) {
-									//	SceneManager::GetInstance()->ChangeScene("SETTING");
-									//} else if (selectedText_ == QUIT) {
-									//	SceneManager::GetInstance()->ChangeScene("QUIT");
-									//}
-								}
-							}
-						} else {
-							if (isStartFadeIn) {
-								// ロゴテキストのアルファ値を徐々に増加させる
-								alpha = std::clamp(alpha + deltaTime * logoAlphaTime, 0.0f, 1.0f);
+				color = quitText1->GetColor();
+				color.w = alpha;
+				quitText1->SetColor(color);
 
-								color = text1->GetColor();
-								color.w = alpha;
-								text1->SetColor(color);
+				color = quitText2->GetColor();
+				color.w = alpha;
+				quitText2->SetColor(color);
+			};
 
-								color = text2->GetColor();
-								color.w = alpha;
-								text2->SetColor(color);
+			float alpha = playText1->GetColor().w;
+			if (isTransition) {
+				setAlpha(std::clamp(alpha - deltaTime * logoAlphaTime, 0.0f, 1.0f));
+				if (auto* transition = GameObject::FindByName("transition"); transition && transition->IsActive()) {
+					auto* transitionAnimation = transition->GetComponent<ObjectRailMovementComponent>();
+					if (transitionAnimation && !transitionAnimation->IsPlaying()) {
+						SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+					}
+				}
+			} else if (isStartFadeIn) {
+				alpha = std::clamp(alpha + deltaTime * logoAlphaTime, 0.0f, 1.0f);
+				setAlpha(alpha);
+				if (alpha >= 1.0f) {
+					isStartFadeIn = false;
+				}
+			}
 
-								color = text3->GetColor();
-								color.w = alpha;
-								text3->SetColor(color);
+			// 演出が終了してから操作可能に
+			if (!isStartFadeIn) {
+				// 上下キーで選択中のテキストを切り替え
+				if (input->TriggerKey(DIK_W)) {
+					if (selectedText_ == PLAY) {
+						selectedText_ = QUIT;
+					} else if (selectedText_ == SETTING) {
+						selectedText_ = PLAY;
+					} else if (selectedText_ == QUIT) {
+						selectedText_ = SETTING;
+					}
+				} else if (input->TriggerKey(DIK_S)) {
+					if (selectedText_ == PLAY) {
+						selectedText_ = SETTING;
+					} else if (selectedText_ == SETTING) {
+						selectedText_ = QUIT;
+					} else if (selectedText_ == QUIT) {
+						selectedText_ = PLAY;
+					}
+				}
 
-								if (color.w >= 1.0f) {
-									isStartFadeIn = false; // 完全に表示されたらフラグを下ろす
-								}
-							}
+				if (selectedText_ == PLAY) {
+					playTextObject2->SetActive(true);
+					settingTextObject2->SetActive(false);
+					quitTextObject2->SetActive(false);
+				} else if (selectedText_ == SETTING) {
+					playTextObject2->SetActive(false);
+					settingTextObject2->SetActive(true);
+					quitTextObject2->SetActive(false);
+				} else if (selectedText_ == QUIT) {
+					playTextObject2->SetActive(false);
+					settingTextObject2->SetActive(false);
+					quitTextObject2->SetActive(true);
+				}
+
+				// トランジション開始
+				if (auto* transition = GameObject::FindByName("transition"); transition && !transition->IsActive()) {
+					if (selectedText_ == PLAY) {
+						if (input->TriggerKey(DIK_SPACE)) {
+							isTransition = true;
+							// ロゴのモデルを非表示にする
+							modelAnimation->SetActive(false);
+
+							transition->SetActive(true);
+
 						}
+					}
 
-						// 演出が終了してから操作可能に
-						if (!isStartFadeIn) {
-							// 上下キーで選択中のテキストを切り替え
-							if (input->TriggerKey(DIK_W)) {
-								if (selectedText_ == PLAY) {
-									selectedText_ = QUIT;
-								} else if (selectedText_ == SETTING) {
-									selectedText_ = PLAY;
-								} else if (selectedText_ == QUIT) {
-									selectedText_ = SETTING;
-								}
-							}else if (input->TriggerKey(DIK_S)) {
-								if (selectedText_ == PLAY) {
-									selectedText_ = SETTING;
-								} else if (selectedText_ == SETTING) {
-									selectedText_ = QUIT;
-								} else if (selectedText_ == QUIT) {
-									selectedText_ = PLAY;
-								}
-							}
-
-							if (selectedText_ == PLAY) {
-								playTextObject2->SetActive(true);
-								settingTextObject2->SetActive(false);
-								quitTextObject2->SetActive(false);
-							} else if (selectedText_ == SETTING) {
-								playTextObject2->SetActive(false);
-								settingTextObject2->SetActive(true);
-								quitTextObject2->SetActive(false);
-							} else if (selectedText_ == QUIT) {
-								playTextObject2->SetActive(false);
-								settingTextObject2->SetActive(false);
-								quitTextObject2->SetActive(true);
-							}
-
-							// トランジション開始
-							if (input->TriggerKey(DIK_SPACE)) {
-								isTransition = true;
-								if (auto* transition = GameObject::FindByName("transition"); transition && !transition->IsActive()) {
-									// ロゴのモデルを非表示にする
-									modelAnimation->SetActive(false);
-
-									transition->SetActive(true);
-								}
+					if (isTransition) {
+						setAlpha(std::clamp(alpha - deltaTime * logoAlphaTime, 0.0f, 1.0f));
+						if (auto* transition = GameObject::FindByName("transition"); transition && transition->IsActive()) {
+							auto* transitionAnimation = transition->GetComponent<ObjectRailMovementComponent>();
+							if (transitionAnimation && !transitionAnimation->IsPlaying()) {
+								SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 							}
 						}
 					}
 				}
 			}
+
+
+
 		}
 
 	}
@@ -462,6 +470,8 @@ void SelectScene::Update() {
 	PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
 	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
 	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
+	// エフェクトの強さ
+	PostEffect::GetInstance()->SetIntensity(intensity);
 
 #pragma endregion
 
@@ -880,6 +890,7 @@ void SelectScene::Update() {
 				renderer->SetColorOverrideEnabled(copyData.modelColorOverrideEnabled);
 				renderer->SetColorOverride(copyData.modelColorOverride);
 				renderer->SetColorOverrideUnlit(copyData.modelColorOverrideUnlit);
+				renderer->SetToonShadingEnabled(copyData.modelToonShading);
 				renderer->SetTextureOverride(copyData.modelTextureOverride);
 			}
 			if (sourceObject->GetComponent<RectTransformComponent>()) {
@@ -1283,6 +1294,13 @@ void SelectScene::Update() {
 						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].modelColorOverrideUnlit = colorOverrideUnlit;
 					}
 					ImGui::EndDisabled();
+					int lightingStyle = renderer->IsToonShadingEnabled() ? 0 : 1;
+					if (ImGui::Combo("Lighting Style##ModelRenderer", &lightingStyle, "Toon\0Realistic\0")) {
+						renderer->SetToonShadingEnabled(lightingStyle == 0);
+						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+							level->GetLevelData()->objects[selectedIndex].modelToonShading = renderer->IsToonShadingEnabled();
+						}
+					}
 
 					char modelPath[260]{};
 					strncpy_s(modelPath, renderer->GetModelPath().c_str(), _TRUNCATE);

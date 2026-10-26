@@ -218,6 +218,13 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	effectData->dissolveEdgeColor = { 1.0f,1.0f,1.0f }; // ディゾルブのエッジの色
 	// ランダムノイズ
 	effectData->isRandomNoise = false; // ランダムノイズON/OFF
+	// アイブリンク
+	effectData->isEyeBlink = false; // アイブリンクON/OFF
+	effectData->eyeBlinkProgress = 0.0f; // アイブリンクの進行度
+	// モニターオフ (ブラウン管)
+	effectData->isMonitorOff = false; // モニターオフON/OFF
+	effectData->monitorOffProgress = 0.0f; // 進行度
+	effectData->monitorOffCenter = { 0.5f, 0.5f }; // 消える最終地点
 
 	effectData->intensity = 1.0f;
 

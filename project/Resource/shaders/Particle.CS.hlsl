@@ -89,33 +89,33 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     if (gParticles[index].isColorChange.x != 0)
     {
-        gParticles[index].color.x = lerp(gParticles[index].color.x, gParticles[index].finalColor.x, progress);
+        gParticles[index].color.x = lerp(gParticles[index].startColor.x, gParticles[index].finalColor.x, progress);
     }
     if (gParticles[index].isColorChange.y != 0)
     {
-        gParticles[index].color.y = lerp(gParticles[index].color.y, gParticles[index].finalColor.y, progress);
+        gParticles[index].color.y = lerp(gParticles[index].startColor.y, gParticles[index].finalColor.y, progress);
     }
     if (gParticles[index].isColorChange.z != 0)
     {
-        gParticles[index].color.z = lerp(gParticles[index].color.z, gParticles[index].finalColor.z, progress);
+        gParticles[index].color.z = lerp(gParticles[index].startColor.z, gParticles[index].finalColor.z, progress);
     }
     if (gParticles[index].isColorChange.w != 0)
     {
-        gParticles[index].color.w = lerp(gParticles[index].color.w, gParticles[index].finalColor.w, progress);
+        gParticles[index].color.w = lerp(gParticles[index].startColor.w, gParticles[index].finalColor.w, progress);
     }
 
     // 5. サイズ変化
     if (gParticles[index].isScaleChange.x != 0)
     {
-        gParticles[index].scale.x = max(0.0f, gParticles[index].scale.x + gParticles[index].scaleAdd);
+        gParticles[index].scale.x = max(0.0f, gParticles[index].scale.x + gParticles[index].scaleAdd * gDeltaTime * 60.0f);
     }
     if (gParticles[index].isScaleChange.y != 0)
     {
-        gParticles[index].scale.y = max(0.0f, gParticles[index].scale.y + gParticles[index].scaleAdd);
+        gParticles[index].scale.y = max(0.0f, gParticles[index].scale.y + gParticles[index].scaleAdd * gDeltaTime * 60.0f);
     }
     if (gParticles[index].isScaleChange.z != 0)
     {
-        gParticles[index].scale.z = max(0.0f, gParticles[index].scale.z + gParticles[index].scaleAdd);
+        gParticles[index].scale.z = max(0.0f, gParticles[index].scale.z + gParticles[index].scaleAdd * gDeltaTime * 60.0f);
     }
 
     // 6. UVスクロール

@@ -16,6 +16,8 @@
 #include "BoxFilter.hlsli"
 #include "Dissolve.hlsli"
 #include "RandomNoise.hlsli"
+#include "EyeBlink.hlsli"
+#include "MonitorOff.hlsli"
 
 //* 上記のファイルで何故か日本語が使えない *//
 
@@ -135,7 +137,7 @@ struct EffectData
     int isTwoColor; // 二値化
     float threshold; // 白と黒の境界値 (0.0~1.0)
     float contrast; // コントラストの強さ
-    float pad10;
+    float grayscaleProgress; // 白黒化の進行度 (0.0=カラー, 1.0=完全な白黒)
     
     // アウトライン
     int isOutline;  // ON/OFF
@@ -163,6 +165,16 @@ struct EffectData
     int isRandomNoise;  // ON/OFF
     float3 pad16;
     
+    // 目を閉じるエフェクト (アイブリンク)
+    int isEyeBlink; // ON/OFF
+    float eyeBlinkProgress; // 閉じる進行度 (0.0 = 全開, 1.0 = 完全に閉じる)
+    float2 pad17;
+    
+    // モニターオフ (ブラウン管)
+    int isMonitorOff; // ON/OFF
+    float monitorOffProgress; // 進行度 (0.0 = 通常, 1.0 = 完全に消える)
+    float2 monitorOffCenter; // 消える最終地点 (X, Y 共に 0.0 ～ 1.0。中央は 0.5, 0.5)
+    
 };
 ConstantBuffer<EffectData> gEffectData : register(b0);
 
@@ -189,6 +201,16 @@ ConstantBuffer<SunAndCloudParam> gSunCloudData : register(b2);
 
 float4 main(VSOutput input) : SV_TARGET
 {
+    // --- 【追加】モニターオフ用の変数を準備 ---
+    float monitorMask = 1.0f;
+    float3 monitorFlash = float3(0.0f, 0.0f, 0.0f);
+    
+    // テクスチャをサンプリングする【前】にUV座標を歪ませる
+    if (gEffectData.isMonitorOff)
+    {
+        ApplyMonitorOff(input.uv, monitorMask, monitorFlash, gEffectData.monitorOffProgress, gEffectData.monitorOffCenter);
+    }
+    
     float4 color = gCurrentTexture.Sample(gSampler, input.uv);
     
     // 高輝度抽出
@@ -305,8 +327,7 @@ float4 main(VSOutput input) : SV_TARGET
         // モノクロ
         if (gEffectData.isGrayscale)
         {
-            color.rgb = Grayscale(color, gEffectData.isTwoColor, gEffectData.threshold, gEffectData.contrast);
-
+            color.rgb = Grayscale(color, gEffectData.isTwoColor, gEffectData.threshold, gEffectData.contrast, gEffectData.grayscaleProgress);
         }
         
         // 色反転
@@ -319,6 +340,19 @@ float4 main(VSOutput input) : SV_TARGET
         if (gEffectData.isOutline)
         {
             color.rgb = Outline(color, gEffectData.outlineThreshold, gEffectData.outlineColor, input.uv, gDepthTexture, gSampler);
+        }
+        
+        // 目を閉じるエフェクト (アイブリンク)
+        if (gEffectData.isEyeBlink)
+        {
+            color.rgb = EyeBlink(color.rgb, input.uv, gEffectData.eyeBlinkProgress);
+        }
+        
+        // モニターオフの黒枠とフラッシュを合成
+        if (gEffectData.isMonitorOff)
+        {
+            // 画面外を真っ黒に切り取り、潰れた瞬間の発光を加算する
+            color.rgb = (color.rgb * monitorMask) + monitorFlash;
         }
         
         color.rgb *= gEffectData.intensity;

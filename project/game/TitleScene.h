@@ -19,7 +19,6 @@
 #include "RailCamera.h"
 #include "Level.h"
 #include "GameObject.h"
-#include "GameTimer.h"
 #include "TrailEffect.h"
 #include "Calc.h"
 #include "EnemySpawner.h"
@@ -37,7 +36,7 @@ public:
 	// 初期化
 	void Initialize() override;
 	// 更新
-	void Update() override;
+	void Update(float deltaTime, float unscaledDeltaTime) override;
 	// 描画
 	void Draw2D() override;
 	void Draw3D() override;
@@ -167,6 +166,7 @@ private:
 	bool isTwoColor = false; // 二値化
 	float threshold = 0.5f; // 白と黒の境界値 (0.0~1.0)
 	float contrast = 1.0f; // コントラストの強さ
+	float grayscaleProgress = 0.0f; // 白黒化の進行度 (0.0=カラー, 1.0=完全な白黒)
 
 	// アウトライン
 	bool isOutline = false;  // ON/OFF
@@ -187,6 +187,16 @@ private:
 
 	// ランダムノイズ
 	bool isRandomNoise = false;  // ON/OFF
+
+	// 目を閉じるエフェクト (アイブリンク)
+	bool isEyeBlink = false; // ON/OFF
+	float eyeBlinkProgress = 0.0f; // 閉じる進行度 (0.0 = 全開, 1.0 = 完全に閉じる)
+
+	// モニターオフ (ブラウン管)
+	bool isMonitorOff = false; // ON/OFF
+	float monitorOffProgress = 0.0f; // 進行度 (0.0 = 通常, 1.0 = 完全に消える)
+	Vector2 monitorOffCenter = { 0.5f, 0.5f }; // 消える最終地点 (X, Y 共に 0.0 ～ 1.0。中央は 0.5, 0.5)
+
 
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
@@ -247,9 +257,6 @@ private:
 	// 敵
 	std::vector<std::unique_ptr<GameObject>> enemies;
 	std::vector<std::unique_ptr<GameObject>> pathPreviewObjects; // パス移動の制御点のオブジェクト
-	// タイマー
-	std::unique_ptr<GameTimer> gameTimer = nullptr;
-	float deltaTime;
 
 	// タイトルロゴの表示時間
 	float logoAlphaTime = 0.8f;

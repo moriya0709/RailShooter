@@ -151,6 +151,8 @@ public:
 		int priority = 100;
 		// 1フレーム目だけ呼び出す為のフラグ
 		bool isFirstUpdate = true;
+		// エディタ専用グループは通常のゲーム画面に描画しない。
+		bool editorOnly = false;
 
 		// CPUからのデータ転送用
 		Microsoft::WRL::ComPtr<ID3D12Resource> instancingUploadResource;
@@ -178,8 +180,20 @@ public:
 	void Initialize(DirectXCommon* dxCommon, SrvManager* srvManager, const std::string& directoryPath, const std::string& filename);
 	// 更新
 	void Update();
+	void SetDeltaTime(float deltaTime) {
+		deltaTime_ = (std::max)(0.0f, deltaTime);
+		// GPU の更新用定数バッファにも即時反映する。
+		if (commonDataMap_) {
+			commonDataMap_->gDeltaTime = deltaTime_;
+		}
+	}
+	float GetDeltaTime() const { return deltaTime_; }
 	// 描画
 	void Draw();
+	// 指定グループだけを指定カメラで描画する。エディタのRenderTextureプレビュー用。
+	void DrawGroup(const std::string& groupName, const Camera& camera);
+	// true のグループは通常のゲーム画面には描画せず、DrawGroup でだけ描画する。
+	void SetGroupEditorOnly(const std::string& groupName, bool editorOnly);
 
 	// .mtlファイルの読み込み
 	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
@@ -270,9 +284,16 @@ private:
 	VertexData* vertexData = nullptr;
 	Material* materialData = nullptr;
 	ParticleCommonData* commonDataMap_ = nullptr;
-	ParticleCameraData* cameraDataMap_ = nullptr;
+	uint8_t* cameraDataMap_ = nullptr;
 	uint8_t* emitDataMap_ = nullptr;
 	uint32_t emitDataAllocationCount_ = 0;
+	enum class CameraDataSlot : uint32_t {
+		Game,
+		Preview,
+		Count,
+	};
+	static constexpr uint32_t kCameraDataStride = (sizeof(ParticleCameraData) + 255u) & ~255u;
+	static constexpr uint32_t kCameraDataSlotCount = static_cast<uint32_t>(CameraDataSlot::Count);
 	static constexpr uint32_t kEmitDataStride = (sizeof(Emitter) + 255u) & ~255u;
 	static constexpr uint32_t kMaxEmitDispatchesPerFrame = 256;
 
@@ -286,9 +307,10 @@ private:
 
 	// デルタタイム(60fps固定)
 	const float kDeltaTime = 1.0f / 60.0f;
+	float deltaTime_ = 1.0f / 60.0f;
 
 	// ビルボード化
-	bool isBillboard = false;
+	bool isBillboard = true;
 
 	// インスタンス数
 	const uint32_t kNumMaxInstance = 100;
@@ -310,6 +332,8 @@ private:
 	void CreateGraphicsPipeline();
 	// コンピュートパイプライン
 	void CreateComputePipeline();
+	void PrepareDraw(const Camera& camera, CameraDataSlot slot);
+	void DrawParticleGroup(ParticleGroup& group);
 
 };
 

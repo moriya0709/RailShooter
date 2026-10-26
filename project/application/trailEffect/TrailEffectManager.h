@@ -13,7 +13,7 @@ class TrailEffectManager {
 public:
     void Initialize();
     void AddTrail(std::shared_ptr<TrailEffect> trail);
-    void UpdateAll();
+	void UpdateAll(float deltaTime);
     void RenderAll();
 
     // setter

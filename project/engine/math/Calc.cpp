@@ -1,4 +1,5 @@
 ﻿#include "Calc.h"
+#include "PostEffect.h"
 #include <cmath>
 #include <numbers>
 
@@ -710,4 +711,39 @@ Vector3 CatmullRomSpline(const Vector3& p0, const Vector3& p1, const Vector3& p2
     result.z = 0.5f * ((2.0f * p1.z) + (-p0.z + p2.z) * t + (2.0f * p0.z - 5.0f * p1.z + 4.0f * p2.z - p3.z) * t2 + (-p0.z + 3.0f * p1.z - 3.0f * p2.z + p3.z) * t3);
 
     return result;
+}
+
+void StartFadeIn(bool& isFadeIn, bool& isFadeOut) {
+    isFadeIn = true;
+    isFadeOut = false; // フェードアウトをキャンセル
+}
+
+void StartFadeOut(bool& isFadeIn, bool& isFadeOut) {
+    isFadeOut = true;
+    isFadeIn = false; // フェードインをキャンセル
+}
+
+void UpdateFade(bool& isFadeIn, bool& isFadeOut, float& intensity) {// フェードイン処理
+    if (isFadeIn) {
+        if (intensity < 1.0f) {
+            intensity += 1.0f / 30.0f;
+            PostEffect::GetInstance()->SetIntensity(intensity);
+        } else {
+            intensity = 1.0f; // 確実に1.0にする
+            PostEffect::GetInstance()->SetIntensity(intensity);
+            isFadeIn = false; // 完了したらフラグを下ろす
+        }
+    }
+
+    // フェードアウト処理
+    if (isFadeOut) {
+        if (intensity > 0.0f) {
+            intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
+            PostEffect::GetInstance()->SetIntensity(intensity);
+        } else {
+            intensity = 0.0f; // 確実に0.0にする
+            PostEffect::GetInstance()->SetIntensity(intensity);
+            isFadeOut = false; // 完了したらフラグを下ろす
+        }
+    }
 }

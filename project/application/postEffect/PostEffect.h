@@ -122,7 +122,7 @@ struct EffectData {
 	int isTwoColor; // 二値化
 	float threshold; // 白と黒の境界値 (0.0~1.0)
 	float contrast; // コントラストの強さ
-	float pad10;
+	float grayscaleProgress; // 白黒化の進行度 (0.0=カラー, 1.0=完全な白黒)
 
 	// アウトライン
 	int isOutline;  // ON/OFF
@@ -149,6 +149,16 @@ struct EffectData {
 	// ランダムノイズ
 	int isRandomNoise;  // ON/OFF
 	Vector3 pad16;
+
+	// 目を閉じるエフェクト (アイブリンク)
+	int isEyeBlink; // ON/OFF
+	float eyeBlinkProgress; // 閉じる進行度 (0.0 = 全開, 1.0 = 完全に閉じる)
+	Vector2 pad17;
+
+	// モニターオフ (ブラウン管)
+	int isMonitorOff; // ON/OFF
+	float monitorOffProgress; // 進行度 (0.0 = 通常, 1.0 = 完全に消える)
+	Vector2 monitorOffCenter; // 消える最終地点 (X, Y 共に 0.0 ～ 1.0。中央は 0.5, 0.5)
 
 };
 
@@ -252,6 +262,7 @@ public:
 	void SetTwoColor(bool isTwoColor) { effectData->isTwoColor = isTwoColor; }
 	void SetThreshold(float threshold) { effectData->threshold = threshold; }
 	void SetContrast(float contrast) { effectData->contrast = contrast; }
+	void SetGrayscaleProgress(float progress) { effectData->grayscaleProgress = progress; } // 白黒化の進行度 (0.0=カラー, 1.0=完全な白黒)
 	// アウトライン
 	void SetOutline(bool isOutline) { effectData->isOutline = isOutline; }
 	void SetOutlineThreshold(float outlineThreshold) { effectData->outlineThreshold = outlineThreshold; }
@@ -267,6 +278,14 @@ public:
 	void SetDissolveEdgeColor(const Vector3& color) { effectData->dissolveEdgeColor = color; }
 	// ランダムノイズ
 	void SetRandomNoise(bool isRandomNoise) { effectData->isRandomNoise = isRandomNoise; }
+	// アイブリンク
+	void SetEyeBlink(bool isEyeBlink) { effectData->isEyeBlink = isEyeBlink; }
+	void SetEyeBlinkProgress(float progress) { effectData->eyeBlinkProgress = progress; }
+	// モニターオフ (ブラウン管)
+	void SetMonitorOff(bool isMonitorOff) { effectData->isMonitorOff = isMonitorOff; }
+	void SetMonitorOffProgress(float progress) { effectData->monitorOffProgress = progress; }
+	void SetMonitorOffCenter(const Vector2& center) { effectData->monitorOffCenter = center; }
+
 	// エフェクトの強さ
 	void SetIntensity(float intensity) { effectData->intensity = intensity; }
 

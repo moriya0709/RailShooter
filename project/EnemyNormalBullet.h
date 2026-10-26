@@ -10,7 +10,8 @@ public:
 	void Initialize(Vector3 position,Vector3 playerPosition) override;
 	void Update() override;
 
-
+	// ダメージ量を取得
+	int GetDamage() const override { return damage; }
 
 	// OBBを取得
 	OBB GetOBB() override;
@@ -28,6 +29,7 @@ private:
 	float speed = 0.5f; // 弾の移動速度
 	float deathTimer = 0.0f; // 消滅までの時間
 	static constexpr float kLifeTime = 5.0f; // 弾の寿命（秒）
+	int damage = 1; // 弾のダメージ量
 
 	std::shared_ptr<TrailEffect> trailEffect;
 };

@@ -272,6 +272,18 @@ void Level::LoadJson(const std::string fileName) {
 				readVector2("control_point_1", newData.easing.controlPoint1);
 				readVector2("control_point_2", newData.easing.controlPoint2);
 			}
+			if (object.contains("particle") && object["particle"].is_object()) {
+				const auto& particle = object["particle"];
+				newData.particle.particleGroup = particle.value("group", newData.particle.particleGroup);
+				newData.particle.presetPath = particle.value("preset", newData.particle.presetPath);
+				newData.particle.count = (std::max)(1u, particle.value("count", newData.particle.count));
+				newData.particle.frequency = (std::max)(0.0f, particle.value("frequency", newData.particle.frequency));
+				newData.particle.overrideEmissionSettings = particle.value("override_emission_settings", newData.particle.overrideEmissionSettings);
+				newData.particle.playOnStart = particle.value("play_on_start", newData.particle.playOnStart);
+				if (particle.contains("local_offset") && particle["local_offset"].is_array() && particle["local_offset"].size() == 3) {
+					newData.particle.localOffset = { particle["local_offset"][0].get<float>(), particle["local_offset"][1].get<float>(), particle["local_offset"][2].get<float>() };
+				}
+			}
 
 			// 新形式では複数コンポーネントを保存する。既存レベルは type から補完する。
 			if (object.contains("components")) {
@@ -480,6 +492,18 @@ void Level::SaveJson(const std::string fileName) {
 			easing["goal_color"] = { obj.easing.goalColor.x, obj.easing.goalColor.y, obj.easing.goalColor.z, obj.easing.goalColor.w };
 			easing["control_point_1"] = { obj.easing.controlPoint1.x, obj.easing.controlPoint1.y };
 			easing["control_point_2"] = { obj.easing.controlPoint2.x, obj.easing.controlPoint2.y };
+		}
+		if (std::find(obj.components.begin(), obj.components.end(), "Particle") != obj.components.end()) {
+			auto& particle = newObjJson["particle"];
+			particle["group"] = obj.particle.particleGroup;
+			if (!obj.particle.presetPath.empty()) {
+				particle["preset"] = obj.particle.presetPath;
+			}
+			particle["count"] = obj.particle.count;
+			particle["frequency"] = obj.particle.frequency;
+			particle["override_emission_settings"] = obj.particle.overrideEmissionSettings;
+			particle["play_on_start"] = obj.particle.playOnStart;
+			particle["local_offset"] = { obj.particle.localOffset.x, obj.particle.localOffset.y, obj.particle.localOffset.z };
 		}
 		if (!obj.components.empty()) {
 			newObjJson["components"] = obj.components;

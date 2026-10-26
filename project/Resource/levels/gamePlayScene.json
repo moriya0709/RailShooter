@@ -1,12 +1,13 @@
 {
-    "active_rail_camera_group": "StartRailCamera",
+    "active_rail_camera_group": "StageRailCamera",
     "groups": [
         "city",
         "Enemies",
         "Cameras",
         "StageRailCamera",
         "StartRailCamera",
-        "PlayerHUD"
+        "PlayerHUD",
+        "Particle"
     ],
     "name": "scene",
     "objects": [
@@ -37,7 +38,7 @@
             "type": "EMPTY"
         },
         {
-            "active": false,
+            "active": true,
             "components": [
                 "EnemySpawner",
                 "ModelRenderer"
@@ -6853,7 +6854,7 @@
                     960.0,
                     440.0
                 ],
-                "rotation": 5.960464477539063e-08,
+                "rotation": 0.0009656548500061035,
                 "scale": [
                     0.9999955892562866,
                     0.9999955892562866
@@ -7142,9 +7143,9 @@
             "name": "cockpit",
             "transform": {
                 "rotation": [
+                    0.004999999888241291,
                     0.0,
-                    0.0,
-                    -0.03357436880469322
+                    -6.394999980926514
                 ],
                 "scaling": [
                     1.0,
@@ -7152,9 +7153,9 @@
                     1.0
                 ],
                 "translation": [
-                    -0.47099918127059937,
-                    119.21609497070313,
-                    150.0
+                    1998.3079833984375,
+                    -91.86799621582031,
+                    113.21099853515625
                 ]
             },
             "type": "EMPTY"
@@ -7305,6 +7306,84 @@
                     1997.907958984375,
                     -79.46800231933594,
                     113.61100006103516
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "Particle"
+            ],
+            "group": "Particle",
+            "name": "DeathParticle1",
+            "particle": {
+                "count": 9,
+                "frequency": 0.25999999046325684,
+                "group": "obj",
+                "local_offset": [
+                    0.0,
+                    0.0,
+                    10.0
+                ],
+                "override_emission_settings": false,
+                "play_on_start": true,
+                "preset": "Resource/particle/fire.csv"
+            },
+            "transform": {
+                "rotation": [
+                    0.2328938990831375,
+                    7.692225456237793,
+                    0.20943725109100342
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    16.221912384033203,
+                    226.31829833984375,
+                    140.46527099609375
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "Particle"
+            ],
+            "group": "Particle",
+            "name": "DeathParticle2",
+            "particle": {
+                "count": 9,
+                "frequency": 0.25999999046325684,
+                "group": "obj",
+                "local_offset": [
+                    0.0,
+                    0.0,
+                    10.0
+                ],
+                "override_emission_settings": false,
+                "play_on_start": true,
+                "preset": "Resource/particle/smoke.csv"
+            },
+            "transform": {
+                "rotation": [
+                    0.2328938990831375,
+                    7.692225456237793,
+                    0.20943725109100342
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    16.221912384033203,
+                    226.31829833984375,
+                    140.46527099609375
                 ]
             },
             "type": "EMPTY"

@@ -43,4 +43,8 @@ OBB GetColliderOBB(const GameObject* object, const OBB& fallback);
 // Draws the shared collider property UI and mirrors changed values into level data.
 void DrawColliderInspector(ColliderComponent& collider, ObjectData& objectData);
 
+// Shows removal controls for optional editor-added components and also removes
+// their serialized names, so the change persists when the level is saved.
+void DrawComponentRemovalInspector(GameObject& object, ObjectData& objectData);
+
 }

@@ -41,8 +41,7 @@ void EnemyNormal::Initialize() {
 }
 
 void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
-	// ★デルタタイムの定義（将来的に GamePlayScene から deltaTime を引数で渡す形に拡張推奨）
-	float deltaTime = 1.0f / 60.0f;
+	const float deltaTime = deltaTime_;
 		aliveTime += deltaTime;
 
 	// 当たり判定リセット
@@ -138,7 +137,7 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 
 	// 毎フレームクールダウンを減らす
 	if (shotCoolTime > 0.0f) {
-		shotCoolTime -= 1.0f / 60.0f; // 60 FPSを想定
+		shotCoolTime -= deltaTime;
 	}
 
 	// 弾の生成
@@ -156,6 +155,9 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 
 	// 全ての弾を更新
 	for (auto& bulletObject : bulletObjects_) {
+		if (auto* bullet = bulletObject->GetComponent<EnemyBullet>()) {
+			bullet->SetDeltaTime(deltaTime);
+		}
 		bulletObject->Update();
 	}
 

@@ -274,6 +274,20 @@ struct EasingData {
 	bool playOnStart = true;
 };
 
+// ParticleComponent のレベル保存用設定。描画形状・マテリアルは
+// ParticleManager に登録された particleGroup で共有し、CSV は任意の見た目プリセット。
+struct ParticleComponentData {
+	std::string particleGroup = "obj";
+	std::string presetPath;
+	// Add Component 直後にも確認できる、目視しやすい既定の発生量。
+	uint32_t count = 8;
+	float frequency = 0.1f;
+	// false の場合、CSVプリセットに記録した count / frequency を使用する。
+	bool overrideEmissionSettings = false;
+	bool playOnStart = true;
+	Vector3 localOffset = { 0.0f, 0.0f, 0.0f };
+};
+
 struct ObjectData {
     std::string type;
     std::string name;
@@ -340,6 +354,8 @@ struct ObjectData {
 	bool objectRailPlayOnStart = true;
 	// EasingComponent 専用。
 	EasingData easing;
+	// ParticleComponent 専用。
+	ParticleComponentData particle;
 
     // スポナー専用の敵配置データリスト
     std::vector<SpawnData> spawnDataList;

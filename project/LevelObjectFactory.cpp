@@ -10,6 +10,7 @@
 #include "LevelEditorCommon.h"
 #include "ModelRendererComponent.h"
 #include "ObjectRailMovementComponent.h"
+#include "ParticleComponent.h"
 #include "RailCamera.h"
 #include "RailPointComponent.h"
 #include "RectTransformComponent.h"
@@ -71,6 +72,13 @@ void ConfigureEasing(GameObject& gameObject, const ObjectData& objectData) {
 		return;
 	}
 	gameObject.AddComponent<EasingComponent>()->Configure(objectData.easing);
+}
+
+void ConfigureParticle(GameObject& gameObject, const ObjectData& objectData) {
+	if (!HasComponent(objectData, "Particle")) {
+		return;
+	}
+	gameObject.AddComponent<ParticleComponent>()->Configure(objectData.particle);
 }
 
 } // namespace
@@ -170,6 +178,7 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 		}
 
 		ConfigureEasing(*gameObject, objectData);
+		ConfigureParticle(*gameObject, objectData);
 
 		gameObject->SetActive(objectData.active);
 		gameObject->Initialize();

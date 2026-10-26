@@ -43,12 +43,18 @@ public:
 	// 制御点の取得
 	const std::vector<RailPoint>& GetPoints() const { return points; }
 	bool IsRailActive() const { return isRail; }
-	bool CanStartRail() const { return points.size() >= 2; }
+	// Catmull-Rom 補間には最低 4 点必要。
+	bool CanStartRail() const { return points.size() >= 4; }
+	bool IsRailFinished() const {
+		return isRail && CanStartRail() &&
+			railT >= static_cast<float>(points.size() - 1) - 0.001f;
+	}
 	// StartRail が成功した回数。再スタートも含めて外部イベントを検出するために使う。
 	uint64_t GetStartRevision() const { return startRevision_; }
 	// 先頭からレール移動を開始する。Catmull-Rom のため制御点は 4 個以上必要。
 	void StartRail();
 	void StopRail() { isRail = false; }
+	void SetDeltaTime(float value) { deltaTime = (std::max)(0.0f, value); }
     // 進行度 (railT) を取得する関数
     float GetRailT() const { return railT; }
 

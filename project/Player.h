@@ -39,10 +39,11 @@ public:
     Vector3 GetRotate() const { return rotate_; }
     Vector3 GetTranslate() const { return translate_; }
     bool IsHit() const { return isHit; }
+	bool IsDeath() const { return currentState == Death; }
 
     const std::list<PlayerBullet*>& GetBullets() const { return bullets_; }
 
-    void OnCollision();
+    void OnCollision(int damage);
 
     // OBBを取得
     OBB GetOBB();
@@ -63,6 +64,9 @@ private:
 
 	Vector3 basePos = { 0.0f, 0.0f, 0.0f };
 	Vector3 baseRot = { 0.0f, 0.0f, 0.0f };
+
+    // 体力
+	int hp_ = 3;
 
 
     // --- パラメーター設定 ---
@@ -136,6 +140,8 @@ private:
     void Move();
     // 通常時更新
 	void UpdateNormal(float deltaTime);
+	// 死亡時更新
+	void UpdateDeath(float deltaTime);
 
 };
 

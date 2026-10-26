@@ -22,6 +22,8 @@
 #include "Skybox.h"
 #include "LineCommon.h"
 #include "LightManager.h"
+#include "ParticlePreviewEditor.h"
+#include "GameTimer.h"
 
 class Game : public M_Framework {
 public:
@@ -44,5 +46,11 @@ private:
 	std::unique_ptr <SceneFactory> sceneFactory_ = nullptr;
 	// スカイボックス
 	std::unique_ptr <Skybox> skybox_ = nullptr;
+	// ImGui内で確認するための、ゲーム本編から独立したパーティクルプレビュー。
+	std::unique_ptr<ParticlePreviewEditor> particlePreviewEditor_ = nullptr;
+	// 唯一のゲーム時計。各シーンはここで計測済みの時間だけを受け取る。
+	std::unique_ptr<GameTimer> gameTimer_ = nullptr;
+	float deltaTime_ = 0.0f;
+	float unscaledDeltaTime_ = 0.0f;
 
 };

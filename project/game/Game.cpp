@@ -6,6 +6,7 @@
 void Game::Initialize() {
 	// 基底クラスの初期化
 	M_Framework::Initialize();
+	gameTimer_ = std::make_unique<GameTimer>();
 
 #pragma region 基盤システム
 
@@ -58,6 +59,10 @@ void Game::Initialize() {
 	ParticleManager::GetInstance()->CreateParticleGroup("Tornado7", "Resource/plane", "plane.obj", "Resource/particle/particle.png",0);
 	ParticleManager::GetInstance()->CreateParticleGroup("Tornado8", "Resource/plane", "plane.obj", "Resource/particle/particle.png",0);
 
+	// ゲーム画面には描画しない専用RenderTextureへ、パーティクルを表示するImGuiエディタ。
+	particlePreviewEditor_ = std::make_unique<ParticlePreviewEditor>();
+	particlePreviewEditor_->Initialize(dxCommon, srvManager.get());
+
 	// Resource 以下のモデルの場所だけを登録する。
 	// 実体のロードは、シーンやエディタがモデルを使用した時点で行う。
 	ModelManager::GetInstance()->RegisterModelsInResourceDirectory();
@@ -100,15 +105,21 @@ void Game::Update() {
 
 	// 　基底クラス
 	M_Framework::Update();
+	// 時間の計測はゲーム全体で一度だけ行う。シーンはこの値を再計測しない。
+	unscaledDeltaTime_ = gameTimer_->Tick();
+	deltaTime_ = unscaledDeltaTime_ * SceneManager::GetInstance()->GetTimeScale();
+	ParticleManager::GetInstance()->SetDeltaTime(deltaTime_);
 
 	// シーンマネージャー更新
-	SceneManager::GetInstance()->Update();
-
+	SceneManager::GetInstance()->Update(deltaTime_, unscaledDeltaTime_);
+	// エディタのUIとエミッタを先に更新し、その後のParticleManager::Updateで
+	// 同じフレームのコンピュート更新へ反映する。
+	particlePreviewEditor_->Update();
 	// パーティクル更新
 	ParticleManager::GetInstance()->Update();
 
 	// トレイルエフェクト更新
-	TrailEffectManager::GetInstance()->UpdateAll();
+	TrailEffectManager::GetInstance()->UpdateAll(deltaTime_);
 
 	// ImGui受付終了
 	imGuiManager->End();
@@ -148,6 +159,8 @@ void Game::Draw() {
 	PostEffect::GetInstance()->PostDraw();
 	PostEffect::GetInstance()->Draw();
 	
+	// 専用の3D RenderTextureへプレビュー用グループだけを描画する。
+	particlePreviewEditor_->Render();
 
 	// ImGui描画
 	imGuiManager->Draw();

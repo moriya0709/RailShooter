@@ -10,6 +10,7 @@
 #include "ObjectRailMovementComponent.h"
 #include "EnemySpawnerComponent.h"
 #include "EasingComponent.h"
+#include "ParticleComponent.h"
 #include "EnemyNormal.h"
 #include "SpriteRendererComponent.h"
 #include "TextRendererComponent.h"
@@ -20,6 +21,7 @@
 #include "SkyBox.h"
 #include "LineCommon.h"
 #include "ModelManager.h"
+#include <algorithm>
 #include <cstring>
 #include <cctype>
 #include <filesystem>
@@ -36,6 +38,16 @@ void GamePlayScene::Initialize() {
 	// プリセットの読み込み
 	level->LoadRailPresetsJson();
 	activeRailGroupName_ = level->GetLevelData()->activeRailCameraGroup;
+	// スタート演出中は、レベルの通常ステージ用設定ではなく開始用レールを使う。
+	// これを先に切り替えておかないと、前回のレール進行度で終了判定だけが走り得る。
+	const auto& railGroups = level->GetLevelData()->railCameraGroups;
+	const bool hasStartRailCameraGroup = std::any_of(
+		railGroups.begin(), railGroups.end(),
+		[](const RailCameraGroupData& group) { return group.groupName == "StartRailCamera"; });
+	if (isStartAction && hasStartRailCameraGroup) {
+		activeRailGroupName_ = "StartRailCamera";
+		level->GetLevelData()->activeRailCameraGroup = activeRailGroupName_;
+	}
 	CreateLevel();
 
 	// Use an EMPTY + CameraComponent from the level. Keep the previous behavior
@@ -70,9 +82,6 @@ void GamePlayScene::Initialize() {
 	// 音声再生
 	//SoundManager::GetInstance()->Play("bgm");
 
-	// タイマー
-	gameTimer = std::make_unique<GameTimer>();
-
 	// プレイヤー
 	defaultPlayerObject = std::make_unique<GameObject>("Player");
 	playerObject = defaultPlayerObject.get();
@@ -93,15 +102,16 @@ void GamePlayScene::Initialize() {
 	trailEffect = std::make_shared<TrailEffect>();
 	trailEffect->Initialize("Resource/trail/trail.png", trailTransform, width, trailMaxLifeTime);
 
+	//	フェードイン
+	StartFadeIn(isFadeIn, isFadeOut);
+
 }
 
-void GamePlayScene::Update() {
+void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	// 入力取得
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
-	// 時間更新
-	deltaTime = gameTimer->Tick();
 
 	trailEffect->Editor();
 
@@ -141,10 +151,9 @@ void GamePlayScene::Update() {
 		if (isRailActive) {
 			isDebugCamera = false;
 		// Stop Rail Camera で停止した瞬間は、操作可能なデバッグカメラへ戻す。
-		} else if (wasRailCameraActive) {
-			isDebugCamera = true;
 		}
 		wasRailCameraActive = isRailActive;
+		railCamera->SetDeltaTime(deltaTime);
 		railCamera->Update();
 	}
 
@@ -224,10 +233,82 @@ void GamePlayScene::Update() {
 	// カメラの現在の進行度を取得
 	float cameraProgress = railCamera->GetRailT();
 
+	// プレイヤー・カメラ・敵の座標が全て確定した後にロックオンを更新する。
+	// 描画に使うカメラ行列と同じ行列で照準を投影するため、レール移動中もずれない。
+	player->UpdateLockOn(enemyTargets);
+	player->UpdateReticle();
+
+	// コックピット
+	auto* cockpit = GameObject::FindByName("cockpit");
+	if (cockpit) {
+		auto* cockpitModel = cockpit ? cockpit->GetComponent<TransformComponent>() : nullptr;
+		cockpitModel->SetTranslate(player->GetTranslate());
+		cockpitModel->SetRotate(player->GetRotate());
+	}
+
+	// 当たり判定
+	LevelEditorCommon::UpdateEnemyCollisions(*player, enemies, levelObjects);
+
+	// プレイヤーの死亡判定
+	auto* deathParticle1 = GameObject::FindByName("DeathParticle1");
+	auto* deathParticle2 = GameObject::FindByName("DeathParticle2");
+	if (player->IsDeath() && !isDeathAction) {
+		railCamera->StopRail();
+		isDeathAction = true;
+		deathParticleElapsed_ = 0.0f;
+		isRadialBlur = true;
+		isGrayscale = true;
+		blurWidth = 0.0f;
+		if (deathParticle1) {
+			deathParticle1->SetActive(true);
+			if (auto* particle = deathParticle1->GetComponent<ParticleComponent>()) {
+				particle->SetLocalOffsetFollowsOwnerRotation(true);
+			}
+		}
+		if (deathParticle2) {
+			deathParticle2->SetActive(true);
+			if (auto* particle = deathParticle2->GetComponent<ParticleComponent>()) {
+				particle->SetLocalOffsetFollowsOwnerRotation(true);
+			}
+		}
+	}
+
+	// デス演出
+	if (isDeathAction) {
+		deathParticleElapsed_ += deltaTime;
+
+		// 放射線ブラー
+		if (blurWidth <= 0.01f) {
+			blurWidth += 0.01f / 60.0f;
+		}
+
+		// スローモーション
+		deathSlowTime_ = Lerp(deathSlowTime_, 0.0f, 0.01f);
+		SceneManager::GetInstance()->SetTimeScale(deathSlowTime_);
+
+		// グレースケール
+		grayscaleProgress = Lerp(grayscaleProgress, 1.0f, 0.01f);
+
+		// デス演出
+		if (deathParticle1) {
+			if (auto* transform = deathParticle1->GetTransform()) {
+				transform->SetTranslate(player->GetTranslate());
+				transform->SetRotate(player->GetRotate());
+			}
+		}
+		if (deathParticle2) {
+			if (auto* transform = deathParticle2->GetTransform()) {
+				transform->SetTranslate(player->GetTranslate());
+				transform->SetRotate(player->GetRotate());
+			}
+		}
+	}
+
 	// シーンに存在するすべての敵の更新処理
 	for (auto& enemyObject : enemies) {
 		if (auto* enemy = enemyObject->GetComponent<Enemy>()) {
 			enemy->SetUpdateContext(player->GetTranslate(), cameraProgress);
+			enemy->SetDeltaTime(deltaTime);
 			enemyObject->Update();
 		}
 	}
@@ -248,25 +329,10 @@ void GamePlayScene::Update() {
 		}
 		if (auto* enemy = object->GetComponent<Enemy>()) {
 			enemy->SetUpdateContext(player->GetTranslate(), cameraProgress);
+			enemy->SetDeltaTime(deltaTime);
 		}
 		object->Update();
 	}
-
-	// プレイヤー・カメラ・敵の座標が全て確定した後にロックオンを更新する。
-	// 描画に使うカメラ行列と同じ行列で照準を投影するため、レール移動中もずれない。
-	player->UpdateLockOn(enemyTargets);
-	player->UpdateReticle();
-
-	// コックピット
-	auto* cockpit = GameObject::FindByName("cockpit");
-	if (cockpit) {
-		auto* cockpitModel = cockpit ? cockpit->GetComponent<TransformComponent>() : nullptr;
-		cockpitModel->SetTranslate(player->GetTranslate());
-		cockpitModel->SetRotate(player->GetRotate());
-	}
-
-	// 当たり判定
-	LevelEditorCommon::UpdateEnemyCollisions(*player, enemies, levelObjects);
 
 	// --- 撃破された敵の削除 ---
 	for (auto it = enemies.begin(); it != enemies.end();) {
@@ -360,9 +426,13 @@ void GamePlayScene::Update() {
 			monitor_1->SetActive(false);
 			monitorAction_1->SetActive(true);
 		}
-		if (monitorActionEasing && !monitorActionEasing->IsPlaying() && !railCamera->IsRailActive()) {
+		if (monitorActionEasing && !monitorActionEasing->IsPlaying() &&
+			!StartRailFirst_ && !railCamera->IsRailActive()) {
 			railCamera->StartRail();
-			isRadialBlur = true;
+			StartRailFirst_ = railCamera->IsRailActive();
+			if (StartRailFirst_) {
+				isRadialBlur = true;
+			}
 		}
 
 		const std::string& groupName = level->GetLevelData()->activeRailCameraGroup;
@@ -370,14 +440,14 @@ void GamePlayScene::Update() {
 		if (groupName == "StartRailCamera") {
 			if (railCamera->IsRailActive()) {
 				// 放射線ブラー
-				blurWidth = (std::max)(0.0f, blurWidth + 0.002f / 60.0f);
+				if (blurWidth <= 0.01f) {
+					blurWidth += 0.01f / 60.0f;
+				}
 			}
 
-			if (railCamera->GetRailT() >= 3.5f) {
-				// フェードアウト
-				intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
-				PostEffect::GetInstance()->SetIntensity(intensity);
-
+			// レールを開始できなかった場合や開始前の古い進行度では、
+			// スタート演出を終了させない。
+			if (StartRailFirst_ && railCamera->GetRailT() >= 3.5f) {
 				if (intensity <= 0.0f) {
 					// そのままステージに切り換え
 					activeRailGroupName_ = "StageRailCamera";
@@ -387,32 +457,26 @@ void GamePlayScene::Update() {
 					railCamera->StartRail();
 					player->SetMoveEnabled(true); // プレイヤーの移動を有効化
 					isStartAction = false;
-					isFadeIn = true;
 					isRadialBlur = false;
-
-					// プレイ会用にセレクトシーンに飛ばす
-					SceneManager::GetInstance()->ChangeScene("SELECT");
 
 					// HUDの演出を非表示にする
 					reticle_1->SetActive(false);
 					reticle_2->SetActive(false);
 					reticle_3->SetActive(false);
 					monitorAction_1->SetActive(false);
+
+					StartFadeIn(isFadeIn, isFadeOut);
+				} else {
+					// フェードアウト
+					StartFadeOut(isFadeIn, isFadeOut);
 				}
+
 			}
 		}
 	}
 
-	// フェードイン
-	if (isFadeIn) {
-		if (intensity < 1.0f) {
-			intensity += 1.0f / 30.0f;
-			PostEffect::GetInstance()->SetIntensity(intensity);
-		} else {
-			isFadeIn = false;
-		}
-	}
-
+	// フェード処理
+	UpdateFade(isFadeIn, isFadeOut, intensity);
 
 #pragma region ライティング
 	// *ライティング* //
@@ -489,6 +553,55 @@ void GamePlayScene::Update() {
 	PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
 	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
 	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
+	// 色収差
+	PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
+	PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
+	// ビネット
+	PostEffect::GetInstance()->SetVignette(isVignette);
+	PostEffect::GetInstance()->SetVignetteIntensity(vignetteIntensity);
+	PostEffect::GetInstance()->SetVignetteColor(vignetteColor);
+	// スピードディストーション
+	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
+	PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
+	// 集中線
+	PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
+	PostEffect::GetInstance()->SetConcentrationLineIntensity(concentrationLineIntensity);
+	PostEffect::GetInstance()->SetConcentrationLineCenter(concentrationLineCenter);
+	PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
+	PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
+	PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
+	// ピンチエフェクト
+	PostEffect::GetInstance()->SetPinch(isPinch);
+	PostEffect::GetInstance()->SetPinchStrength(pinchStrength);
+	PostEffect::GetInstance()->SetPinchCenter(pinchCenter);
+	PostEffect::GetInstance()->SetPinchRadius(pinchRadius);
+	// モノクロ
+	PostEffect::GetInstance()->SetTwoColor(isTwoColor);
+	PostEffect::GetInstance()->SetThreshold(threshold);
+	PostEffect::GetInstance()->SetContrast(contrast);
+	PostEffect::GetInstance()->SetGrayscaleProgress(grayscaleProgress);
+	// アウトライン
+	PostEffect::GetInstance()->SetOutline(isOutline);
+	PostEffect::GetInstance()->SetOutlineThreshold(outlineThreshold);
+	PostEffect::GetInstance()->SetOutlineColor(outlineColor);
+	// 平滑化
+	PostEffect::GetInstance()->SetBoxFilter(isBoxFilter);
+	// ディゾルブ
+	PostEffect::GetInstance()->SetDissolve(isDissolve);
+	PostEffect::GetInstance()->SetDissolveThreshold(dissolveThreshold);
+	PostEffect::GetInstance()->SetDissolveEdgeWidth(dissolveEdgeWidth);
+	PostEffect::GetInstance()->SetDissolveNoiseScale(dissolveNoiseScale);
+	PostEffect::GetInstance()->SetDissolveNoiseColor(dissolveNoiseColor);
+	PostEffect::GetInstance()->SetDissolveEdgeColor(dissolveEdgeColor);
+	// ランダムノイズ
+	PostEffect::GetInstance()->SetRandomNoise(isRandomNoise);
+	// 目を閉じるエフェクト (アイブリンク)
+	PostEffect::GetInstance()->SetEyeBlink(isEyeBlink);
+	PostEffect::GetInstance()->SetEyeBlinkProgress(eyeBlinkProgress);
+	// モニターオフ
+	PostEffect::GetInstance()->SetMonitorOff(isMonitorOff);
+	PostEffect::GetInstance()->SetMonitorOffProgress(monitorOffProgress);
+	PostEffect::GetInstance()->SetMonitorOffCenter(monitorOffCenter);
 
 #pragma endregion
 
@@ -608,6 +721,15 @@ void GamePlayScene::Update() {
 	// グレースケール
 	if (ImGui::TreeNode("grayscale")) {
 		ImGui::Checkbox("OnOff", &isGrayscale);
+		if (isGrayscale) {
+			// モノクロ
+			ImGui::Checkbox("isTwoColor", &isTwoColor);
+			ImGui::DragFloat("grayscaleProgress", &grayscaleProgress, 0.01f, 0.0f, 1.0f);
+			if (isTwoColor) {
+				ImGui::DragFloat("threshold", &threshold, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("contrast", &contrast, 0.01f, 0.0f, 10.0f);
+			}
+		}
 
 		ImGui::TreePop();
 	}
@@ -691,6 +813,101 @@ void GamePlayScene::Update() {
 			ImGui::DragFloat("motionBlurScale", &motionBlurScale, 0.01f, 0.0f, 10.0f);
 		}
 
+		ImGui::TreePop();
+	}
+	// 色収差
+	if (ImGui::TreeNode("FullScreenCA")) {
+		ImGui::Checkbox("OnOff", &isFullScreenCA);
+		if (isFullScreenCA) {
+			ImGui::DragFloat("chromaticAberrationIntensity", &fullScreenCAIntensity, 0.001f, 0.0f, 10.0f);
+		}
+		ImGui::TreePop();
+	}
+	// ビネット
+	if (ImGui::TreeNode("Vignette")) {
+		ImGui::Checkbox("OnOff", &isVignette);
+		if (isVignette) {
+			ImGui::DragFloat("vignetteIntensity", &vignetteIntensity, 0.001f, 0.0f, 1.0f);
+			ImGui::ColorEdit3("vignetteColor", &vignetteColor.x);
+		}
+		ImGui::TreePop();
+	}
+	// スピードディストーション
+	if (ImGui::TreeNode("SpeedDistortion")) {
+		ImGui::Checkbox("OnOff", &isSpeedDistortion);
+		if (isSpeedDistortion) {
+			ImGui::DragFloat("speedDistortionIntensity", &speedDistortionStrength, 0.001f, 0.0f, 10.0f);
+		}
+		ImGui::TreePop();
+	}
+	// 集中線
+	if (ImGui::TreeNode("ConcentrationLines")) {
+		ImGui::Checkbox("OnOff", &isConcentrationLines);
+		if (isConcentrationLines) {
+			ImGui::DragFloat("concentrationLineIntensity", &concentrationLineIntensity, 0.001f, 0.0f, 10.0f);
+			ImGui::DragFloat3("concentrationLineCenter", &concentrationLineCenter.x, 0.01f, -1.0f, 1.0f);
+			ImGui::DragFloat("concentrationLineDensity", &concentrationLineDensity, 1.0f, 0.0f, 500.0f);
+			ImGui::DragFloat("concentrationLineLength", &concentrationLineLength, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("concentrationLineSpeed", &concentrationLineSpeed, 0.01f, 0.0f, 10.0f);
+		}
+		ImGui::TreePop();
+	}
+	// ピンチエフェクト
+	if (ImGui::TreeNode("isPinch")) {
+		ImGui::Checkbox("OnOff", &isPinch);
+		if (isPinch) {
+			ImGui::DragFloat("pinchStrength", &pinchStrength, 0.001f, -10.0f, 10.0f);
+			ImGui::DragFloat2("pinchCenter", &pinchCenter.x, 0.01f, -1.0f, 1.0f);
+			ImGui::DragFloat("pinchRadius", &pinchRadius, 0.01f, 0.0f, 100.0f);
+		}
+		ImGui::TreePop();
+	}
+	// アウトライン
+	if (ImGui::TreeNode("isOutline")) {
+		ImGui::Checkbox("OnOff", &isOutline);
+		if (isOutline) {
+			ImGui::DragFloat("outlineThreshold", &outlineThreshold, 0.01f, 0.0f, 1.0f);
+			ImGui::ColorEdit4("outlineColor", &outlineColor.x);
+		}
+		ImGui::TreePop();
+	}
+	// 平滑化
+	if (ImGui::TreeNode("isBoxFilter")) {
+		ImGui::Checkbox("OnOff", &isBoxFilter);
+		ImGui::TreePop();
+	}
+	// ディゾルブ
+	if (ImGui::TreeNode("isDissolve")) {
+		ImGui::Checkbox("OnOff", &isDissolve);
+		if (isDissolve) {
+			ImGui::DragFloat("dissolveThreshold", &dissolveThreshold, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("dissolveEdgeWidth", &dissolveEdgeWidth, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("dissolveNoiseScale", &dissolveNoiseScale, 0.01f, 0.0f, 100.0f);
+			ImGui::ColorEdit3("dissolveNoiseColor", &dissolveNoiseColor.x);
+			ImGui::ColorEdit3("dissolveEdgeColor", &dissolveEdgeColor.x);
+		}
+		ImGui::TreePop();
+	}
+	// ランダムノイズ
+	if (ImGui::TreeNode("isRandomNoise")) {
+		ImGui::Checkbox("OnOff", &isRandomNoise);
+		ImGui::TreePop();
+	}
+	// 目を閉じるエフェクト (アイブリンク)
+	if (ImGui::TreeNode("isEyeBlink")) {
+		ImGui::Checkbox("OnOff", &isEyeBlink);
+		if (isEyeBlink) {
+			ImGui::DragFloat("eyeBlinkProgress", &eyeBlinkProgress, 0.01f, -1.0f, 2.0f);
+		}
+		ImGui::TreePop();
+	}
+	// モニターオフ
+	if (ImGui::TreeNode("isMonitorOff")) {
+		ImGui::Checkbox("OnOff", &isMonitorOff);
+		if (isMonitorOff) {
+			ImGui::DragFloat("monitorOffProgress", &monitorOffProgress, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat2("monitorOffCenter", &monitorOffCenter.x, 0.01f, 0.0f, 1.0f);
+		}
 		ImGui::TreePop();
 	}
 
@@ -863,6 +1080,7 @@ void GamePlayScene::Update() {
 			// 停止ボタン
 			if (ImGui::Button("Stop")) {
 				railCamera->StopRail();
+				isDebugCamera = true;
 			}
 
 		} else {
@@ -1119,6 +1337,9 @@ void GamePlayScene::Update() {
 		}
 		if (sourceObject->GetComponent<EasingComponent>()) {
 			copyObject->AddComponent<EasingComponent>()->Configure(copyData.easing);
+		}
+		if (sourceObject->GetComponent<ParticleComponent>()) {
+			copyObject->AddComponent<ParticleComponent>()->Configure(copyData.particle);
 		}
 		if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
 			auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
@@ -1724,6 +1945,13 @@ void GamePlayScene::Update() {
 				}
 			}
 		}
+		if (auto* particle = selectedObject->GetComponent<ParticleComponent>()) {
+			if (ImGui::CollapsingHeader("Particle", ImGuiTreeNodeFlags_DefaultOpen)) {
+				if (DrawParticleComponentInspector(*particle) && selectedIndex != -1) {
+					level->GetLevelData()->objects[selectedIndex].particle = particle->GetSettings();
+				}
+			}
+		}
 
 		if (auto* animatorComponent = selectedObject->GetComponent<AnimatorComponent>()) {
 			if (ImGui::CollapsingHeader("Animator")) {
@@ -1832,6 +2060,9 @@ void GamePlayScene::Update() {
 				LevelEditorCommon::DrawColliderInspector(*collider, level->GetLevelData()->objects[selectedIndex]);
 			}
 		}
+		if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+			LevelEditorCommon::DrawComponentRemovalInspector(*selectedObject, level->GetLevelData()->objects[selectedIndex]);
+		}
 
 		if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size() &&
 			ImGui::CollapsingHeader("Add Component")) {
@@ -1933,6 +2164,11 @@ void GamePlayScene::Update() {
 				objectData.easing = easingData;
 				selectedObject->AddComponent<EasingComponent>()->Configure(objectData.easing);
 				addSerializedComponent("Easing");
+			}
+			if (!selectedObject->GetComponent<ParticleComponent>() && ImGui::Button("Particle")) {
+				objectData.particle = ParticleComponentData{};
+				selectedObject->AddComponent<ParticleComponent>()->Configure(objectData.particle);
+				addSerializedComponent("Particle");
 			}
 			if ((objectData.type == "EMPTY" || objectData.type == "empty") &&
 				!selectedObject->GetComponent<CameraComponent>() && ImGui::Button("Camera")) {
@@ -2459,6 +2695,11 @@ void GamePlayScene::CreateLevel() {
 			gameObject.AddComponent<EasingComponent>()->Configure(objectData.easing);
 		}
 	};
+	auto configureParticle = [](GameObject& gameObject, const ObjectData& objectData) {
+		if (std::find(objectData.components.begin(), objectData.components.end(), "Particle") != objectData.components.end()) {
+			gameObject.AddComponent<ParticleComponent>()->Configure(objectData.particle);
+		}
+	};
 	auto hideEditorOnlyModelInRelease = [](ModelRendererComponent& renderer, const ObjectData& objectData) {
 #ifndef USE_IMGUI
 		const bool isRail = objectData.type == "RAIL" || objectData.type == "rail";
@@ -2508,6 +2749,7 @@ void GamePlayScene::CreateLevel() {
 
 			// 4. アタッチされたコンポーネントを一括初期化
 			configureEasing(*gameObject, objectData);
+			configureParticle(*gameObject, objectData);
 			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 
@@ -2550,6 +2792,7 @@ void GamePlayScene::CreateLevel() {
 			}
 
 			configureEasing(*gameObject, objectData);
+			configureParticle(*gameObject, objectData);
 			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
@@ -2586,6 +2829,7 @@ void GamePlayScene::CreateLevel() {
 			}
 
 			configureEasing(*gameObject, objectData);
+			configureParticle(*gameObject, objectData);
 			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
@@ -2683,6 +2927,7 @@ void GamePlayScene::CreateLevel() {
 				enemy->SetTransform(objectData.transform);
 			}
 			configureEasing(*gameObject, objectData);
+			configureParticle(*gameObject, objectData);
 			gameObject->SetActive(objectData.active);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));

@@ -160,6 +160,33 @@ public:
 		return nullptr;
 	}
 
+	// Transform は GameObject の必須コンポーネントなので削除不可。
+	// それ以外は実行中でも安全に取り外せ、次回の Update / Draw から除外される。
+	template <class T>
+	bool RemoveComponent() {
+		static_assert(std::is_base_of_v<Component, T>, "T must derive from Component");
+		if constexpr (std::is_same_v<T, TransformComponent>) {
+			return false;
+		}
+
+		const auto mapIt = componentMap_.find(typeid(T));
+		if (mapIt == componentMap_.end()) {
+			return false;
+		}
+
+		Component* component = mapIt->second;
+		componentMap_.erase(mapIt);
+		const auto componentIt = std::find_if(components_.begin(), components_.end(),
+			[component](const std::unique_ptr<Component>& candidate) {
+				return candidate.get() == component;
+			});
+		if (componentIt == components_.end()) {
+			return false;
+		}
+		components_.erase(componentIt);
+		return true;
+	}
+
 private:
 	static std::vector<GameObject*>& GetRegistry() {
 		static std::vector<GameObject*> registry;

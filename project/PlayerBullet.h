@@ -13,6 +13,7 @@ public:
 	// inheritedVelocity は発射元の1フレームあたりのワールド移動量。
 	virtual void Initialize(Vector3 position, Enemy* target, const Vector3& inheritedVelocity) = 0;
 	virtual void Update() override = 0;
+	void SetDeltaTime(float deltaTime) { deltaTime_ = (std::max)(0.0f, deltaTime); }
 
 	// 消滅しているか
 	bool IsDead() const { return isDead_; }
@@ -34,6 +35,7 @@ public:
 
 protected:
 	bool isDead_ = false; // 消滅フラグ
+	float deltaTime_ = 1.0f / 60.0f;
 
 };
 

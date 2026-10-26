@@ -26,10 +26,16 @@ public:
 	void LoadParticle(const std::string& filePath);
 
 	// エディター
-	void Editor();
+	// beginWindow を false にすると、ほかのImGuiウインドウへ設定UIを埋め込める。
+	void Editor(bool beginWindow = true, bool allowMeshSelection = true);
 
 	// setter
-	void SetTranslate(Vector3 translate) { emitter->translate = translate; }
+	void SetTranslate(Vector3 translate) { if (emitter) emitter->translate = translate; }
+	// Component-side emission settings. These intentionally override a loaded
+	// preset so a level can keep timing/count data independently of its visual preset.
+	void SetEmissionSettings(uint32_t count, float frequency);
+	uint32_t GetEmissionCount() const { return emitter ? emitter->count : 1u; }
+	float GetEmissionFrequency() const { return emitter ? emitter->frequency : 0.0f; }
 
 private:
 	// パーティクルエミッタの設定

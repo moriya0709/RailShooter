@@ -67,9 +67,10 @@ void TrailEffectManager::AddTrail(std::shared_ptr<TrailEffect> trail) {
     m_ActiveTrails.push_back(trail);
 }
 
-void TrailEffectManager::UpdateAll() {
+void TrailEffectManager::UpdateAll(float deltaTime) {
     // 全てのトレイルの「時間」を進める（弾が死んでいても実行される）
     for (auto& trail : m_ActiveTrails) {
+		trail->SetDeltaTime(deltaTime);
         trail->UpdateLifetimes();
     }
 

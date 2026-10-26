@@ -32,6 +32,7 @@ void Player::Update(float deltaTime) {
 	UpdateNormal(deltaTime);
 	break;
 	case Player::Death:
+	UpdateDeath(deltaTime);
 
 	break;
 
@@ -183,8 +184,20 @@ void Player::RemoveBulletTarget(const Enemy* enemy) {
 	}
 }
 
-void Player::OnCollision() {
+void Player::OnCollision(int damage) {
 	hitTimer_ = 0.2f; // 衝突時に0.2秒間（60FPSで約12フレーム）タイマーをセット
+
+	if (hp_ <= 0) {
+		currentState = Death;
+		return;
+	}
+
+	hp_ = (std::max)(0, hp_ - damage);
+	// HP が 0 になった被弾そのもので死亡状態へ遷移する。
+	// 以前は次の被弾まで Death にならず、デスパーティクルも起動しなかった。
+	if (hp_ == 0) {
+		currentState = Death;
+	}
 
 	//PostEffect::GetInstance()->SetDamageEffectRatio(1.0f);
 }
@@ -234,7 +247,7 @@ void Player::Move() {
 
 	// 毎フレームクールダウンを減らす
 	if (bulletCoolTime > 0.0f) {
-		bulletCoolTime -= 1.0f / 60.0f; // 60 FPSを想定
+		bulletCoolTime -= deltaTime_;
 	}
 
 	// 弾の生成
@@ -322,7 +335,7 @@ void Player::UpdateNormal(float deltaTime) {
 	previousLockedTarget = lockedTarget;
 
 	// 移動処理
-	if (isMoveEnabled_) {
+	if (isMoveEnabled_ && deltaTime > 0.0f) {
 		Move();
 	}
 
@@ -404,6 +417,7 @@ void Player::UpdateNormal(float deltaTime) {
 	for (auto& bulletObject : bulletObjects_) {
 		if (auto* bullet = bulletObject->GetComponent<PlayerBullet>()) {
 			bullet->SetInheritedVelocity(launchVelocity_);
+			bullet->SetDeltaTime(deltaTime);
 		}
 		bulletObject->Update();
 	}
@@ -419,4 +433,38 @@ void Player::UpdateNormal(float deltaTime) {
 		GetGameObject()->GetTransform()->transform.scale = scale_;
 	}
 
+}
+
+void Player::UpdateDeath(float deltaTime) {
+	// カメラ情報の取得
+	Camera* camera = CameraManager::GetInstance()->GetActiveCamera();
+	Matrix4x4 cameraWorld = camera->GetWorldMatrix();
+
+	// カメラの前方ベクトル (ローカルZ軸方向)
+	Vector3 forward = {
+		cameraWorld.m[2][0],
+		cameraWorld.m[2][1],
+		cameraWorld.m[2][2]
+	};
+
+	// 演出用のパラメータ（必要に応じて数値を調整してください）
+	const float forwardSpeed = 10.0f; // 前方へ吹き飛ぶ速度
+	const float fallSpeed = 5.0f;    // 下方向に落ちる速度
+	float spinSpeed = 5.0f;    // Z軸（ロール）の回転速度
+
+	// カメラ前方方向へ進みつつ、ワールドの下(-Y)へ落ちる
+	translate_.x += forward.x * forwardSpeed * deltaTime;
+	translate_.y += (forward.y * forwardSpeed - fallSpeed) * deltaTime;
+	translate_.z += forward.z * forwardSpeed * deltaTime;
+
+	// Z軸回転（カメラのZ軸回転と同等のロール回転）
+	rotate_.x = Lerp(rotate_.x, 0.3f, 0.01f);
+	rotate_.z += spinSpeed * deltaTime;
+
+	// Transformへ適用
+	if (GetGameObject()) {
+		GetGameObject()->GetTransform()->transform.translate = translate_;
+		GetGameObject()->GetTransform()->transform.rotate = rotate_;
+		GetGameObject()->GetTransform()->transform.scale = scale_;
+	}
 }

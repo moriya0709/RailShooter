@@ -190,7 +190,7 @@
     <ClCompile Include="TextRendererComponent.cpp" />
     <ClCompile Include="ColliderComponent.cpp" />
     <ClCompile Include="ObjectRailMovementComponent.cpp" />
-	<ClCompile Include="EasingComponent.cpp" />
+    <ClCompile Include="EasingComponent.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp">
       <Filter>ソース ファイル\engine\2d</Filter>
     </ClCompile>
@@ -254,6 +254,8 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="PlayerBulletNormal.cpp" />
+    <ClCompile Include="ParticleComponent.cpp" />
+    <ClCompile Include="ParticlePreviewEditor.cpp" />
     <ClCompile Include="EnemyNormal.cpp" />
     <ClCompile Include="EnemySpawner.cpp" />
     <ClCompile Include="EnemyNormalBullet.cpp" />
@@ -264,7 +266,7 @@
     </ClCompile>
     <ClCompile Include="ImGuiFunction.cpp" />
     <ClCompile Include="LevelEditorCommon.cpp" />
-	<ClCompile Include="LevelObjectFactory.cpp" />
+    <ClCompile Include="LevelObjectFactory.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="SelectScene.cpp" />
   </ItemGroup>
@@ -440,7 +442,7 @@
     <ClInclude Include="ModelRendererComponent.h" />
     <ClInclude Include="RailPointComponent.h" />
     <ClInclude Include="ObjectRailMovementComponent.h" />
-	<ClInclude Include="EasingComponent.h" />
+    <ClInclude Include="EasingComponent.h" />
     <ClInclude Include="RectTransformComponent.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="engine\3d\Object.h" />
@@ -451,6 +453,8 @@
     </ClInclude>
     <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="PlayerBulletNormal.h" />
+    <ClInclude Include="ParticleComponent.h" />
+    <ClInclude Include="ParticlePreviewEditor.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="EnemyNormal.h" />
@@ -465,7 +469,7 @@
     </ClInclude>
     <ClInclude Include="ImGuiFunction.h" />
     <ClInclude Include="LevelEditorCommon.h" />
-	<ClInclude Include="LevelObjectFactory.h" />
+    <ClInclude Include="LevelObjectFactory.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="SelectScene.h" />
   </ItemGroup>
@@ -547,6 +551,12 @@
     </None>
     <None Include="Resource\shaders\RayMarching.hlsli">
       <Filter>シェーダー ファイル</Filter>
+    </None>
+    <None Include="Resource\shaders\postEffect\EyeBlink.hlsli">
+      <Filter>シェーダー ファイル\postEffect</Filter>
+    </None>
+    <None Include="Resource\shaders\postEffect\MonitorOff.hlsli">
+      <Filter>シェーダー ファイル\postEffect</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

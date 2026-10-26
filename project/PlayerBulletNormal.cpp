@@ -47,9 +47,13 @@ void PlayerBulletNormal::Initialize(const Vector3 position, Enemy* target, const
 }
 
 void PlayerBulletNormal::Update() {
+	const float frameScale = deltaTime_ * 60.0f;
+	if (frameScale <= 0.0f) {
+		return;
+	}
 	previousTranslate_ = transform.translate;
 	// 寿命タイマーを進める
-	deathTimer += 1.0f / 60.0f;
+	deathTimer += deltaTime_;
 	if (deathTimer >= kLifeTime) {
 		isDead_ = true; // 寿命が来たら消滅フラグを立てる
 	}
@@ -64,7 +68,7 @@ void PlayerBulletNormal::Update() {
 			dir.x /= length; dir.y /= length; dir.z /= length;
 
 			// 2. 誘導の強さ（0.01f ～ 0.1f 程度がおすすめ。高すぎると往復します）
-			float homingPower = 0.05f;
+			float homingPower = 0.05f * frameScale;
 
 			// 3. 現在の速度にターゲット方向の力を加算
 			projectileVelocity_.x += dir.x * homingPower;
@@ -88,9 +92,9 @@ void PlayerBulletNormal::Update() {
 	velocity.z = projectileVelocity_.z + inheritedVelocity_.z;
 
 	// 計算しておいた速度ベクトルを現在位置に加算して弾を移動させる
-	transform.translate.x += velocity.x;
-	transform.translate.y += velocity.y;
-	transform.translate.z += velocity.z;
+	transform.translate.x += velocity.x * frameScale;
+	transform.translate.y += velocity.y * frameScale;
+	transform.translate.z += velocity.z * frameScale;
 	if (GetGameObject()) {
 		GetGameObject()->GetTransform()->transform = transform;
 	}

@@ -50,15 +50,17 @@ void ParticleManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager
 	materialResource = dxCommon_->CreateBufferResource(bufferSize);
 
 	// *カメラ* //
-	uint32_t cameraBufferSize = (sizeof(ParticleCameraData) + 255) & ~255; // 256バイトアライメント
-	cameraDataResource_ = dxCommon_->CreateBufferResource(cameraBufferSize);
+	cameraDataResource_ = dxCommon_->CreateBufferResource(kCameraDataStride * kCameraDataSlotCount);
 
 	HRESULT hr = cameraDataResource_->Map(0, nullptr, reinterpret_cast<void**>(&cameraDataMap_));
 	assert(SUCCEEDED(hr));
 
-	// 初期化 (とりあえず単位行列を入れておく)
-	cameraDataMap_->viewProj = MakeIdentity4x4();
-	cameraDataMap_->billboardMatrix = MakeIdentity4x4();
+	// 同一フレームでゲーム画面とプレビューを描画しても上書きしないよう、各スロットを初期化する。
+	for (uint32_t slot = 0; slot < kCameraDataSlotCount; ++slot) {
+		auto* cameraData = reinterpret_cast<ParticleCameraData*>(cameraDataMap_ + kCameraDataStride * slot);
+		cameraData->viewProj = MakeIdentity4x4();
+		cameraData->billboardMatrix = MakeIdentity4x4();
+	}
 
 	// *CS用* //
 
@@ -70,7 +72,7 @@ void ParticleManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager
 	assert(SUCCEEDED(hr));
 
 	// 初期値を設定
-	commonDataMap_->gDeltaTime = 1.0f / 60.0f; // 例: 60FPS固定の場合。可変フレームレートならUpdateで毎フレーム更新
+	commonDataMap_->gDeltaTime = deltaTime_;
 	commonDataMap_->gMaxParticles = kMaxParticleInstance; // 最大パーティクル数
 	commonDataMap_->gUseField = 0; // フィールド(重力など)を最初はOFFにする
 
@@ -161,27 +163,10 @@ void ParticleManager::Update() {
 
 void ParticleManager::Draw() {
 	Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
-	if (activeCamera) {
-		cameraDataMap_->viewProj = activeCamera->GetViewProjectionMatrix();
-
-		// ─── ★ここを修正：カメラのワールド行列から位置成分を消去する ───
-		Matrix4x4 billboard = activeCamera->GetWorldMatrix();
-
-		// 行列の4行目（平行移動成分のX, Y, Z）を 0.0f にクリアして純粋な回転行列にする
-		billboard.m[3][0] = 0.0f;
-		billboard.m[3][1] = 0.0f;
-		billboard.m[3][2] = 0.0f;
-
-		cameraDataMap_->billboardMatrix = billboard;
+	if (!activeCamera) {
+		return;
 	}
-
-	// ルートシグネイチャを設定
-	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
-	// プリミティブポロジーを設定
-	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	// ▼ ここを追加！ ルートパラメータ[4]（VSの b0）をセット ▼
-	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraDataResource_->GetGPUVirtualAddress());
+	PrepareDraw(*activeCamera, CameraDataSlot::Game);
 	
 	// ---------------------------------------------------------
 	// 1. 【追加】描画対象のグループへのポインタを一時的に配列に集める
@@ -191,7 +176,9 @@ void ParticleManager::Draw() {
 
 	for (auto& groupPair : particleGroups) {
 		ParticleGroup& group = groupPair.second;
-		sortedGroups.push_back(&group);
+		if (!group.editorOnly) {
+			sortedGroups.push_back(&group);
+		}
 	}
 
 	// ---------------------------------------------------------
@@ -208,35 +195,58 @@ void ParticleManager::Draw() {
 		// 参照として受け取ることで、既存のコード（group.〜）をそのまま動かせます
 		ParticleGroup& group = *groupPtr;
 
-		// グループが持っている固有の頂点バッファをセットする
-		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &group.vertexBufferView);
-
-		// ★範囲チェックとフォールバックの追加
-		uint32_t blendIndex = static_cast<uint32_t>(group.blendMode);
-		if (blendIndex >= kCountOfBlendMode) {
-			assert(false && "Invalid blend mode specified for particle group.");
-			blendIndex = 0;
-		}
-
-		// 安全に検証されたインデックスでPSOをセット
-		dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineStates[blendIndex].Get());
-
-		// マテリアルCBufferの場所を設定
-		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, group.materialResource->GetGPUVirtualAddress());
-
-		// パーティクル用 StructuredBuffer(SRV) を設定
-		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetGPUDescriptorHandle(group.instancingIndex));
-
-		// SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
-		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetGPUDescriptorHandle(group.materialData.textureIndex));
-
-		// ★ 修正2: 描画時の1インスタンスあたりの頂点数を、グループのモデルデータから取得する
-		dxCommon_->GetCommandList()->DrawInstanced(static_cast<UINT>(group.modelData.vertices.size()), kMaxParticleInstance, 0, 0);
+		DrawParticleGroup(group);
 	}
 
 	// このフレームの Emit はすべてコマンドリストに記録済み。次のフレームは
 	// DirectXCommon::PostDraw() の GPU 完了待機後に始まるため、スロットを再利用できる。
 	emitDataAllocationCount_ = 0;
+}
+
+void ParticleManager::DrawGroup(const std::string& groupName, const Camera& camera) {
+	auto groupIt = particleGroups.find(groupName);
+	if (groupIt == particleGroups.end()) {
+		return;
+	}
+	PrepareDraw(camera, CameraDataSlot::Preview);
+	DrawParticleGroup(groupIt->second);
+}
+
+void ParticleManager::SetGroupEditorOnly(const std::string& groupName, bool editorOnly) {
+	auto groupIt = particleGroups.find(groupName);
+	if (groupIt != particleGroups.end()) {
+		groupIt->second.editorOnly = editorOnly;
+	}
+}
+
+void ParticleManager::PrepareDraw(const Camera& camera, CameraDataSlot slot) {
+	const uint32_t slotIndex = static_cast<uint32_t>(slot);
+	auto* cameraData = reinterpret_cast<ParticleCameraData*>(cameraDataMap_ + kCameraDataStride * slotIndex);
+	cameraData->viewProj = camera.GetViewProjectionMatrix();
+	Matrix4x4 billboard = camera.GetWorldMatrix();
+	billboard.m[3][0] = 0.0f;
+	billboard.m[3][1] = 0.0f;
+	billboard.m[3][2] = 0.0f;
+	cameraData->billboardMatrix = billboard;
+
+	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
+	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(
+		4, cameraDataResource_->GetGPUVirtualAddress() + kCameraDataStride * slotIndex);
+}
+
+void ParticleManager::DrawParticleGroup(ParticleGroup& group) {
+	dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &group.vertexBufferView);
+	uint32_t blendIndex = static_cast<uint32_t>(group.blendMode);
+	if (blendIndex >= kCountOfBlendMode) {
+		assert(false && "Invalid blend mode specified for particle group.");
+		blendIndex = 0;
+	}
+	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineStates[blendIndex].Get());
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, group.materialResource->GetGPUVirtualAddress());
+	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetGPUDescriptorHandle(group.instancingIndex));
+	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetGPUDescriptorHandle(group.materialData.textureIndex));
+	dxCommon_->GetCommandList()->DrawInstanced(static_cast<UINT>(group.modelData.vertices.size()), kMaxParticleInstance, 0, 0);
 }
 
 // .mtlファイルの読み込み

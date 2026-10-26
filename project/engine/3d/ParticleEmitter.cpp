@@ -1,17 +1,18 @@
 ﻿#include "Particleemitter.h"
 #include "particleManager.h"
 #include "ImGuiManager.h"
+#include <algorithm>
 #include <iostream>
 
 void ParticleEmitter::Initialize(std::string name, const Transform& transform, uint32_t count, float frequency) {
 	// 初期値を設定
 	emitter = std::make_unique<Emitter>();
 	emitter->color = {1.0f,1.0f,1.0f,1.0f};
-	emitter->uvScale = {0.0f,0.0f};	// UVスケール
+	emitter->uvScale = {1.0f,1.0f};	// UVスケール
 	emitter->uvOffset = { 0.0f ,0.0f};	// UVオフセット
-	emitter->translate = { 0.0f,0.0f,0.0f };
-	emitter->scale = { 1.0f,1.0f,1.0f };
-	emitter->rotate = { 0.0f,0.0f,0.0f };
+	emitter->translate = transform.translate;
+	emitter->scale = transform.scale;
+	emitter->rotate = transform.rotate;
 	emitter->isRandPosition = { 0,0,0 };	// ランダムな座標にするかどうか
 	emitter->isRandScale = { 0,0,0 };	// ランダムなスケールにするかどうか
 	emitter->isRandRotate = { 0,0,0 };	// ランダムな回転にするかどうか
@@ -19,28 +20,40 @@ void ParticleEmitter::Initialize(std::string name, const Transform& transform, u
 	emitter->isScaleChange = { 0,0,0 };	// スケール変更するかどうか
 	emitter->isColorChange = { 0,0,0,0 };	// 色変更するかどうか
 	emitter->finalColor = { 0.0f,0.0f,0.0f,0.0f };
-	emitter->lifeTime = 5.0f;
+	emitter->lifeTime = 1.0f;
 	emitter->currentTime = 0.0f;
 	emitter->colorChangeSpeed = 0.0f;
 	emitter->scaleAdd = 0.0f;			// スケール変更量
-	emitter->emissive = 0.0f;			// エミッシブ
+	emitter->emissive = 1.0f;			// エミッシブ
 	emitter->uvScrollSpeed = { 0.0f,0.0f };	// UVスクロール速度
 	emitter->useNoise = 0;		// 0:通常 1:ノイズテクスチャ 2:両方
 	emitter->burnColor = { 0.0f,0.0f,0.0f };		// ふちの色
-	emitter->count = 1; //!< 発生数
-	emitter->frequency = 1.0f; //!< 発生頻度
+	emitter->count = (std::max)(1u, count); //!< 発生数
+	emitter->frequency = (std::max)(0.0f, frequency); //!< 発生頻度
 	emitter->frequencyTime = 0.0f; //!< 頻度用時刻
 	emitter->randPosition = { 0.0f,0.0f };
 	emitter->randScale = { 0.0f,0.0f };
 	emitter->randRotate = { 0.0f,0.0f };
 	emitter->randVelocity = { 0.0f,0.0f };
+	// Compute shader はこの範囲から実際の寿命を選ぶ。ゼロのままだと
+	// 発生直後に消えるため、CSV 未指定でも 1 秒は表示する。
+	emitter->randLifeTime = { 1.0f,1.0f };
+	strncpy_s(fileName, "test", _TRUNCATE);
 	this->name = name;
 	blendMode = kBlendModeNormal;
 }
 
+void ParticleEmitter::SetEmissionSettings(uint32_t count, float frequency) {
+	if (!emitter) {
+		return;
+	}
+	emitter->count = (std::max)(1u, count);
+	emitter->frequency = (std::max)(0.0f, frequency);
+}
+
 void ParticleEmitter::Update() {
 	// 時間経過によって発生させる
-	emitter->frequencyTime += kDeltaTime; // 時刻を進める
+	emitter->frequencyTime += ParticleManager::GetInstance()->GetDeltaTime(); // 時刻を進める
 	if (emitter->frequency <= emitter->frequencyTime) { // 頻度より大きいなら発生
 	ParticleManager::GetInstance()->Emit(
 		name,
@@ -67,7 +80,9 @@ void ParticleEmitter::SetActive(const std::string& name) {
 
 void ParticleEmitter::SaveParticle(const std::string& filePath) {
 	std::ofstream file(filePath, std::ios::binary);
-	assert(file.is_open());
+	if (!file.is_open()) {
+		return;
+	}
 	
 	// パーティクルの座標
 	file << emitter->translate.x << "," << emitter->translate.y << "," << emitter->translate.z << "\n";
@@ -106,7 +121,7 @@ void ParticleEmitter::SaveParticle(const std::string& filePath) {
 	// パーティクルの速度範囲
 	file << emitter->randVelocity.x << "," << emitter->randVelocity.y << "\n";
 	// パーティクルの寿命範囲
-	file << distTime.a() << "," << distTime.b() << "\n";
+	file << emitter->randLifeTime.x << "," << emitter->randLifeTime.y << "\n";
 	// パーティクルのサイズ追加数
 	file << emitter->scaleAdd << "\n";
 	// エミッシブ
@@ -114,15 +129,15 @@ void ParticleEmitter::SaveParticle(const std::string& filePath) {
 	// ブレンドモード
 	file << (int)blendMode << "\n";
 	// UVスケール
-	file << emitter->uvScale.x << "," << uvScale.y << "\n";
+	file << emitter->uvScale.x << "," << emitter->uvScale.y << "\n";
 	// UVスクロール速度
-	file << emitter->uvScrollSpeed.x << "," << uvScrollSpeed.y << "\n";
+	file << emitter->uvScrollSpeed.x << "," << emitter->uvScrollSpeed.y << "\n";
 	// UVオフセット
-	file << uvOffset.x << "," << uvOffset.y << "\n";
+	file << emitter->uvOffset.x << "," << emitter->uvOffset.y << "\n";
 	// ノイズ使用
-	file << useNoise << "\n";
+	file << emitter->useNoise << "\n";
 	// ふちの色
-	file << burnColor.x << "," << burnColor.y << "," << burnColor.z << "\n";
+	file << emitter->burnColor.x << "," << emitter->burnColor.y << "," << emitter->burnColor.z << "\n";
 	
 	
 	file.close();
@@ -131,7 +146,9 @@ void ParticleEmitter::SaveParticle(const std::string& filePath) {
 void ParticleEmitter::LoadParticle(const std::string& filePath) {
 	// ファイル読み込み
 	std::ifstream file(filePath);
-	assert(file.is_open());
+	if (!file.is_open()) {
+		return;
+	}
 
 	std::string line;
 
@@ -152,12 +169,12 @@ void ParticleEmitter::LoadParticle(const std::string& filePath) {
 
 	// パーティクルの発生数
 	if (std::getline(file, line)) {
-		emitter->count = std::stoi(line);
+		emitter->count = (std::max)(1u, static_cast<uint32_t>(std::stoul(line)));
 	}
 
 	// パーティクルの発生頻度
 	if (std::getline(file, line)) {
-		emitter->frequency = std::stof(line);
+		emitter->frequency = (std::max)(0.0f, std::stof(line));
 	}
 
 	// ランダム座標（bool）
@@ -230,44 +247,32 @@ void ParticleEmitter::LoadParticle(const std::string& filePath) {
 		emitter->isScaleChange.z = (c != 0);
 	}
 
+	// 以下の 5 項目は bool ではなく「最小値,最大値」の float 範囲。
+	// 以前は int/bool として読み込んでいたため、例えば -5,5 が 1,1 に
+	// 置き換わり、移動・拡縮・寿命の設定が壊れていた。
 	// 発生範囲
 	if (std::getline(file, line)) {
-		int a, b, c;
-		sscanf_s(line.c_str(), "%d,%d,%d", &a, &b, &c);
-		emitter->randPosition.x = (a != 0);
-		emitter->randPosition.y = (b != 0);
+		sscanf_s(line.c_str(), "%f,%f", &emitter->randPosition.x, &emitter->randPosition.y);
 	}
 
 	// スケール範囲
 	if (std::getline(file, line)) {
-		int a, b, c;
-		sscanf_s(line.c_str(), "%d,%d,%d", &a, &b, &c);
-		emitter->randScale.x = (a != 0);
-		emitter->randScale.y = (b != 0);
+		sscanf_s(line.c_str(), "%f,%f", &emitter->randScale.x, &emitter->randScale.y);
 	}
 
 	// 回転範囲
 	if (std::getline(file, line)) {
-		int a, b, c;
-		sscanf_s(line.c_str(), "%d,%d,%d", &a, &b, &c);
-		emitter->randRotate.x = (a != 0);
-		emitter->randRotate.y = (b != 0);
+		sscanf_s(line.c_str(), "%f,%f", &emitter->randRotate.x, &emitter->randRotate.y);
 	}
 
 	// 速度範囲
 	if (std::getline(file, line)) {
-		int a, b, c;
-		sscanf_s(line.c_str(), "%d,%d,%d", &a, &b, &c);
-		emitter->randVelocity.x = (a != 0);
-		emitter->randVelocity.y = (b != 0);
+		sscanf_s(line.c_str(), "%f,%f", &emitter->randVelocity.x, &emitter->randVelocity.y);
 	}
 
 	// 寿命範囲
 	if (std::getline(file, line)) {
-		int a, b, c;
-		sscanf_s(line.c_str(), "%d,%d,%d", &a, &b, &c);
-		emitter->randLifeTime.x = (a != 0);
-		emitter->randLifeTime.y = (b != 0);
+		sscanf_s(line.c_str(), "%f,%f", &emitter->randLifeTime.x, &emitter->randLifeTime.y);
 	}
 
 	// サイズ追加数
@@ -315,9 +320,11 @@ void ParticleEmitter::LoadParticle(const std::string& filePath) {
 	file.close();
 }
 
-void ParticleEmitter::Editor() {
+void ParticleEmitter::Editor(bool beginWindow, bool allowMeshSelection) {
 #ifdef USE_IMGUI
-	ImGui::Begin("Partocle");
+	if (beginWindow) {
+		ImGui::Begin("Particle");
+	}
 	// パーティクルの座標変更
 	ImGui::DragFloat3("translate", &emitter->translate.x, 0.01f, -100.0f, 100.0f);
 	// パーティクルのスケール変更
@@ -325,25 +332,27 @@ void ParticleEmitter::Editor() {
 	// パーティクルの回転変更
 	ImGui::DragFloat3("rotate", &emitter->rotate.x, 0.1f, 0.0f, 3.14f);
 
-	// パーティクルのメッシュ
-	if (ImGui::Button("obj", ImVec2(50, 50))) {
-		SetActive("obj");
-	}
-	ImGui::SameLine(); // 横並びにする
-	if (ImGui::Button("ring", ImVec2(50, 50))) {
-		SetActive("ring");
-	}
-	ImGui::SameLine(); // 横並びにする
-	if (ImGui::Button("cylinder", ImVec2(50, 50))) {
-		SetActive("cylinder");
-	}
-	ImGui::SameLine(); // 横並びにする
-	if (ImGui::Button("cone", ImVec2(50, 50))) {
-		SetActive("cone");
-	}
-	ImGui::SameLine(); // 横並びにする
-	if (ImGui::Button("sphere", ImVec2(50, 50))) {
-		SetActive("sphere");
+	if (allowMeshSelection) {
+		// パーティクルのメッシュ
+		if (ImGui::Button("obj", ImVec2(50, 50))) {
+			SetActive("obj");
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("ring", ImVec2(50, 50))) {
+			SetActive("ring");
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("cylinder", ImVec2(50, 50))) {
+			SetActive("cylinder");
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("cone", ImVec2(50, 50))) {
+			SetActive("cone");
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("sphere", ImVec2(50, 50))) {
+			SetActive("sphere");
+		}
 	}
 
 	// パーティクルの発生数
@@ -561,7 +570,9 @@ void ParticleEmitter::Editor() {
 
 		LoadParticle(path);
 	}
-	ImGui::End();
+	if (beginWindow) {
+		ImGui::End();
+	}
 
 #endif
 }

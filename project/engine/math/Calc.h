@@ -184,5 +184,9 @@ Vector3 GetRotate(const Matrix4x4& matrix);
 Matrix4x4 GetRotateMatrix(const Matrix4x4& matrix);
 // Catmull-Rom スプライン補間（p1 から p2 への移動座標を算出）
 Vector3 CatmullRomSpline(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
-
+// フェードを開始する関数（1回だけ呼び出す）
+void StartFadeIn(bool& isFadeIn,bool& isFadeOut);
+void StartFadeOut(bool& isFadeIn, bool& isFadeOut);
+// 毎フレーム呼び出す更新関数
+void UpdateFade(bool& isFadeIn, bool& isFadeOut,float& intensity);
 

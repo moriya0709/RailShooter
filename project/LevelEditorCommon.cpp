@@ -7,6 +7,14 @@
 #include "Enemy.h"
 #include "Player.h"
 #include "RectTransformComponent.h"
+#include "SpriteRendererComponent.h"
+#include "TextRendererComponent.h"
+#include "RailPointComponent.h"
+#include "ObjectRailMovementComponent.h"
+#include "EasingComponent.h"
+#include "ParticleComponent.h"
+#include "EnemySpawnerComponent.h"
+#include "EnemyNormal.h"
 #include "SceneManager.h"
 #include "CollisionManager.h"
 
@@ -15,12 +23,94 @@
 #include <cstring>
 #include <filesystem>
 #include <random>
+#include <string>
 
 #ifdef USE_IMGUI
 #include <externals/imgui/imgui.h>
 #endif
 
 namespace LevelEditorCommon {
+
+void DrawComponentRemovalInspector(GameObject& object, ObjectData& objectData) {
+#ifdef USE_IMGUI
+	if (!ImGui::CollapsingHeader("Remove Component")) {
+		return;
+	}
+
+	auto removeSerializedComponent = [&objectData](const char* componentName) {
+		std::erase(objectData.components, std::string(componentName));
+	};
+	const bool isMesh = objectData.type == "MESH" || objectData.type == "mesh";
+	const bool isRail = objectData.type == "RAIL" || objectData.type == "rail";
+	const bool isSpawner = objectData.type == "SPAWNER" || objectData.type == "spawner";
+
+	if (object.GetComponent<ModelRendererComponent>()) {
+		if (isMesh || isRail || isSpawner) {
+			ImGui::TextDisabled("Model Renderer is required by this object type");
+		} else if (ImGui::Button("Remove Model Renderer")) {
+			object.RemoveComponent<ModelRendererComponent>();
+			removeSerializedComponent("ModelRenderer");
+		}
+	}
+	if (object.GetComponent<SpriteRendererComponent>() && ImGui::Button("Remove Sprite Renderer")) {
+		object.RemoveComponent<SpriteRendererComponent>();
+		removeSerializedComponent("SpriteRenderer");
+	}
+	if (object.GetComponent<TextRendererComponent>() && ImGui::Button("Remove Text Renderer")) {
+		object.RemoveComponent<TextRendererComponent>();
+		removeSerializedComponent("TextRenderer");
+	}
+	if (object.GetComponent<RectTransformComponent>()) {
+		const bool requiredByUiRenderer = object.GetComponent<SpriteRendererComponent>() || object.GetComponent<TextRendererComponent>();
+		if (requiredByUiRenderer) {
+			ImGui::TextDisabled("Remove Sprite/Text Renderer before Rect Transform");
+		} else if (ImGui::Button("Remove Rect Transform")) {
+			object.RemoveComponent<RectTransformComponent>();
+			removeSerializedComponent("RectTransform");
+		}
+	}
+	if (object.GetComponent<RailPointComponent>()) {
+		if (isRail) {
+			ImGui::TextDisabled("Rail Camera Point is required by a rail object");
+		} else if (ImGui::Button("Remove Rail Camera Point")) {
+			object.RemoveComponent<RailPointComponent>();
+			removeSerializedComponent("RailPoint");
+		}
+	}
+	if (object.GetComponent<ObjectRailMovementComponent>() && ImGui::Button("Remove Object Rail Movement")) {
+		object.RemoveComponent<ObjectRailMovementComponent>();
+		removeSerializedComponent("ObjectRailMovement");
+	}
+	if (object.GetComponent<EasingComponent>() && ImGui::Button("Remove Easing")) {
+		object.RemoveComponent<EasingComponent>();
+		removeSerializedComponent("Easing");
+	}
+	if (object.GetComponent<ParticleComponent>() && ImGui::Button("Remove Particle")) {
+		object.RemoveComponent<ParticleComponent>();
+		removeSerializedComponent("Particle");
+	}
+	if (object.GetComponent<EnemySpawnerComponent>()) {
+		if (isSpawner) {
+			ImGui::TextDisabled("Enemy Spawner is required by a spawner object");
+		} else if (ImGui::Button("Remove Enemy Spawner")) {
+			object.RemoveComponent<EnemySpawnerComponent>();
+			removeSerializedComponent("EnemySpawner");
+		}
+	}
+	if (object.GetComponent<ColliderComponent>() && ImGui::Button("Remove Collider")) {
+		object.RemoveComponent<ColliderComponent>();
+		removeSerializedComponent("Collider");
+	}
+	if (object.GetComponent<EnemyNormal>() && ImGui::Button("Remove Enemy Normal")) {
+		object.RemoveComponent<EnemyNormal>();
+		removeSerializedComponent("EnemyNormal");
+	}
+	ImGui::TextDisabled("Transform, Camera, and Player Controller are required while this scene is active.");
+#else
+	(void)object;
+	(void)objectData;
+#endif
+}
 
 OBB GetColliderOBB(const GameObject* object, const OBB& fallback) {
 	// Existing Player/Enemy colliders remain valid until an editable Collider is attached.
@@ -134,7 +224,7 @@ void UpdateEnemyCollisions(Player& player,
 		const auto& enemyBullets = enemy->GetBullets();
 		for (const auto& bullet : enemyBullets) {
 			if (CheckOBBToOBB(playerObb, bullet->GetOBB())) {
-				player.OnCollision();
+				player.OnCollision(bullet->GetDamage());
 				bullet->OnCollision();
 			}
 		}
@@ -154,7 +244,7 @@ void UpdateEnemyCollisions(Player& player,
 		const auto& enemyBullets = enemy->GetBullets();
 		for (const auto& bullet : enemyBullets) {
 			if (CheckOBBToOBB(playerObb, bullet->GetOBB())) {
-				player.OnCollision();
+				player.OnCollision(bullet->GetDamage());
 				bullet->OnCollision();
 			}
 		}

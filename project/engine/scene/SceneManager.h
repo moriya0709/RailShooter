@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <cassert>
+#include <algorithm>
 #include <memory>
 #include <string>
 
@@ -9,7 +10,9 @@
 class SceneManager {
 public:
 	// 更新
-	void Update();
+	void Update(float deltaTime, float unscaledDeltaTime);
+	void SetTimeScale(float timeScale);
+	float GetTimeScale() const { return timeScale_; }
 	// 描画
 	void Draw2D();
 	void Draw3D();
@@ -41,6 +44,7 @@ private:
 	std::unique_ptr <BaseScene> nextScene_ = nullptr;
 	std::string currentSceneName_;
 	std::string nextSceneName_;
+	float timeScale_ = 1.0f;
 	// シーンファクトリー
 	std::unique_ptr <AbstractSceneFactory> sceneFactory_ = nullptr;
 

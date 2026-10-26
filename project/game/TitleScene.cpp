@@ -10,6 +10,7 @@
 #include "ObjectRailMovementComponent.h"
 #include "EnemySpawnerComponent.h"
 #include "EasingComponent.h"
+#include "ParticleComponent.h"
 #include "EnemyNormal.h"
 #include "SpriteRendererComponent.h"
 #include "TextRendererComponent.h"
@@ -65,9 +66,6 @@ void TitleScene::Initialize() {
 	// 音声再生
 	//SoundManager::GetInstance()->Play("bgm");
 
-	// タイマー
-	gameTimer = std::make_unique<GameTimer>();
-
 	// 当たり判定の線
 	debugLineNormal = std::make_unique<Line>();
 	debugLineNormal->Initialize(camera->GetCamera());
@@ -83,13 +81,11 @@ void TitleScene::Initialize() {
 
 }
 
-void TitleScene::Update() {
+void TitleScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTime) {
 	// 入力取得
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
-	// 時間更新
-	deltaTime = gameTimer->Tick();
 
 	trailEffect->Editor();
 
@@ -206,6 +202,7 @@ void TitleScene::Update() {
 		if (railCamera->IsRailActive()) {
 			isDebugCamera = false;
 		}
+		railCamera->SetDeltaTime(deltaTime);
 		railCamera->Update();
 	}
 
@@ -264,6 +261,7 @@ void TitleScene::Update() {
 	for (auto& enemyObject : enemies) {
 		if (auto* enemy = enemyObject->GetComponent<Enemy>()) {
 			enemy->SetUpdateContext(camera->GetTranslate(), cameraProgress);
+			enemy->SetDeltaTime(deltaTime);
 			enemyObject->Update();
 		}
 	}
@@ -278,6 +276,7 @@ void TitleScene::Update() {
 		}
 		if (auto* enemy = object->GetComponent<Enemy>()) {
 			enemy->SetUpdateContext(camera->GetTranslate(), cameraProgress);
+			enemy->SetDeltaTime(deltaTime);
 		}
 		object->Update();
 	}
@@ -450,6 +449,7 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetTwoColor(isTwoColor);
 	PostEffect::GetInstance()->SetThreshold(threshold);
 	PostEffect::GetInstance()->SetContrast(contrast);
+	PostEffect::GetInstance()->SetGrayscaleProgress(grayscaleProgress);
 	// アウトライン
 	PostEffect::GetInstance()->SetOutline(isOutline);
 	PostEffect::GetInstance()->SetOutlineThreshold(outlineThreshold);
@@ -465,6 +465,14 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetDissolveEdgeColor(dissolveEdgeColor);
 	// ランダムノイズ
 	PostEffect::GetInstance()->SetRandomNoise(isRandomNoise);
+	// アイブリンク
+	PostEffect::GetInstance()->SetEyeBlink(isEyeBlink);
+	PostEffect::GetInstance()->SetEyeBlinkProgress(eyeBlinkProgress);
+	// モニターオフ
+	PostEffect::GetInstance()->SetMonitorOff(isMonitorOff);
+	PostEffect::GetInstance()->SetMonitorOffProgress(monitorOffProgress);
+	PostEffect::GetInstance()->SetMonitorOffCenter(monitorOffCenter);
+
 
 
 #pragma endregion
@@ -587,6 +595,7 @@ void TitleScene::Update() {
 			if (isGrayscale) {
 				// モノクロ
 				ImGui::Checkbox("isTwoColor", &isTwoColor);
+				ImGui::DragFloat("grayscaleProgress", &grayscaleProgress, 0.01f, 0.0f, 1.0f);
 				if (isTwoColor) {
 					ImGui::DragFloat("threshold", &threshold, 0.01f, 0.0f, 1.0f);
 					ImGui::DragFloat("contrast", &contrast, 0.01f, 0.0f, 10.0f);
@@ -753,6 +762,23 @@ void TitleScene::Update() {
 		// ランダムノイズ
 		if (ImGui::TreeNode("isRandomNoise")) {
 			ImGui::Checkbox("OnOff", &isRandomNoise);
+			ImGui::TreePop();
+		}
+		// アイブリンク
+		if (ImGui::TreeNode("isEyeBlink")) {
+			ImGui::Checkbox("OnOff", &isEyeBlink);
+			if (isEyeBlink) {
+				ImGui::DragFloat("eyeBlinkProgress", &eyeBlinkProgress, 0.01f, 0.0f, 1.0f);
+			}
+			ImGui::TreePop();
+		}
+		// モニターオフ
+		if (ImGui::TreeNode("isMonitorOff")) {
+			ImGui::Checkbox("OnOff", &isMonitorOff);
+			if (isMonitorOff) {
+				ImGui::DragFloat("monitorOffProgress", &monitorOffProgress, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat2("monitorOffCenter", &monitorOffCenter.x, 0.01f, -1.0f, 1.0f);
+			}
 			ImGui::TreePop();
 		}
 
@@ -1016,6 +1042,9 @@ void TitleScene::Update() {
 			}
 			if (sourceObject->GetComponent<EasingComponent>()) {
 				copyObject->AddComponent<EasingComponent>()->Configure(copyData.easing);
+			}
+			if (sourceObject->GetComponent<ParticleComponent>()) {
+				copyObject->AddComponent<ParticleComponent>()->Configure(copyData.particle);
 			}
 			if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
 				auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
@@ -1616,6 +1645,13 @@ void TitleScene::Update() {
 					}
 				}
 			}
+			if (auto* particle = selectedObject->GetComponent<ParticleComponent>()) {
+				if (ImGui::CollapsingHeader("Particle", ImGuiTreeNodeFlags_DefaultOpen)) {
+					if (DrawParticleComponentInspector(*particle) && selectedIndex != -1) {
+						level->GetLevelData()->objects[selectedIndex].particle = particle->GetSettings();
+					}
+				}
+			}
 
 			if (auto* animatorComponent = selectedObject->GetComponent<AnimatorComponent>()) {
 				if (ImGui::CollapsingHeader("Animator")) {
@@ -1709,6 +1745,9 @@ void TitleScene::Update() {
 				if (selectedIndex != -1) {
 					LevelEditorCommon::DrawColliderInspector(*collider, level->GetLevelData()->objects[selectedIndex]);
 				}
+			}
+			if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+				LevelEditorCommon::DrawComponentRemovalInspector(*selectedObject, level->GetLevelData()->objects[selectedIndex]);
 			}
 
 			if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size() &&
@@ -1811,6 +1850,11 @@ void TitleScene::Update() {
 					objectData.easing = easingData;
 					selectedObject->AddComponent<EasingComponent>()->Configure(objectData.easing);
 					addSerializedComponent("Easing");
+				}
+				if (!selectedObject->GetComponent<ParticleComponent>() && ImGui::Button("Particle")) {
+					objectData.particle = ParticleComponentData{};
+					selectedObject->AddComponent<ParticleComponent>()->Configure(objectData.particle);
+					addSerializedComponent("Particle");
 				}
 				if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
 					auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();

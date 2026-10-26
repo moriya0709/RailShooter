@@ -19,7 +19,6 @@
 #include "RailCamera.h"
 #include "Level.h"
 #include "GameObject.h"
-#include "GameTimer.h"
 #include "TrailEffect.h"
 #include "Calc.h"
 #include "EnemySpawner.h"
@@ -37,7 +36,7 @@ public:
 	// 初期化
 	void Initialize() override;
 	// 更新
-	void Update() override;
+	void Update(float deltaTime, float unscaledDeltaTime) override;
 	// 描画
 	void Draw2D() override;
 	void Draw3D() override;
@@ -199,9 +198,6 @@ private:
 	// 敵
 	std::vector<std::unique_ptr<GameObject>> enemies;
 	std::vector<std::unique_ptr<GameObject>> pathPreviewObjects; // パス移動の制御点のオブジェクト
-	// タイマー
-	std::unique_ptr<GameTimer> gameTimer = nullptr;
-	float deltaTime;
 
 	// セレクトテキストの表示時間
 	float logoAlphaTime = 0.8f;

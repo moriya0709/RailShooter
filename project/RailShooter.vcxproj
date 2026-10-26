@@ -29,7 +29,7 @@
     <ClCompile Include="EnemyNormal.cpp" />
     <ClCompile Include="EnemyNormalBullet.cpp" />
     <ClCompile Include="EnemySpawner.cpp" />
-	<ClCompile Include="EasingComponent.cpp" />
+    <ClCompile Include="EasingComponent.cpp" />
     <ClCompile Include="engine\3d\AnimationManager.cpp" />
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
     <ClCompile Include="application\rayMarching\RayMarching.cpp" />
@@ -71,7 +71,7 @@
     <ClCompile Include="engine\base\Level.cpp" />
     <ClCompile Include="ImGuiFunction.cpp" />
     <ClCompile Include="LevelEditorCommon.cpp" />
-	<ClCompile Include="LevelObjectFactory.cpp" />
+    <ClCompile Include="LevelObjectFactory.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
@@ -105,6 +105,8 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerBulletMissile.cpp" />
     <ClCompile Include="PlayerBulletNormal.cpp" />
+    <ClCompile Include="ParticleComponent.cpp" />
+    <ClCompile Include="ParticlePreviewEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\shaders\BookUi.DS.hlsl">
@@ -304,7 +306,7 @@
     <ClInclude Include="EnemyNormalBullet.h" />
     <ClInclude Include="EnemySpawner.h" />
     <ClInclude Include="EnemySpawnerComponent.h" />
-	<ClInclude Include="EasingComponent.h" />
+    <ClInclude Include="EasingComponent.h" />
     <ClInclude Include="engine\3d\AnimationManager.h" />
     <ClInclude Include="application\railCamera\RailCamera.h" />
     <ClInclude Include="application\rayMarching\RayMarching.h" />
@@ -346,7 +348,7 @@
     <ClInclude Include="engine\2d\Sprite.h" />
     <ClInclude Include="ImGuiFunction.h" />
     <ClInclude Include="LevelEditorCommon.h" />
-	<ClInclude Include="LevelObjectFactory.h" />
+    <ClInclude Include="LevelObjectFactory.h" />
     <ClInclude Include="SelectScene.h" />
     <ClInclude Include="SpriteRendererComponent.h" />
     <ClInclude Include="TextRendererComponent.h" />
@@ -372,6 +374,8 @@
     <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="PlayerBulletMissile.h" />
     <ClInclude Include="PlayerBulletNormal.h" />
+    <ClInclude Include="ParticleComponent.h" />
+    <ClInclude Include="ParticlePreviewEditor.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TransformComponent.h" />
   </ItemGroup>
@@ -401,10 +405,12 @@
     <None Include="Resource\shaders\postEffect\Dissolve.hlsli" />
     <None Include="Resource\shaders\postEffect\DistanceFog.hlsli" />
     <None Include="Resource\shaders\postEffect\DoF.hlsli" />
+    <None Include="Resource\shaders\postEffect\EyeBlink.hlsli" />
     <None Include="Resource\shaders\postEffect\Grayscale.hlsli" />
     <None Include="Resource\shaders\postEffect\HeightFog.hlsli" />
     <None Include="Resource\shaders\postEffect\Inversion.hlsli" />
     <None Include="Resource\shaders\postEffect\LensFlare.hlsli" />
+    <None Include="Resource\shaders\postEffect\MonitorOff.hlsli" />
     <None Include="Resource\shaders\postEffect\MotionBlur.hlsli" />
     <None Include="Resource\shaders\postEffect\Outline.hlsli" />
     <None Include="Resource\shaders\postEffect\Pinch.hlsli" />

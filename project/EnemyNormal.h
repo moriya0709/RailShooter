@@ -16,6 +16,7 @@ class EnemyNormal : public Enemy {
 public:
 	void Initialize() override;
 	void Update(Vector3 playerPosition, float currentPlayerProgress) override;
+	void SetDeltaTime(float deltaTime) override { deltaTime_ = (std::max)(0.0f, deltaTime); }
 	void Draw() override;
 
 	// 指定した制御点リスト上の座標を算出する関数
@@ -80,6 +81,7 @@ public:
 	// 当たったか
 	bool isHit = false;
 	float hitTimer_ = 0.0f;
+	float deltaTime_ = 1.0f / 60.0f;
 
 	// HP
 	int hp = 1;

@@ -8,6 +8,7 @@
 #include "AnimatorComponent.h"
 #include "RailPointComponent.h"
 #include "ObjectRailMovementComponent.h"
+#include "ParticleComponent.h"
 #include "EnemySpawnerComponent.h"
 #include "EnemyNormal.h"
 #include "SpriteRendererComponent.h"
@@ -64,9 +65,6 @@ void SelectScene::Initialize() {
 	// 音声再生
 	//SoundManager::GetInstance()->Play("bgm");
 
-	// タイマー
-	gameTimer = std::make_unique<GameTimer>();
-
 	// 当たり判定の線
 	debugLineNormal = std::make_unique<Line>();
 	debugLineNormal->Initialize(camera->GetCamera());
@@ -82,13 +80,11 @@ void SelectScene::Initialize() {
 
 }
 
-void SelectScene::Update() {
+void SelectScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTime) {
 	// 入力取得
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
-	// 時間更新
-	deltaTime = gameTimer->Tick();
 
 	trailEffect->Editor();
 
@@ -255,6 +251,7 @@ void SelectScene::Update() {
 		if (railCamera->IsRailActive()) {
 			isDebugCamera = false;
 		}
+		railCamera->SetDeltaTime(deltaTime);
 		railCamera->Update();
 	}
 
@@ -313,6 +310,7 @@ void SelectScene::Update() {
 	for (auto& enemyObject : enemies) {
 		if (auto* enemy = enemyObject->GetComponent<Enemy>()) {
 			enemy->SetUpdateContext(camera->GetTranslate(), cameraProgress);
+			enemy->SetDeltaTime(deltaTime);
 			enemyObject->Update();
 		}
 	}
@@ -324,6 +322,7 @@ void SelectScene::Update() {
 		}
 		if (auto* enemy = object->GetComponent<Enemy>()) {
 			enemy->SetUpdateContext(camera->GetTranslate(), cameraProgress);
+			enemy->SetDeltaTime(deltaTime);
 		}
 		object->Update();
 	}
@@ -932,6 +931,9 @@ void SelectScene::Update() {
 				railMovement->Configure(copyData.objectRailPoints, copyData.objectRailSpeed,
 					copyData.objectRailLoop, copyData.objectRailOrientToPath, copyData.objectRailPlayOnStart,
 					copyData.objectRailPointRotations, copyData.objectRailUsePointRotations);
+			}
+			if (sourceObject->GetComponent<ParticleComponent>()) {
+				copyObject->AddComponent<ParticleComponent>()->Configure(copyData.particle);
 			}
 			if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
 				auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
@@ -1603,6 +1605,13 @@ void SelectScene::Update() {
 					}
 				}
 			}
+			if (auto* particle = selectedObject->GetComponent<ParticleComponent>()) {
+				if (ImGui::CollapsingHeader("Particle", ImGuiTreeNodeFlags_DefaultOpen)) {
+					if (DrawParticleComponentInspector(*particle) && selectedIndex != -1) {
+						level->GetLevelData()->objects[selectedIndex].particle = particle->GetSettings();
+					}
+				}
+			}
 
 			if (auto* spawner = selectedObject->GetComponent<EnemySpawnerComponent>()) {
 				if (ImGui::CollapsingHeader("Enemy Spawner")) {
@@ -1616,6 +1625,9 @@ void SelectScene::Update() {
 				if (selectedIndex != -1) {
 					LevelEditorCommon::DrawColliderInspector(*collider, level->GetLevelData()->objects[selectedIndex]);
 				}
+			}
+			if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+				LevelEditorCommon::DrawComponentRemovalInspector(*selectedObject, level->GetLevelData()->objects[selectedIndex]);
 			}
 
 			if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size() &&
@@ -1694,6 +1706,11 @@ void SelectScene::Update() {
 					objectData.objectRailUsePointRotations = false;
 					objectData.objectRailPlayOnStart = true;
 					addSerializedComponent("ObjectRailMovement");
+				}
+				if (!selectedObject->GetComponent<ParticleComponent>() && ImGui::Button("Particle")) {
+					objectData.particle = ParticleComponentData{};
+					selectedObject->AddComponent<ParticleComponent>()->Configure(objectData.particle);
+					addSerializedComponent("Particle");
 				}
 				if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
 					auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();

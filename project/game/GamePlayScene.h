@@ -19,7 +19,6 @@
 #include "RailCamera.h"
 #include "Level.h"
 #include "GameObject.h"
-#include "GameTimer.h"
 #include "Player.h"
 #include "Calc.h"
 #include "EnemySpawner.h"
@@ -37,7 +36,7 @@ public:
 	// 初期化
 	void Initialize() override;
 	// 更新
-	void Update() override;
+	void Update(float deltaTime, float unscaledDeltaTime) override;
 	// 描画
 	void Draw2D() override;
 	void Draw3D() override;
@@ -64,10 +63,10 @@ private:
 	// *ライティング* //
 
 	// 平行光
-	bool isDirectionalLight = false;
+	bool isDirectionalLight = true;
 	Vector4 DirectionalLightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector3 DirectionalLightDirection = { 0.0f, -1.0f, 0.0f };
-	float DirectionalLightIntensity = 0.0f;
+	float DirectionalLightIntensity = 1.0f;
 	// 環境光
 	bool isAmbientLight = true;
 	Vector4 AmbientLightColor = { 0.2f, 0.2f, 0.2f,1.0f };
@@ -137,7 +136,68 @@ private:
 	int motionBlurSamples = 16; // サンプル数（例：8〜16）
 	float motionBlurScale = 1.0f;   // ブラーの強さ
 
-	float intensity = 1.0f; // エフェクトの強さ
+	// 色収差
+	bool isFullScreenCA = false; // 画面全体の色収差ON/OFF
+	float fullScreenCAIntensity = 0.02f; // 画面全体の色収差の強さ
+	// ビネット
+	bool isVignette = true; // ビネットのON/OFF
+	float vignetteIntensity = 0.5f; // ビネットの強さ
+	Vector3 vignetteColor = { 0.0f, 0.0f, 0.0f };   // 色
+
+	// スピードディストーション
+	bool isSpeedDistortion = false; // スピードディストーションのON/OFF
+	float speedDistortionStrength = 1.0f; // 歪みの強さ
+
+	// 集中線
+	bool isConcentrationLines = false; // ON/OFF
+	float concentrationLineIntensity = 1.0f; // 線の濃さ
+	Vector2 concentrationLineCenter = { 0.5f, 0.5f }; // 中心座標 (通常 0.5, 0.5)
+	float concentrationLineDensity = 10.0f; // 線の密度（本数）
+	float concentrationLineLength = 0.5f; // 線の長さ（中心からの開始距離 0.0〜1.0）
+	float concentrationLineSpeed = 1.0f; // アニメーション速度
+
+	// ピンチエフェクト
+	bool isPinch = false; // ON/OFF
+	float pinchStrength = 0.5f; // 歪みの強さ（正の値で吸い込み、負の値で膨張）
+	Vector2 pinchCenter = { 0.5f, 0.5f }; // 歪みの中心 (通常 0.5, 0.5)
+	float pinchRadius = 0.5f; // 歪みが影響する半径
+
+	// モノクロ
+	bool isTwoColor = false; // 二値化
+	float threshold = 0.5f; // 白と黒の境界値 (0.0~1.0)
+	float contrast = 1.0f; // コントラストの強さ
+	float grayscaleProgress = 0.0f; // 白黒化の進行度 (0.0=カラー, 1.0=完全な白黒)
+
+	// アウトライン
+	bool isOutline = false;  // ON/OFF
+	float outlineThreshold = 0.5f; // 境界値
+	Vector4 outlineColor = { 1.0f, 1.0f, 1.0f, 1.0f };    // 色
+
+	// 平滑化
+	bool isBoxFilter = false;   // ON/OFF
+
+	// ディゾルブ
+	bool isDissolve = false;     // ON/OFF
+	float dissolveThreshold = 0.5f;    // 境界値
+	float dissolveEdgeWidth = 0.1f;    // エッジの幅
+	float dissolveNoiseScale = 1.0f;   // ノイズの細かさ
+
+	Vector3 dissolveNoiseColor = { 0.5f, 0.5f, 0.5f }; // ノイズの色
+	Vector3 dissolveEdgeColor = { 0.0f, 0.0f, 0.0f };   // エッジの色
+
+	// ランダムノイズ
+	bool isRandomNoise = false;  // ON/OFF
+
+	// 目を閉じるエフェクト (アイブリンク)
+	bool isEyeBlink = false; // ON/OFF
+	float eyeBlinkProgress = -0.5f; // 閉じる進行度 (0.0 = 全開, 1.0 = 完全に閉じる)
+
+	// モニターオフ (ブラウン管)
+	bool isMonitorOff = false; // ON/OFF
+	float monitorOffProgress = 0.0f; // 進行度 (0.0 = 通常, 1.0 = 完全に消える)
+	Vector2 monitorOffCenter = { 0.5f, 0.5f }; // 消える最終地点 (X, Y 共に 0.0 ～ 1.0。中央は 0.5, 0.5)
+
+	float intensity = 0.0f; // エフェクトの強さ
 
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
@@ -206,9 +266,6 @@ private:
 	std::unique_ptr<GameObject> defaultPlayerObject = nullptr;
 	GameObject* playerObject = nullptr;
 	Player* player = nullptr;
-	// タイマー
-	std::unique_ptr<GameTimer> gameTimer = nullptr;
-	float deltaTime;
 
 	// 当たり判定の線
 	std::unique_ptr<Line> debugLineNormal;
@@ -225,7 +282,16 @@ private:
 
 	// スタート演出
 	bool isStartAction = true;
-	bool isFadeIn = true;
+	// 開始レールの再生が実際に開始された後だけ、終了判定を有効にする。
+	bool StartRailFirst_ = false;
+	bool isFadeIn = false;
+	bool isFadeOut = false;
+
+	// デス演出
+	bool isDeathAction = false;
+	float deathParticleElapsed_ = 0.0f;
+	float deathSlowTime_ = 1.0f;
+
 
 	// レベルデータからオブジェクト生成、配置
 	void CreateLevel();
@@ -239,5 +305,6 @@ private:
 
 	// Gizmo
 	void GizmoUpdate(bool showEditorControls);
+
 
 };

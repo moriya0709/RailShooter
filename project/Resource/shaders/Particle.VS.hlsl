@@ -20,6 +20,20 @@ VertexShaderOutput main(VSInput input, uint instanceId : SV_InstanceID)
     VertexShaderOutput output;
     Particle p = gParticles[instanceId];
 
+    // パーティクル用バッファは GPU 側で使い回す。未使用スロットは描画対象
+    // ではないため、初期化されていない transform を頂点処理へ渡さない。
+    if (p.isActive == 0)
+    {
+        output.position = float4(2.0f, 2.0f, 1.0f, 1.0f);
+        output.texcoord = input.uv;
+        output.uv = input.uv;
+        output.normal = float3(0.0f, 0.0f, 0.0f);
+        output.color = float4(0.0f, 0.0f, 0.0f, 0.0f);
+        output.useNoise = 0;
+        output.burnColor = float3(0.0f, 0.0f, 0.0f);
+        return output;
+    }
+
     // スケール行列
     matrix scaleMatrix =
     {

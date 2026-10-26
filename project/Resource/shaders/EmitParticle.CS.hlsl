@@ -153,22 +153,22 @@ void main(uint3 DTid : SV_DispatchThreadID)
     gParticles[particleIndex].lifeTime = randomLifeTime;
     gParticles[particleIndex].velocity = randomVelocity;
     gParticles[particleIndex].color = color;
+	// 色補間は常に発生時の色を始点にする。
+    gParticles[particleIndex].startColor = color;
     gParticles[particleIndex].uvScale = uvScale; // UVスケール
     gParticles[particleIndex].uvOffset = uvOffset; // UVオフセット
     
     // 座標
+    // ランダム出現はエミッター（GameObject）の座標からの差分として扱う。
+    // 以前はランダム値をワールド座標としてそのまま代入していたため、
+    // GameObject が遠い位置にあっても原点付近に発生していた。
+    gParticles[particleIndex].translate = translate;
     if (isRandPosition.x)
-        gParticles[particleIndex].translate.x = randomPos.x;
-    else     
-        gParticles[particleIndex].translate.x = translate.x;
+        gParticles[particleIndex].translate.x += randomPos.x;
     if (isRandPosition.y)
-        gParticles[particleIndex].translate.y = randomPos.y;
-    else
-        gParticles[particleIndex].translate.y = translate.y;
+        gParticles[particleIndex].translate.y += randomPos.y;
     if (isRandPosition.z)
-        gParticles[particleIndex].translate.z = randomPos.z;
-    else
-        gParticles[particleIndex].translate.z = translate.z;
+        gParticles[particleIndex].translate.z += randomPos.z;
     
     // スケール
     if (isRandScale.x)

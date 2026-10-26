@@ -17,6 +17,7 @@ public:
 		playerPosition_ = playerPosition;
 		playerProgress_ = playerProgress;
 	}
+	virtual void SetDeltaTime(float) {}
 
 	virtual void Initialize() = 0;
 	virtual void Update(Vector3 playerPosition, float currentPlayerProgress) = 0;

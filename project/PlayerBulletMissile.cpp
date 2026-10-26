@@ -43,9 +43,13 @@ void PlayerBulletMissile::Initialize(const Vector3 position, Enemy* target, cons
 }
 
 void PlayerBulletMissile::Update() {
+	const float frameScale = deltaTime_ * 60.0f;
+	if (frameScale <= 0.0f) {
+		return;
+	}
 	previousTranslate_ = transform.translate;
 	// 寿命タイマーを進める
-	deathTimer += 1.0f / 60.0f;
+	deathTimer += deltaTime_;
 	if (deathTimer >= kLifeTime) {
 		isDead_ = true;
 	}
@@ -75,7 +79,7 @@ void PlayerBulletMissile::Update() {
 				target_ = nullptr;
 			} else {
 				// ★ 修正2: 距離に関係なくホーミングさせる（遠い時は弱く、30以内で強く）
-				float currentHomingPower = (length <= homingDistance) ? 0.3f : 0.05f;
+				float currentHomingPower = ((length <= homingDistance) ? 0.3f : 0.05f) * frameScale;
 
 				Vector3 newDir;
 				newDir.x = Lerp(currentDir.x, dir.x, currentHomingPower);
@@ -98,9 +102,9 @@ void PlayerBulletMissile::Update() {
 	velocity.z = projectileVelocity_.z + inheritedVelocity_.z;
 
 	// 2. 中心軸を速度に従って移動
-	centerPos.x += velocity.x;
-	centerPos.y += velocity.y;
-	centerPos.z += velocity.z;
+	centerPos.x += velocity.x * frameScale;
+	centerPos.y += velocity.y * frameScale;
+	centerPos.z += velocity.z * frameScale;
 
 	// 3. 進行方向（velocity）から垂直な右軸(Right)と上軸(Up)を算出
 	// ... (この部分は変更なしのため省略) ...
@@ -127,7 +131,7 @@ void PlayerBulletMissile::Update() {
 
 	// 4. 螺旋（トルネード）回転のオフセット計算
 	// ※前回の「spiralDirection」を反映しています
-	spiralAngle += spiralSpeed * spiralDirection * (1.0f / 60.0f);
+	spiralAngle += spiralSpeed * spiralDirection * deltaTime_;
 	float cosA = std::cos(spiralAngle);
 	float sinA = std::sin(spiralAngle);
 

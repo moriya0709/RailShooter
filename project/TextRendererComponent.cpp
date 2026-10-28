@@ -8,6 +8,7 @@
 #include "GameObject.h"
 #include "RectTransformComponent.h"
 #include "Sprite.h"
+#include "SpriteCommon.h"
 #include "TextureManager.h"
 
 #pragma comment(lib, "Gdi32.lib")
@@ -187,6 +188,21 @@ void TextRendererComponent::DrawTextSprite() {
 	if (sprite_) {
 		sprite_->Draw();
 	}
+}
+
+void TextRendererComponent::DrawPostEffectMask() {
+	if (!sprite_) {
+		return;
+	}
+	// OFF のときも不透明な文字領域には 0 を書く。これにより背後の空や
+	// モデルのマスク値を上書きし、文字だけを確実に対象外にできる。
+	SpriteCommon::GetInstance()->SetPostEffectMaskPipelineState(enablePostEffect_);
+	if (outlineEnabled_) {
+		for (const auto& outlineSprite : outlineSprites_) {
+			outlineSprite->DrawPostEffectMask();
+		}
+	}
+	sprite_->DrawPostEffectMask();
 }
 
 void TextRendererComponent::SetText(std::string text) {

@@ -13,10 +13,13 @@ public:
 	// ObjectRailMovement より後に Transform を反映する。
 	int GetUpdateOrder() const override { return -50; }
 
-	void SetDeltaTime(float deltaTime);
+	// useGameTime 設定に従い、ゲーム時間または実時間を進行時間に使用する。
+	void SetDeltaTime(float gameDeltaTime, float unscaledDeltaTime);
 	void Restart();
 	void SetPlaying(bool playing) { playing_ = playing; }
 	bool IsPlaying() const { return playing_; }
+	// ループ以外のイージングが終端まで到達しているか。手動Pauseとは区別できる。
+	bool IsFinished() const { return !settings_.loop && progress_ >= 1.0f; }
 	float GetProgress() const { return progress_; }
 
 	EasingData& GetSettings() { return settings_; }

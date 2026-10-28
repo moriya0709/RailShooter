@@ -40,6 +40,7 @@ public:
 	// 描画
 	void Draw2D() override;
 	void Draw3D() override;
+	void DrawPostEffectMask() override;
 	// 終了
 	void Finalize() override;
 

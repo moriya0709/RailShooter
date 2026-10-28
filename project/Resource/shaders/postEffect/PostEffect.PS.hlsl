@@ -28,6 +28,7 @@ Texture2D<float4> gBloom3Texture : register(t3); // 1/8ぼかし
 Texture2D<float> gDepthTexture : register(t4); // 深度はt4に移動
 Texture2D<float4> gLensFlareTexture : register(t5); // レンズフレア
 Texture2D<float2> gVelocityTexture : register(t6); // RGチャンネルのみの想定
+Texture2D<float> gObjectMaskTexture : register(t7); // ポストエフェクト対象オブジェクト
 
 SamplerState gSampler : register(s0);
 
@@ -368,6 +369,19 @@ float4 main(VSOutput input) : SV_TARGET
             float exposure = 1.0f;
             color.rgb = 1.0f - exp(-color.rgb * exposure);
         }
+
+        // マスク外は HDR シーンの元の色を同じトーンマッピングで出力し、
+        // enablePostEffect を有効にしたオブジェクトだけへエフェクト結果を適用する。
+        float4 originalColor = gCurrentTexture.Sample(gSampler, input.uv);
+        if (gEffectData.isACES)
+        {
+            originalColor.rgb = ACESFitted(originalColor.rgb);
+        }
+        else
+        {
+            originalColor.rgb = 1.0f - exp(-originalColor.rgb);
+        }
+        color = lerp(originalColor, color, gObjectMaskTexture.Sample(gSampler, input.uv));
     }
 
     return color;

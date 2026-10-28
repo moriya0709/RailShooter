@@ -27,6 +27,15 @@ void SpriteCommon::SetCommonPipelineState() {
 	dxCommon_->GetCommandList()->SetDescriptorHeaps(1, heaps);
 }
 
+void SpriteCommon::SetPostEffectMaskPipelineState(bool enabled) {
+	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
+	dxCommon_->GetCommandList()->SetPipelineState(
+		enabled ? postEffectMaskPipelineState.Get() : postEffectMaskDisabledPipelineState.Get());
+	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	ID3D12DescriptorHeap* heaps[] = { dxCommon_->srvDescriptorHeap.Get() };
+	dxCommon_->GetCommandList()->SetDescriptorHeaps(1, heaps);
+}
+
 SpriteCommon* SpriteCommon::GetInstance() {
 	if (instance == nullptr) {
 		instance = std::make_unique <SpriteCommon>();
@@ -169,5 +178,22 @@ void SpriteCommon::CreateGraphicsPipeline() {
 	// 実際に生成
 	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&graphicsPipelineState));
+	assert(SUCCEEDED(hr));
+
+	Microsoft::WRL::ComPtr<IDxcBlob> maskPixelShader =
+		dxCommon_->CompileShader(L"Resource/shaders/SpriteMask.PS.hlsl", L"ps_6_0");
+	graphicsPipelineStateDesc.PS = { maskPixelShader->GetBufferPointer(), maskPixelShader->GetBufferSize() };
+	graphicsPipelineStateDesc.BlendState.RenderTarget[0].BlendEnable = FALSE;
+	// モデル用マスクパスと同じ DSV を共有するが、スプライト自身は深度を使用しない。
+	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
+		IID_PPV_ARGS(&postEffectMaskPipelineState));
+	assert(SUCCEEDED(hr));
+
+	Microsoft::WRL::ComPtr<IDxcBlob> disabledMaskPixelShader =
+		dxCommon_->CompileShader(L"Resource/shaders/SpriteMaskDisabled.PS.hlsl", L"ps_6_0");
+	graphicsPipelineStateDesc.PS = { disabledMaskPixelShader->GetBufferPointer(), disabledMaskPixelShader->GetBufferSize() };
+	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
+		IID_PPV_ARGS(&postEffectMaskDisabledPipelineState));
 	assert(SUCCEEDED(hr));
 }

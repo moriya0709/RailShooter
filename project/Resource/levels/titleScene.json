@@ -44,6 +44,7 @@
                 ],
                 "color_override_enabled": true,
                 "color_override_unlit": true,
+                "enable_post_effect": false,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -141,6 +142,7 @@
                 ],
                 "color_override_enabled": true,
                 "color_override_unlit": true,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -275,6 +277,7 @@
                     0.0
                 ],
                 "emissive_intensity": 0.0,
+                "enable_post_effect": true,
                 "font_family": "@HGP創英ﾌﾟﾚｾﾞﾝｽEB",
                 "font_size": 256,
                 "max_width": 0.0,
@@ -406,6 +409,7 @@
                     0.0
                 ],
                 "emissive_intensity": 0.0,
+                "enable_post_effect": true,
                 "font_family": "@HGP創英ﾌﾟﾚｾﾞﾝｽEB",
                 "font_size": 256,
                 "max_width": 0.0,
@@ -537,6 +541,7 @@
                     0.0
                 ],
                 "emissive_intensity": 0.0,
+                "enable_post_effect": false,
                 "font_family": "@HGP創英ﾌﾟﾚｾﾞﾝｽEB",
                 "font_size": 256,
                 "max_width": 0.0,
@@ -668,6 +673,7 @@
                     0.0
                 ],
                 "emissive_intensity": 0.0,
+                "enable_post_effect": false,
                 "font_family": "@HGP創英ﾌﾟﾚｾﾞﾝｽEB",
                 "font_size": 256,
                 "max_width": 0.0,

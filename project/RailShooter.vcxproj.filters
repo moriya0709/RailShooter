@@ -19,6 +19,9 @@
     <FxCompile Include="Resource\shaders\Outline.PS.hlsl">
       <Filter>シェーダー ファイル</Filter>
     </FxCompile>
+    <FxCompile Include="Resource\shaders\PostEffectMask.PS.hlsl">
+      <Filter>シェーダー ファイル</Filter>
+    </FxCompile>
     <FxCompile Include="Resource\shaders\Outline.VS.hlsl">
       <Filter>シェーダー ファイル</Filter>
     </FxCompile>
@@ -44,6 +47,12 @@
       <Filter>シェーダー ファイル</Filter>
     </FxCompile>
     <FxCompile Include="Resource\shaders\Sprite.PS.hlsl">
+      <Filter>シェーダー ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\shaders\SpriteMask.PS.hlsl">
+      <Filter>シェーダー ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\shaders\SpriteMaskDisabled.PS.hlsl">
       <Filter>シェーダー ファイル</Filter>
     </FxCompile>
     <FxCompile Include="Resource\shaders\Sprite.VS.hlsl">
@@ -83,6 +92,9 @@
       <Filter>シェーダー ファイル</Filter>
     </FxCompile>
     <FxCompile Include="Resource\shaders\RayMarching.PS.hlsl">
+      <Filter>シェーダー ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\shaders\RayMarchingMask.PS.hlsl">
       <Filter>シェーダー ファイル</Filter>
     </FxCompile>
     <FxCompile Include="Resource\shaders\RayMarching.VS.hlsl">

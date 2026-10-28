@@ -187,6 +187,9 @@ public:
 	void SetSceneColorRenderTarget();
 	// 描画後処理
 	void PostDraw();
+	// 通常シーンの深度を利用して、ポストエフェクト対象だけをマスクへ描画する。
+	void PreDrawObjectMask();
+	void PostDrawObjectMask();
 	// 最終合成先を指定する。Editor の Game ウィンドウにだけゲーム映像を表示するために使用する。
 	void SetOutputViewport(float left, float top, float width, float height);
 
@@ -320,6 +323,7 @@ private:
 	RenderTarget blurRenderTarget_[2]; // ぼかし用（Ping-Pong処理用）
 	RenderTarget lensFlareRenderTarget_; // レンズフレア
 	RenderTarget velocityRenderTarget_; // ベロシティ
+	RenderTarget objectMaskRenderTarget_; // オブジェクト単位ポストエフェクト用マスク
 	// ビューポート
 	D3D12_VIEWPORT viewport_;
 	// シザー矩形
@@ -356,6 +360,7 @@ private:
 	uint32_t lensFlareSrvIndex_ = 0;
 	// モーションブラー
 	uint32_t velocitySrvIndex_ = 0; // ベロシティバッファ(t6)用
+	uint32_t objectMaskSrvIndex_ = 0; // オブジェクトマスク(t7)用
 	// ダメージエフェクト
 	bool isDamegeFade = true; // フェードアウト
 	float damageEffectRatio_ = 0.0f; // 0.0fでエフェクト無し、1.0fで最大ダメージ表現

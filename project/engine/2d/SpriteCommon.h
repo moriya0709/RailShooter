@@ -13,6 +13,9 @@ public:
 
 	// 共通描画設定
 	void SetCommonPipelineState();
+	// enabled が false の場合は、透明でない部分へマスク値 0 を書き込む。
+	// 背後のレイマーチング等が書いたマスクを上書きするために必要。
+	void SetPostEffectMaskPipelineState(bool enabled = true);
 
 	// シングルトンインスタンスの取得
 	static SpriteCommon* GetInstance();
@@ -37,6 +40,8 @@ private:
 
 	// グラフィックスパイプライン
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> postEffectMaskPipelineState = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> postEffectMaskDisabledPipelineState = nullptr;
 
 	// シングルトンインスタンス
 	static std::unique_ptr <SpriteCommon> instance;

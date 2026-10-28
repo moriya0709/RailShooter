@@ -134,6 +134,25 @@ void ModelRendererComponent::DrawOutline() {
 	model_->Draw(activeTextureOverridePath_, false);
 }
 
+void ModelRendererComponent::DrawPostEffectMask() {
+	if (!model_ || IsCulledByDistance()) {
+		return;
+	}
+
+	if (model_->IsSkinning()) {
+		ObjectCommon::GetInstance()->SetPostEffectMaskAnimationPipelineState();
+		dxCommon_->GetCommandList()->SetGraphicsRootShaderResourceView(
+			15, model_->GetSkinCluster().paletteResource->GetGPUVirtualAddress());
+	} else {
+		ObjectCommon::GetInstance()->SetPostEffectMaskPipelineState();
+	}
+
+	// マスク用 PS は位置だけを使うが、同じ VS / WVP を使い通常描画と深度値を一致させる。
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(
+		1, transformationMatrixResource->GetGPUVirtualAddress());
+	model_->Draw({}, false);
+}
+
 void ModelRendererComponent::SetOutlineThickness(float thickness) {
 	outlineThickness_ = (std::max)(0.0f, thickness);
 	if (outlineData) {

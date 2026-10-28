@@ -130,6 +130,13 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 		velocitySrvIndex_
 	);
 
+	// 選択した GameObject の可視ピクセルを 1 として保持するマスク。
+	objectMaskSrvIndex_ = srvManager_->Allocate(1);
+	objectMaskRenderTarget_ = CreateRenderTarget(
+		dxCommon_->GetDevice(), windowAPI_->kClientWidth, windowAPI_->kClientHeight,
+		DXGI_FORMAT_R8_UNORM, clearColor,
+		dxCommon_->GetRtvHeap(), currentRtvIndex++, dxCommon_->GetSrvHeap(), objectMaskSrvIndex_);
+
 	rtvHandles[0] = renderTarget_.rtvHandle;          // メインカラー (SV_TARGET0)
 	rtvHandles[1] = velocityRenderTarget_.rtvHandle;  // ベロシティ   (SV_TARGET1)
 
@@ -335,6 +342,7 @@ void PostEffect::Draw() {
 	D3D12_GPU_VIRTUAL_ADDRESS cloudCbAddress = RayMarching::GetInstance()->GetCloudParamGPUVirtualAddress();
 	cmdList->SetGraphicsRootConstantBufferView(8, cloudCbAddress); // b2: 太陽と雲パラメータ
 	cmdList->SetGraphicsRootDescriptorTable(9, renderTarget_.srvGpuHandle); // t6: ダミー
+	cmdList->SetGraphicsRootDescriptorTable(10, objectMaskRenderTarget_.srvGpuHandle); // t7: オブジェクトマスク
 
 	cmdList->DrawInstanced(3, 1, 0, 0);
 
@@ -376,6 +384,7 @@ void PostEffect::Draw() {
 			cmdList->SetGraphicsRootDescriptorTable(5, dxCommon_->GetSRVGPUDescriptorHandle(depthSrvIndex_)); // t4: 深度
 			cmdList->SetGraphicsRootDescriptorTable(7, inputSrvX); // t5: ダミー (レンズフレア)
 			cmdList->SetGraphicsRootDescriptorTable(9, inputSrvX); // t6: ダミー (ベロシティ)
+			cmdList->SetGraphicsRootDescriptorTable(10, objectMaskRenderTarget_.srvGpuHandle);
 			
 			cmdList->DrawInstanced(3, 1, 0, 0);
 			TransitionResource(bloomBuffers_[i].blurRenderTarget[0].resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -393,6 +402,7 @@ void PostEffect::Draw() {
 			cmdList->SetGraphicsRootDescriptorTable(5, dxCommon_->GetSRVGPUDescriptorHandle(depthSrvIndex_)); // t4: 深度
 			cmdList->SetGraphicsRootDescriptorTable(7, bloomBuffers_[i].blurRenderTarget[0].srvGpuHandle); // t4: 深度
 			cmdList->SetGraphicsRootDescriptorTable(9, bloomBuffers_[i].blurRenderTarget[0].srvGpuHandle); // t4: 深度
+			cmdList->SetGraphicsRootDescriptorTable(10, objectMaskRenderTarget_.srvGpuHandle);
 			
 			cmdList->DrawInstanced(3, 1, 0, 0);
 
@@ -458,6 +468,7 @@ void PostEffect::Draw() {
 	cmdList->SetGraphicsRootDescriptorTable(5, dxCommon_->GetSRVGPUDescriptorHandle(depthSrvIndex_)); // t4: 深度
 	cmdList->SetGraphicsRootDescriptorTable(7, lensFlareRenderTarget_.srvGpuHandle); // t5: レンズフレア
 	cmdList->SetGraphicsRootDescriptorTable(9, velocityRenderTarget_.srvGpuHandle);// t6: ベロシティマップ
+	cmdList->SetGraphicsRootDescriptorTable(10, objectMaskRenderTarget_.srvGpuHandle);// t7: オブジェクトマスク
 
 	cmdList->DrawInstanced(3, 1, 0, 0);
 
@@ -493,6 +504,23 @@ void PostEffect::PreDraw() {
 void PostEffect::PostDraw() {
 	TransitionResource(renderTarget_.resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	TransitionResource(velocityRenderTarget_.resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+}
+
+void PostEffect::PreDrawObjectMask() {
+	// この時点では深度バッファは通常の DEPTH_WRITE 状態。クリアせずに EQUAL テストで利用する。
+	TransitionResource(objectMaskRenderTarget_.resource.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		D3D12_RESOURCE_STATE_RENDER_TARGET);
+	ID3D12GraphicsCommandList* const commandList = dxCommon_->GetCommandList();
+	const D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dxCommon_->GetDSVHandle();
+	commandList->OMSetRenderTargets(1, &objectMaskRenderTarget_.rtvHandle, FALSE, &dsvHandle);
+	commandList->ClearRenderTargetView(objectMaskRenderTarget_.rtvHandle, clearColor, 0, nullptr);
+	commandList->RSSetViewports(1, &viewport_);
+	commandList->RSSetScissorRects(1, &scissorRect_);
+}
+
+void PostEffect::PostDrawObjectMask() {
+	TransitionResource(objectMaskRenderTarget_.resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
 void PostEffect::SetSceneColorRenderTarget() {
@@ -740,10 +768,16 @@ void PostEffect::CreateRootSignature() {
 	range6[0].BaseShaderRegister = 6;
 	range6[0].RegisterSpace = 0;
 	range6[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	// t7: オブジェクト単位ポストエフェクト用マスク
+	D3D12_DESCRIPTOR_RANGE range7[1] = {};
+	range7[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	range7[0].NumDescriptors = 1;
+	range7[0].BaseShaderRegister = 7;
+	range7[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 
 	// RootParameter を 7つ に拡張
-	D3D12_ROOT_PARAMETER rootParameters[10] = {};
+	D3D12_ROOT_PARAMETER rootParameters[11] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; rootParameters[0].DescriptorTable.pDescriptorRanges = range0; rootParameters[0].DescriptorTable.NumDescriptorRanges = 1; // t0: メイン画像
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; rootParameters[1].Descriptor.ShaderRegister = 0; // b0: 定数バッファ
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; rootParameters[2].DescriptorTable.pDescriptorRanges = range1; rootParameters[2].DescriptorTable.NumDescriptorRanges = 1; // t1: 1/2ブルーム
@@ -775,6 +809,10 @@ void PostEffect::CreateRootSignature() {
 	rootParameters[9].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[9].DescriptorTable.pDescriptorRanges = range6; // ★作った range6 をセット！
 	rootParameters[9].DescriptorTable.NumDescriptorRanges = 1;
+	rootParameters[10].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[10].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[10].DescriptorTable.pDescriptorRanges = range7;
+	rootParameters[10].DescriptorTable.NumDescriptorRanges = 1;
 
 	// Sampler設定
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};

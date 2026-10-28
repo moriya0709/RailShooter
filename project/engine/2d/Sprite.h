@@ -32,6 +32,8 @@ public:
 	void Update();
 	// 描画
 	void Draw();
+	// 現在のテクスチャの不透明部分だけをポストエフェクト用マスクへ描画する。
+	void DrawPostEffectMask();
 
 	// getter
 	const Vector2& GetPosition() const { return position; } // 座標

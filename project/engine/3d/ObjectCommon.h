@@ -18,6 +18,8 @@ public:
 	void SetCommonPipelineState(); // 通常
 	void SetAnimationPipelineState(); // アニメーション
 	void SetOutlinePipelineState(); // アウトライン
+	void SetPostEffectMaskPipelineState();
+	void SetPostEffectMaskAnimationPipelineState();
 	void SetMaterialBlendPipelineState(bool isSkinning, bool isTransparent);
 
 	// シングルトンインスタンスの取得
@@ -57,6 +59,8 @@ private:
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> transparentGraphicsPipelineState = nullptr;
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> transparentAnimationPipelineState = nullptr;
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> outlinePipelineState = nullptr;	// アウトライン用
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> postEffectMaskPipelineState = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> postEffectMaskAnimationPipelineState = nullptr;
 
 	// コンピュートパイプライン
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> computePipelineState = nullptr;
@@ -77,6 +81,7 @@ private:
 	void CreateGraphicsPipeline();			// 通常
 	void CreateGraphicsAnimationPipeline(); // アニメーション
 	void CreateGraphicsOutlinePipeline();	// アウトライン用
+	void CreatePostEffectMaskPipeline();
 	// コンピュートパイプラインの生成
 	void CreateComputePipeline();
 

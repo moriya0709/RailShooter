@@ -52,6 +52,9 @@ public:
 
 	void SetActive(bool active) { activeSelf_ = active; }
 	bool IsActive() const { return activeSelf_; }
+	// true のとき、このオブジェクトの可視ピクセルだけにポストエフェクトを適用する。
+	void SetEnablePostEffect(bool enabled) { enablePostEffect_ = enabled; }
+	bool IsPostEffectEnabled() const { return enablePostEffect_; }
 
 	TransformComponent* GetTransform() { return transform_; }
 	const TransformComponent* GetTransform() const { return transform_; }
@@ -103,6 +106,20 @@ public:
 			}
 			if (components_[index]->IsEnabled()) {
 				components_[index]->Draw();
+			}
+		}
+	}
+
+	// 通常シーンを描いた後、深度テストを使って可視部分だけをマスクへ描く。
+	void DrawPostEffectMask() {
+		if (!activeSelf_ || !enablePostEffect_) {
+			return;
+		}
+		Initialize();
+		for (const auto& component : components_) {
+			if (component->IsEnabled()) {
+				component->StartIfNeeded();
+				component->DrawPostEffectMask();
 			}
 		}
 	}
@@ -195,6 +212,7 @@ private:
 
 	std::string name_;
 	bool activeSelf_ = true;
+	bool enablePostEffect_ = true;
 	bool started_ = false;
 	TransformComponent* transform_ = nullptr;
 	std::vector<std::unique_ptr<Component>> components_;

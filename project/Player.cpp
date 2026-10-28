@@ -20,6 +20,11 @@ void Player::Initialize() {
 		reticle[i]->SetRotation(reticleRotation[i]);
 		reticle[i]->SetSize(reticleSize[i]);
 	}
+
+	// 初期状態を Normal に設定
+	currentState = Normal;
+	// 体力
+	hp_ = 3;
 }
 
 void Player::Update() {

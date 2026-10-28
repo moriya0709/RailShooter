@@ -7,7 +7,8 @@
         "StageRailCamera",
         "StartRailCamera",
         "PlayerHUD",
-        "Particle"
+        "Particle",
+        "DeathUI"
     ],
     "name": "scene",
     "objects": [
@@ -20,9 +21,9 @@
             "name": "MainCamera",
             "transform": {
                 "rotation": [
-                    0.004999999888241291,
-                    0.0,
-                    -6.394999980926514
+                    0.2999979257583618,
+                    13.992913246154785,
+                    0.20943725109100342
                 ],
                 "scaling": [
                     1.0,
@@ -30,9 +31,9 @@
                     1.0
                 ],
                 "translation": [
-                    1998.3079833984375,
-                    -91.86799621582031,
-                    113.21099853515625
+                    18.840835571289063,
+                    238.63943481445313,
+                    132.63951110839844
                 ]
             },
             "type": "EMPTY"
@@ -54,6 +55,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -136,6 +138,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -218,6 +221,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -300,6 +304,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -388,6 +393,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -441,6 +447,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -494,6 +501,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -547,6 +555,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -600,6 +609,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -653,6 +663,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -706,6 +717,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -759,6 +771,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -812,6 +825,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -865,6 +879,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -918,6 +933,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -971,6 +987,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1024,6 +1041,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1077,6 +1095,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1130,6 +1149,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1183,6 +1203,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1236,6 +1257,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1289,6 +1311,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1342,6 +1365,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1395,6 +1419,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1448,6 +1473,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1501,6 +1527,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1554,6 +1581,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1607,6 +1635,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1660,6 +1689,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1713,6 +1743,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1766,6 +1797,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1819,6 +1851,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1872,6 +1905,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1925,6 +1959,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -1978,6 +2013,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2031,6 +2067,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2084,6 +2121,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2137,6 +2175,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2190,6 +2229,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2243,6 +2283,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2296,6 +2337,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2349,6 +2391,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2402,6 +2445,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2455,6 +2499,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2508,6 +2553,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2561,6 +2607,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2614,6 +2661,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2667,6 +2715,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2720,6 +2769,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2773,6 +2823,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2826,6 +2877,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2879,6 +2931,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2932,6 +2985,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2985,6 +3039,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3038,6 +3093,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3091,6 +3147,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3144,6 +3201,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3197,6 +3255,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3250,6 +3309,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3303,6 +3363,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3356,6 +3417,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3409,6 +3471,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3462,6 +3525,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3515,6 +3579,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3568,6 +3633,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3621,6 +3687,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3674,6 +3741,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3727,6 +3795,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3780,6 +3849,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3833,6 +3903,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3886,6 +3957,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3939,6 +4011,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -3992,6 +4065,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4045,6 +4119,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4098,6 +4173,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4151,6 +4227,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4204,6 +4281,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4257,6 +4335,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4310,6 +4389,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4363,6 +4443,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4416,6 +4497,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4469,6 +4551,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4522,6 +4605,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4575,6 +4659,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4628,6 +4713,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4681,6 +4767,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4734,6 +4821,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4787,6 +4875,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4840,6 +4929,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4893,6 +4983,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4946,6 +5037,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -4999,6 +5091,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5052,6 +5145,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5105,6 +5199,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5158,6 +5253,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5211,6 +5307,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5264,6 +5361,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5317,6 +5415,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5370,6 +5469,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5423,6 +5523,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5476,6 +5577,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5529,6 +5631,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5582,6 +5685,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5635,6 +5739,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5680,6 +5785,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5725,6 +5831,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5770,6 +5877,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5815,6 +5923,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5860,6 +5969,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5905,6 +6015,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5952,6 +6063,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -5999,6 +6111,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6046,6 +6159,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6093,6 +6207,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6140,6 +6255,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6187,6 +6303,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6234,6 +6351,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6281,6 +6399,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6328,6 +6447,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6375,6 +6495,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6422,6 +6543,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6469,6 +6591,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6516,6 +6639,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6563,6 +6687,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6610,6 +6735,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6657,6 +6783,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6704,6 +6831,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6751,6 +6879,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6845,7 +6974,8 @@
                     0.800000011920929,
                     0.800000011920929,
                     0.800000011920929
-                ]
+                ],
+                "use_game_time": true
             },
             "group": "PlayerHUD",
             "name": "reticle_1",
@@ -6854,7 +6984,7 @@
                     960.0,
                     440.0
                 ],
-                "rotation": 0.0009656548500061035,
+                "rotation": 5.960464477539063e-08,
                 "scale": [
                     0.9999955892562866,
                     0.9999955892562866
@@ -6956,7 +7086,8 @@
                     1.100000023841858,
                     1.100000023841858,
                     1.100000023841858
-                ]
+                ],
+                "use_game_time": true
             },
             "group": "PlayerHUD",
             "name": "reticle_2",
@@ -7067,7 +7198,8 @@
                     1.100000023841858,
                     1.100000023841858,
                     1.100000023841858
-                ]
+                ],
+                "use_game_time": true
             },
             "group": "PlayerHUD",
             "name": "reticle_3",
@@ -7130,6 +7262,7 @@
                 ],
                 "color_override_enabled": false,
                 "color_override_unlit": false,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -7143,9 +7276,9 @@
             "name": "cockpit",
             "transform": {
                 "rotation": [
-                    0.004999999888241291,
-                    0.0,
-                    -6.394999980926514
+                    0.2999979257583618,
+                    13.992913246154785,
+                    0.20943725109100342
                 ],
                 "scaling": [
                     1.0,
@@ -7153,9 +7286,9 @@
                     1.0
                 ],
                 "translation": [
-                    1998.3079833984375,
-                    -91.86799621582031,
-                    113.21099853515625
+                    18.840835571289063,
+                    238.63943481445313,
+                    132.63951110839844
                 ]
             },
             "type": "EMPTY"
@@ -7175,6 +7308,7 @@
                 ],
                 "color_override_enabled": true,
                 "color_override_unlit": true,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -7268,7 +7402,8 @@
                     6.0,
                     5.0,
                     5.0
-                ]
+                ],
+                "use_game_time": true
             },
             "file_name": "plane.obj",
             "model_renderer": {
@@ -7280,6 +7415,7 @@
                 ],
                 "color_override_enabled": true,
                 "color_override_unlit": true,
+                "enable_post_effect": true,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -7332,8 +7468,8 @@
             },
             "transform": {
                 "rotation": [
-                    0.2328938990831375,
-                    7.692225456237793,
+                    0.2999979257583618,
+                    13.992913246154785,
                     0.20943725109100342
                 ],
                 "scaling": [
@@ -7342,9 +7478,9 @@
                     1.0
                 ],
                 "translation": [
-                    16.221912384033203,
-                    226.31829833984375,
-                    140.46527099609375
+                    18.840835571289063,
+                    238.63943481445313,
+                    132.63951110839844
                 ]
             },
             "type": "EMPTY"
@@ -7371,8 +7507,8 @@
             },
             "transform": {
                 "rotation": [
-                    0.2328938990831375,
-                    7.692225456237793,
+                    0.2999979257583618,
+                    13.992913246154785,
                     0.20943725109100342
                 ],
                 "scaling": [
@@ -7381,9 +7517,1755 @@
                     1.0
                 ],
                 "translation": [
-                    16.221912384033203,
-                    226.31829833984375,
-                    140.46527099609375
+                    18.840835571289063,
+                    238.63943481445313,
+                    132.63951110839844
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easing": {
+                "color": true,
+                "control_point_1": [
+                    0.24310776591300964,
+                    0.9937499761581421
+                ],
+                "control_point_2": [
+                    0.7443609237670898,
+                    0.9937499761581421
+                ],
+                "duration": 1.0,
+                "goal_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "goal_position": [
+                    979.10400390625,
+                    387.62799072265625,
+                    0.0
+                ],
+                "goal_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "goal_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "loop": false,
+                "play_on_start": true,
+                "position": true,
+                "rotation": false,
+                "scale": false,
+                "start_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "start_position": [
+                    960.0,
+                    375.9070129394531,
+                    0.0
+                ],
+                "start_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "start_scale": [
+                    0.8999999761581421,
+                    0.8999999761581421,
+                    0.8999999761581421
+                ],
+                "use_game_time": false
+            },
+            "group": "DeathUI",
+            "name": "GameOverText_1",
+            "rect_transform": {
+                "position": [
+                    979.10400390625,
+                    387.62799072265625
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 15.0,
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": false,
+                "font_family": "HGP創英角ｺﾞｼｯｸUB",
+                "font_size": 195,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 2.0,
+                "text": "GAME OVER"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easing": {
+                "color": false,
+                "control_point_1": [
+                    0.25563910603523254,
+                    1.0
+                ],
+                "control_point_2": [
+                    0.7493734359741211,
+                    1.0
+                ],
+                "duration": 0.5,
+                "goal_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "goal_position": [
+                    450.0,
+                    375.9069519042969,
+                    0.0
+                ],
+                "goal_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "goal_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "loop": false,
+                "play_on_start": true,
+                "position": true,
+                "rotation": false,
+                "scale": false,
+                "start_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0
+                ],
+                "start_position": [
+                    60.900001525878906,
+                    375.9070129394531,
+                    0.0
+                ],
+                "start_rotation": [
+                    0.0,
+                    0.0,
+                    -0.20000000298023224
+                ],
+                "start_scale": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "use_game_time": false
+            },
+            "group": "DeathUI",
+            "name": "GameOverText_2",
+            "rect_transform": {
+                "position": [
+                    450.0,
+                    375.9069519042969
+                ],
+                "rotation": -5.960464477539063e-08,
+                "scale": [
+                    0.9999997019767761,
+                    0.9999997019767761
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 15.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": false,
+                "font_family": "HGP創英角ｺﾞｼｯｸUB",
+                "font_size": 195,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": true,
+                "outline_thickness": 2.0,
+                "text": "G"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    1.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easing": {
+                "color": false,
+                "control_point_1": [
+                    0.2506265640258789,
+                    0.987500011920929
+                ],
+                "control_point_2": [
+                    0.7443609237670898,
+                    0.987500011920929
+                ],
+                "duration": 0.5,
+                "goal_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "goal_position": [
+                    587.0999755859375,
+                    375.9069519042969,
+                    0.0
+                ],
+                "goal_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "goal_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "loop": false,
+                "play_on_start": true,
+                "position": true,
+                "rotation": false,
+                "scale": false,
+                "start_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0
+                ],
+                "start_position": [
+                    587.0999755859375,
+                    723.6279907226563,
+                    0.0
+                ],
+                "start_rotation": [
+                    0.0,
+                    0.0,
+                    -0.20000000298023224
+                ],
+                "start_scale": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "use_game_time": false
+            },
+            "group": "DeathUI",
+            "name": "GameOverText_3",
+            "rect_transform": {
+                "position": [
+                    587.0999755859375,
+                    375.90704345703125
+                ],
+                "rotation": -5.960464477539063e-08,
+                "scale": [
+                    0.9999997019767761,
+                    0.9999997019767761
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 15.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": false,
+                "font_family": "HGP創英角ｺﾞｼｯｸUB",
+                "font_size": 195,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": true,
+                "outline_thickness": 2.0,
+                "text": "A"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    3.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easing": {
+                "color": false,
+                "control_point_1": [
+                    0.2506265640258789,
+                    0.987500011920929
+                ],
+                "control_point_2": [
+                    0.7443609237670898,
+                    0.987500011920929
+                ],
+                "duration": 0.5,
+                "goal_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "goal_position": [
+                    732.7000122070313,
+                    375.9069519042969,
+                    0.0
+                ],
+                "goal_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "goal_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "loop": false,
+                "play_on_start": true,
+                "position": false,
+                "rotation": true,
+                "scale": true,
+                "start_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0
+                ],
+                "start_position": [
+                    732.7000122070313,
+                    166.22799682617188,
+                    0.0
+                ],
+                "start_rotation": [
+                    0.0,
+                    0.0,
+                    -0.4300000071525574
+                ],
+                "start_scale": [
+                    0.699999988079071,
+                    0.699999988079071,
+                    0.699999988079071
+                ],
+                "use_game_time": false
+            },
+            "group": "DeathUI",
+            "name": "GameOverText_4",
+            "rect_transform": {
+                "position": [
+                    732.7000122070313,
+                    375.9068908691406
+                ],
+                "rotation": -1.1920928955078125e-07,
+                "scale": [
+                    0.9999998807907104,
+                    0.9999998807907104
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 15.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": false,
+                "font_family": "HGP創英角ｺﾞｼｯｸUB",
+                "font_size": 195,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": true,
+                "outline_thickness": 2.0,
+                "text": "M"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    4.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easing": {
+                "color": false,
+                "control_point_1": [
+                    0.2506265640258789,
+                    0.987500011920929
+                ],
+                "control_point_2": [
+                    0.7443609237670898,
+                    0.987500011920929
+                ],
+                "duration": 0.5,
+                "goal_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "goal_position": [
+                    872.4000244140625,
+                    375.9069519042969,
+                    0.0
+                ],
+                "goal_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "goal_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "loop": false,
+                "play_on_start": true,
+                "position": true,
+                "rotation": false,
+                "scale": true,
+                "start_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0
+                ],
+                "start_position": [
+                    1438.5009765625,
+                    375.9070129394531,
+                    0.0
+                ],
+                "start_rotation": [
+                    0.0,
+                    0.0,
+                    -0.20000000298023224
+                ],
+                "start_scale": [
+                    1.0,
+                    -1.0,
+                    1.0
+                ],
+                "use_game_time": false
+            },
+            "group": "DeathUI",
+            "name": "GameOverText_5",
+            "rect_transform": {
+                "position": [
+                    872.4002075195313,
+                    375.9069519042969
+                ],
+                "rotation": -5.960464477539063e-08,
+                "scale": [
+                    1.0,
+                    0.9999994039535522
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 15.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": false,
+                "font_family": "HGP創英角ｺﾞｼｯｸUB",
+                "font_size": 195,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": true,
+                "outline_thickness": 2.0,
+                "text": "E"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    5.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easing": {
+                "color": false,
+                "control_point_1": [
+                    0.2506265640258789,
+                    0.987500011920929
+                ],
+                "control_point_2": [
+                    0.7443609237670898,
+                    0.987500011920929
+                ],
+                "duration": 0.5,
+                "goal_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "goal_position": [
+                    1088.5,
+                    375.9069519042969,
+                    0.0
+                ],
+                "goal_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "goal_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "loop": false,
+                "play_on_start": true,
+                "position": true,
+                "rotation": false,
+                "scale": false,
+                "start_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0
+                ],
+                "start_position": [
+                    1088.5,
+                    0.42800000309944153,
+                    0.0
+                ],
+                "start_rotation": [
+                    0.0,
+                    0.0,
+                    -0.20000000298023224
+                ],
+                "start_scale": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "use_game_time": false
+            },
+            "group": "DeathUI",
+            "name": "GameOverText_6",
+            "rect_transform": {
+                "position": [
+                    1088.5,
+                    375.9068298339844
+                ],
+                "rotation": -5.960464477539063e-08,
+                "scale": [
+                    0.9999997019767761,
+                    0.9999997019767761
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 15.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": false,
+                "font_family": "HGP創英角ｺﾞｼｯｸUB",
+                "font_size": 195,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": true,
+                "outline_thickness": 1.0,
+                "text": "O"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    6.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easing": {
+                "color": false,
+                "control_point_1": [
+                    0.2506265640258789,
+                    0.987500011920929
+                ],
+                "control_point_2": [
+                    0.7443609237670898,
+                    0.987500011920929
+                ],
+                "duration": 0.5,
+                "goal_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "goal_position": [
+                    1227.0999755859375,
+                    375.9069519042969,
+                    0.0
+                ],
+                "goal_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "goal_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "loop": false,
+                "play_on_start": true,
+                "position": true,
+                "rotation": false,
+                "scale": false,
+                "start_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0
+                ],
+                "start_position": [
+                    867.0999755859375,
+                    375.9070129394531,
+                    0.0
+                ],
+                "start_rotation": [
+                    0.0,
+                    0.0,
+                    -0.20000000298023224
+                ],
+                "start_scale": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "use_game_time": false
+            },
+            "group": "DeathUI",
+            "name": "GameOverText_7",
+            "rect_transform": {
+                "position": [
+                    1227.099853515625,
+                    375.9069519042969
+                ],
+                "rotation": -5.960464477539063e-08,
+                "scale": [
+                    0.9999997019767761,
+                    0.9999997019767761
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 15.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": false,
+                "font_family": "HGP創英角ｺﾞｼｯｸUB",
+                "font_size": 195,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": true,
+                "outline_thickness": 2.0,
+                "text": "V"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    7.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easing": {
+                "color": false,
+                "control_point_1": [
+                    0.2506265640258789,
+                    0.987500011920929
+                ],
+                "control_point_2": [
+                    0.7443609237670898,
+                    0.987500011920929
+                ],
+                "duration": 0.5,
+                "goal_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "goal_position": [
+                    1349.0,
+                    375.9069519042969,
+                    0.0
+                ],
+                "goal_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "goal_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "loop": false,
+                "play_on_start": true,
+                "position": true,
+                "rotation": false,
+                "scale": true,
+                "start_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0
+                ],
+                "start_position": [
+                    1349.0,
+                    716.5280151367188,
+                    0.0
+                ],
+                "start_rotation": [
+                    0.0,
+                    0.0,
+                    -0.20000000298023224
+                ],
+                "start_scale": [
+                    -1.0,
+                    1.0,
+                    0.0
+                ],
+                "use_game_time": false
+            },
+            "group": "DeathUI",
+            "name": "GameOverText_8",
+            "rect_transform": {
+                "position": [
+                    1349.0,
+                    375.90704345703125
+                ],
+                "rotation": -5.960464477539063e-08,
+                "scale": [
+                    0.9999994039535522,
+                    1.0
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 15.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": false,
+                "font_family": "HGP創英角ｺﾞｼｯｸUB",
+                "font_size": 195,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": true,
+                "outline_thickness": 2.0,
+                "text": "E"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    8.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easing": {
+                "color": false,
+                "control_point_1": [
+                    0.2506265640258789,
+                    0.987500011920929
+                ],
+                "control_point_2": [
+                    0.7443609237670898,
+                    0.987500011920929
+                ],
+                "duration": 0.5,
+                "goal_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "goal_position": [
+                    1476.800048828125,
+                    375.9069519042969,
+                    0.0
+                ],
+                "goal_rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "goal_scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "loop": false,
+                "play_on_start": true,
+                "position": true,
+                "rotation": false,
+                "scale": false,
+                "start_color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0
+                ],
+                "start_position": [
+                    1803.5,
+                    375.9070129394531,
+                    0.0
+                ],
+                "start_rotation": [
+                    0.0,
+                    0.0,
+                    -0.20000000298023224
+                ],
+                "start_scale": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "use_game_time": false
+            },
+            "group": "DeathUI",
+            "name": "GameOverText_9",
+            "rect_transform": {
+                "position": [
+                    1476.8001708984375,
+                    375.9069519042969
+                ],
+                "rotation": -5.960464477539063e-08,
+                "scale": [
+                    0.9999997019767761,
+                    0.9999997019767761
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 15.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": false,
+                "font_family": "HGP創英角ｺﾞｼｯｸUB",
+                "font_size": 195,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": true,
+                "outline_thickness": 2.0,
+                "text": "R"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    9.0,
+                    0.0,
+                    0.0
                 ]
             },
             "type": "EMPTY"
@@ -7473,6 +9355,16 @@
         {
             "direction_mode": 0,
             "name": "PlayerHUD",
+            "preset_sequence": [],
+            "target_position": [
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "direction_mode": 0,
+            "name": "DeathUI",
             "preset_sequence": [],
             "target_position": [
                 0.0,

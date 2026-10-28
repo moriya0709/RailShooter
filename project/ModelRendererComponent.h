@@ -12,6 +12,7 @@ public:
 	void Initialize() override;
 	void Update() override;
 	void Draw() override;
+	void DrawPostEffectMask() override;
 	// 通常描画の後に呼び出す、モデル輪郭専用の描画パス。
 	void DrawOutline();
 

@@ -283,13 +283,59 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 		}
 
 		// スローモーション
-		deathSlowTime_ = Lerp(deathSlowTime_, 0.0f, 0.01f);
+		if(deathSlowTime_ > 0.0f) {
+			deathSlowTime_ -= 1.0f / 180.0f;
+		}
 		SceneManager::GetInstance()->SetTimeScale(deathSlowTime_);
-
 		// グレースケール
-		grayscaleProgress = Lerp(grayscaleProgress, 1.0f, 0.01f);
+		if (grayscaleProgress < 1.0f) {
+			grayscaleProgress += 1.0f / 180.0f;
+		}
 
-		// デス演出
+		if (grayscaleProgress >= 0.8f) {
+			// ゲームオーバーテキスト
+			auto* deathTextObject1 = GameObject::FindByName("GameOverText_1");// 影
+			auto* deathTextObject2 = GameObject::FindByName("GameOverText_2");// G
+			auto* deathTextObject3 = GameObject::FindByName("GameOverText_3");// A
+			auto* deathTextObject4 = GameObject::FindByName("GameOverText_4");// M
+			auto* deathTextObject5 = GameObject::FindByName("GameOverText_5");// E
+			auto* deathTextObject6 = GameObject::FindByName("GameOverText_6");// O
+			auto* deathTextObject7 = GameObject::FindByName("GameOverText_7");// V
+			auto* deathTextObject8 = GameObject::FindByName("GameOverText_8");// E
+			auto* deathTextObject9 = GameObject::FindByName("GameOverText_9");// R
+			deathTextObject2->SetActive(true);
+			deathTextObject3->SetActive(true);
+			deathTextObject4->SetActive(true);
+			deathTextObject5->SetActive(true);
+			deathTextObject6->SetActive(true);
+			deathTextObject7->SetActive(true);
+			deathTextObject8->SetActive(true);
+			deathTextObject9->SetActive(true);
+			auto* deathText9 = deathTextObject9 ? deathTextObject9->GetComponent<EasingComponent>() : nullptr;
+
+			if (deathText9->IsFinished()) {
+				deathTextObject1->SetActive(true);
+			}
+
+			if (grayscaleProgress >= 1.0f) {
+				if (input->TriggerKey(DIK_SPACE)) {
+					isMonitorOff = true;
+				}
+
+				if (isMonitorOff) {
+					monitorOffProgress += 1.0f / 20.0f;
+					// 同じGamePlaySceneを部分的に再初期化すると、死亡済みの
+					// プレイヤーやパーティクルが残る。新しいシーンとして作り直す。
+					if (monitorOffProgress >= 1.0f) {
+						SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+						return;
+					}
+				}
+			}
+
+		}
+
+		// パーティクル
 		if (deathParticle1) {
 			if (auto* transform = deathParticle1->GetTransform()) {
 				transform->SetTranslate(player->GetTranslate());
@@ -300,6 +346,12 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			if (auto* transform = deathParticle2->GetTransform()) {
 				transform->SetTranslate(player->GetTranslate());
 				transform->SetRotate(player->GetRotate());
+			}
+		}
+	} else {
+		if (isMonitorOff) {
+			if (monitorOffProgress > 0.0f) {
+				monitorOffProgress -= 1.0f / 20.0f;
 			}
 		}
 	}
@@ -319,7 +371,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			railMovement->SetDeltaTime(deltaTime);
 		}
 		if (auto* easing = object->GetComponent<EasingComponent>()) {
-			easing->SetDeltaTime(deltaTime);
+			easing->SetDeltaTime(deltaTime, unscaledDeltaTime);
 		}
 		if (object.get() == playerObject) {
 			continue; // 操作対象プレイヤーは上で一度だけ更新する。
@@ -923,6 +975,10 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	ImGui::Checkbox("rayMarchingIsRialLight", &rayMarchingIsRialLight);
 	ImGui::Checkbox("rayMarchingIsAnimeLight", &rayMarchingIsAnimeLight);
 	ImGui::Checkbox("rayMarchingIsMotionBlur", &rayMarchingIsMotionBlur);
+	bool rayMarchingPostEffect = RayMarching::GetInstance()->IsPostEffectEnabled();
+	if (ImGui::Checkbox("RayMarching Post Effect", &rayMarchingPostEffect)) {
+		RayMarching::GetInstance()->SetEnablePostEffect(rayMarchingPostEffect);
+	}
 	ImGui::DragFloat("rayMarchingCloudOpacity", &rayMarchingCloudOpacity, 0.001f, 0.0f, 0.1f);
 	ImGui::Checkbox("isStorm", &isStorm);
 	ImGui::DragFloat("thunderFrequency", &thunderFrequency, 0.001f, 0.0f, 10.0f);
@@ -1326,6 +1382,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			textRenderer->SetOutlineColor(copyData.textOutlineColor);
 			textRenderer->SetEmissive(copyData.textEmissiveColor, copyData.textEmissiveIntensity);
 			textRenderer->SetCharacterSpacing(copyData.textCharacterSpacing);
+			textRenderer->SetEnablePostEffect(copyData.textEnablePostEffect);
 			textRenderer->SetMeshOffsets(copyData.textMeshOffsets);
 		}
 		if (sourceObject->GetComponent<RailPointComponent>()) copyObject->AddComponent<RailPointComponent>();
@@ -1350,6 +1407,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			enemy->SetTransform(copyData.transform);
 		}
 		copyObject->SetActive(copyData.active);
+		copyObject->SetEnablePostEffect(copyData.enablePostEffect);
 		copyObject->Initialize();
 		selectedObject = copyObject.get();
 		levelObjects.push_back(std::move(copyObject));
@@ -1668,6 +1726,13 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					renderer->SetEnabled(enabled);
 				}
 				bool outlineEnabled = renderer->IsOutlineEnabled();
+				bool enablePostEffect = selectedObject->IsPostEffectEnabled();
+				if (ImGui::Checkbox("Enable Post Effect##ModelRenderer", &enablePostEffect)) {
+					selectedObject->SetEnablePostEffect(enablePostEffect);
+					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+						level->GetLevelData()->objects[selectedIndex].enablePostEffect = enablePostEffect;
+					}
+				}
 				if (ImGui::Checkbox("Outline OnOff##ModelRenderer", &outlineEnabled)) {
 					renderer->SetOutlineEnabled(outlineEnabled);
 					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
@@ -1824,6 +1889,15 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				bool enabled = textRenderer->IsEnabled();
 				if (ImGui::Checkbox("Enabled##TextRenderer", &enabled)) {
 					textRenderer->SetEnabled(enabled);
+				}
+				bool enablePostEffect = textRenderer->IsPostEffectEnabled();
+				if (ImGui::Checkbox("Enable Post Effect##TextRenderer", &enablePostEffect)) {
+					textRenderer->SetEnablePostEffect(enablePostEffect);
+					// OFF時も黒いマスクを描いて背後の値を消すため、共通フラグは有効に保つ。
+					selectedObject->SetEnablePostEffect(true);
+					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+						level->GetLevelData()->objects[selectedIndex].textEnablePostEffect = enablePostEffect;
+					}
 				}
 
 				char textBuffer[1024]{};
@@ -2445,6 +2519,21 @@ void GamePlayScene::Draw3D() {
 
 }
 
+void GamePlayScene::DrawPostEffectMask() {
+	for (const auto& object : levelObjects) {
+		object->DrawPostEffectMask();
+	}
+	for (const auto& preview : spawnerPreviewObjects) {
+		preview->DrawPostEffectMask();
+	}
+	for (const auto& preview : pathPreviewObjects) {
+		preview->DrawPostEffectMask();
+	}
+	for (const auto& enemyObject : enemies) {
+		enemyObject->DrawPostEffectMask();
+	}
+}
+
 void GamePlayScene::Finalize() {
 	CameraManager::GetInstance()->RemoveCamera("main");
 }
@@ -2751,6 +2840,7 @@ void GamePlayScene::CreateLevel() {
 			configureEasing(*gameObject, objectData);
 			configureParticle(*gameObject, objectData);
 			gameObject->SetActive(objectData.active);
+			gameObject->SetEnablePostEffect(objectData.enablePostEffect);
 			gameObject->Initialize();
 
 			// 5. コンテナに登録
@@ -2794,6 +2884,7 @@ void GamePlayScene::CreateLevel() {
 			configureEasing(*gameObject, objectData);
 			configureParticle(*gameObject, objectData);
 			gameObject->SetActive(objectData.active);
+			gameObject->SetEnablePostEffect(objectData.enablePostEffect);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
 
@@ -2831,6 +2922,7 @@ void GamePlayScene::CreateLevel() {
 			configureEasing(*gameObject, objectData);
 			configureParticle(*gameObject, objectData);
 			gameObject->SetActive(objectData.active);
+			gameObject->SetEnablePostEffect(objectData.enablePostEffect);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
 		} else if (objectData.type == "EMPTY" || objectData.type == "empty") {
@@ -2894,6 +2986,7 @@ void GamePlayScene::CreateLevel() {
 				textRenderer->SetOutlineColor(objectData.textOutlineColor);
 				textRenderer->SetEmissive(objectData.textEmissiveColor, objectData.textEmissiveIntensity);
 				textRenderer->SetCharacterSpacing(objectData.textCharacterSpacing);
+				textRenderer->SetEnablePostEffect(objectData.textEnablePostEffect);
 				textRenderer->SetMeshOffsets(objectData.textMeshOffsets);
 			}
 			if (hasComponent("RailPoint")) {
@@ -2929,6 +3022,7 @@ void GamePlayScene::CreateLevel() {
 			configureEasing(*gameObject, objectData);
 			configureParticle(*gameObject, objectData);
 			gameObject->SetActive(objectData.active);
+			gameObject->SetEnablePostEffect(objectData.enablePostEffect);
 			gameObject->Initialize();
 			levelObjects.push_back(std::move(gameObject));
 		}

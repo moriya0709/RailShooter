@@ -39,6 +39,9 @@ void SceneManager::Draw2D() {
 void SceneManager::Draw3D() {
 	scene_->Draw3D();
 }
+void SceneManager::DrawPostEffectMask() {
+	scene_->DrawPostEffectMask();
+}
 
 SceneManager* SceneManager::GetInstance() {
 	if (instance == nullptr) {

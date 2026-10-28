@@ -13,6 +13,8 @@ public:
 	virtual void Initialize() {}
 	virtual void Update() {}
 	virtual void Draw() {}
+	// ポストエフェクト対象を識別するマスク用の描画。対応する Renderer だけがオーバーライドする。
+	virtual void DrawPostEffectMask() {}
 	// 値が小さいコンポーネントほど先に Update される。移動系が描画用の
 	// Transform を更新してから Renderer が行列を作れるようにするための順序。
 	virtual int GetUpdateOrder() const { return 0; }

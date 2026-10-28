@@ -270,6 +270,8 @@ struct EasingData {
 	Vector2 controlPoint1 = { 0.25f, 0.25f };
 	Vector2 controlPoint2 = { 0.75f, 0.75f };
 	float duration = 1.0f;
+	// true: シーンの timeScale を反映したゲーム時間、false: timeScale の影響を受けない実時間。
+	bool useGameTime = true;
 	bool loop = false;
 	bool playOnStart = true;
 };
@@ -313,6 +315,8 @@ struct ObjectData {
 	Vector3 textEmissiveColor = { 1.0f, 1.0f, 1.0f };
 	float textEmissiveIntensity = 0.0f;
 	float textCharacterSpacing = 0.0f;
+	// テキスト単位のポストエフェクト対象設定。通常描画は常に行う。
+	bool textEnablePostEffect = true;
 	// Pixel offsets for a 4x4 grid, in row-major order from top-left to bottom-right.
 	std::array<Vector2, 16> textMeshOffsets = {};
     Transform transform;
@@ -332,6 +336,8 @@ struct ObjectData {
 	float lodLowDistance = 600.0f;
 	// ModelRenderer のモデル輪郭を描画するかどうか。
 	bool modelOutlineEnabled = false;
+	// true のとき、通常描画後に深度付きマスクへ描かれ、ポストエフェクト対象になる。
+	bool enablePostEffect = true;
 	float modelOutlineThickness = 0.01f;
 	Vector4 modelOutlineColor = { 1.0f, 0.0f, 0.0f, 1.0f };
 	// Shared model data is never modified: this is a per-GameObject render override.

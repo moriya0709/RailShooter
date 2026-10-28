@@ -18,6 +18,10 @@ public:
 	void Initialize() override;
 	void Update() override;
 	void Draw() override {}
+	void DrawPostEffectMask() override;
+	// テキストだけをポストエフェクト対象にするか。通常描画には影響しない。
+	void SetEnablePostEffect(bool enabled) { enablePostEffect_ = enabled; }
+	bool IsPostEffectEnabled() const { return enablePostEffect_; }
 	// Call from a 2D draw pass after SpriteCommon has been configured.
 	void DrawTextSprite();
 
@@ -74,5 +78,6 @@ private:
 	float characterSpacing_ = 0.0f;
 	bool bold_ = false;
 	bool outlineEnabled_ = false;
+	bool enablePostEffect_ = true;
 	bool dirty_ = true;
 };

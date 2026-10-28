@@ -184,6 +184,10 @@ void Sprite::Draw() {
 
 }
 
+void Sprite::DrawPostEffectMask() {
+	Draw();
+}
+
 // テクスチャ変更
 void Sprite::ChangeTexture(const std::string& textureFilePath) {
 	textureFilePath_ = textureFilePath;

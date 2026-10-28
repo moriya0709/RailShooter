@@ -55,6 +55,8 @@ public:
 	void Initialize(SrvManager* srvManager, WindowAPI* windowAPI_);
 	// 描画
 	void Draw();
+	// 雲の不透明ピクセルをポストエフェクト用マスクへ描画する。
+	void DrawPostEffectMask();
 
 	// カメラ更新
 	void Update(Camera* camera);
@@ -80,6 +82,8 @@ public:
 	void SetFogHeight(float fogHeight) { cloudParam->fogHeight = fogHeight; }
 	void SetFogScattering(float fogScattering) { cloudParam->fogScattering = fogScattering; }
 	void SetFogColor(Vector3 fogColor) { cloudParam->fogColor = fogColor; }
+	void SetEnablePostEffect(bool enabled) { enablePostEffect_ = enabled; }
+	bool IsPostEffectEnabled() const { return enablePostEffect_; }
 
 	// getter
 	Vector3 GetSunDir() { return cloudParam->sunDir; }
@@ -112,6 +116,7 @@ private:
 
 	// グラフィックスパイプライン
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> postEffectMaskPipelineState = nullptr;
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> computePipelineState = nullptr;
 
 	// UAV
@@ -134,6 +139,7 @@ private:
 	DirectX::XMFLOAT3 cloudOffset = { 0.0f, 0.0f, 0.0f };
 	// 初回実行判定用フラグ
 	bool isFirstFrame = true;
+	bool enablePostEffect_ = true;
 
 	// CSが直接書き込む出力テクスチャ
 	Microsoft::WRL::ComPtr<ID3D12Resource> cloudColorTexture;

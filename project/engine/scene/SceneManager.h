@@ -16,6 +16,7 @@ public:
 	// 描画
 	void Draw2D();
 	void Draw3D();
+	void DrawPostEffectMask();
 
 	// フレーム途中で破棄しないよう、切り替え要求は次回 Update 冒頭まで保留する。
 	void SetNextScene(std::unique_ptr <BaseScene> nextScene) { nextScene_ = move(nextScene); }

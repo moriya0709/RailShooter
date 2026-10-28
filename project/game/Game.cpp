@@ -154,6 +154,16 @@ void Game::Draw() {
 	// 2DをHDRシーンバッファへ描画する。これによりエミッシブ文字もブルーム対象になる。
 	PostEffect::GetInstance()->SetSceneColorRenderTarget();
 	SceneManager::GetInstance()->Draw2D();
+	// 3D・雲・パーティクル・2Dテキストのすべてを描き終えた後にマスクを作る。
+	// モデルは既存の深度を EQUAL で比較するため、隠れた面はマスクに現れない。
+	PostEffect::GetInstance()->PreDrawObjectMask();
+	// 空・雲は背景として先に書く。後から描くモデルと2Dテキストのマスクが
+	// 前景として上書きされるため、テキストのOFF(値0)も確実に残る。
+	if (RayMarching::GetInstance()->IsPostEffectEnabled()) {
+		RayMarching::GetInstance()->DrawPostEffectMask();
+	}
+	SceneManager::GetInstance()->DrawPostEffectMask();
+	PostEffect::GetInstance()->PostDrawObjectMask();
 
 	// ポストエフェクト描画
 	PostEffect::GetInstance()->PostDraw();

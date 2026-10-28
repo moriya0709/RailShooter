@@ -89,6 +89,33 @@ void RayMarching::Draw() {
 	commandList->DrawInstanced(3, 1, 0, 0);
 }
 
+void RayMarching::DrawPostEffectMask() {
+	// Development 構成では assert が無効なため、PSO生成に失敗しても
+	// nullptr を D3D12 に渡さない。
+	if (!postEffectMaskPipelineState) {
+		return;
+	}
+
+	auto commandList = dxCommon_->GetCommandList();
+	auto device = dxCommon_->GetDevice();
+	commandList->SetPipelineState(postEffectMaskPipelineState.Get());
+	commandList->SetGraphicsRootSignature(rootSignature.Get());
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap.Get() };
+	commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+	commandList->SetGraphicsRootConstantBufferView(0, cloudParamResource->GetGPUVirtualAddress());
+
+	const UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	D3D12_GPU_DESCRIPTOR_HANDLE colorGpuHandle = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	colorGpuHandle.ptr += descriptorSize * outputSrvIndex_;
+	commandList->SetGraphicsRootDescriptorTable(1, colorGpuHandle);
+	// ルートシグネチャと整合させるため速度テクスチャも設定する（マスクPSでは未使用）。
+	D3D12_GPU_DESCRIPTOR_HANDLE velocityGpuHandle = colorGpuHandle;
+	velocityGpuHandle.ptr += descriptorSize;
+	commandList->SetGraphicsRootDescriptorTable(2, velocityGpuHandle);
+	commandList->DrawInstanced(3, 1, 0, 0);
+}
+
 void RayMarching::Update(Camera* camera) {
 	// カメラ座標
 	cloudParam->cameraPos = camera->GetTranslate();
@@ -380,6 +407,24 @@ void RayMarching::CreateGraphicsPipeline() {
 	// 実際に生成
 	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&graphicsPipelineState));
+	assert(SUCCEEDED(hr));
+
+	Microsoft::WRL::ComPtr<IDxcBlob> maskPixelShader =
+		dxCommon_->CompileShader(L"Resource/shaders/RayMarchingMask.PS.hlsl", L"ps_6_0");
+	graphicsPipelineStateDesc.PS = { maskPixelShader->GetBufferPointer(), maskPixelShader->GetBufferSize() };
+	graphicsPipelineStateDesc.NumRenderTargets = 1;
+	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8_UNORM;
+	// NumRenderTargets を 1 にしたので、以前のベロシティ用RTV形式を残してはいけない。
+	// 残すと PSO の生成が失敗し、Development 構成では nullptr のままになる。
+	graphicsPipelineStateDesc.RTVFormats[1] = DXGI_FORMAT_UNKNOWN;
+	graphicsPipelineStateDesc.BlendState.RenderTarget[0].BlendEnable = FALSE;
+	graphicsPipelineStateDesc.DepthStencilState.DepthEnable = FALSE;
+	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
+		IID_PPV_ARGS(&postEffectMaskPipelineState));
+	if (FAILED(hr)) {
+		postEffectMaskPipelineState.Reset();
+		OutputDebugStringA("[RayMarching] Failed to create the post-effect mask PSO.\n");
+	}
 	assert(SUCCEEDED(hr));
 }
 

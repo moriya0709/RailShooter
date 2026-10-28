@@ -40,6 +40,7 @@ public:
 	// 描画
 	void Draw2D() override;
 	void Draw3D() override;
+	void DrawPostEffectMask() override;
 	// 終了
 	void Finalize() override;
 
@@ -291,6 +292,9 @@ private:
 	bool isDeathAction = false;
 	float deathParticleElapsed_ = 0.0f;
 	float deathSlowTime_ = 1.0f;
+	float alpha = 0.0f;
+	float textAlphaTime = 0.8f;
+	float effectTime = 0.0f;
 
 
 	// レベルデータからオブジェクト生成、配置

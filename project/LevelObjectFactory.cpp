@@ -154,6 +154,7 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 				textRenderer->SetOutlineColor(objectData.textOutlineColor);
 				textRenderer->SetEmissive(objectData.textEmissiveColor, objectData.textEmissiveIntensity);
 				textRenderer->SetCharacterSpacing(objectData.textCharacterSpacing);
+				textRenderer->SetEnablePostEffect(objectData.textEnablePostEffect);
 				textRenderer->SetMeshOffsets(objectData.textMeshOffsets);
 			}
 			if (HasComponent(objectData, "RailPoint")) {
@@ -181,6 +182,7 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 		ConfigureParticle(*gameObject, objectData);
 
 		gameObject->SetActive(objectData.active);
+		gameObject->SetEnablePostEffect(objectData.enablePostEffect);
 		gameObject->Initialize();
 		destination.push_back(std::move(gameObject));
 	}

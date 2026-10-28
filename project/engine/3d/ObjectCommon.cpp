@@ -15,6 +15,7 @@ void ObjectCommon::Initialize(DirectXCommon* dxCommon) {
 	CreateGraphicsPipeline();			// 通常
 	CreateGraphicsAnimationPipeline();	// アニメーション
 	CreateGraphicsOutlinePipeline();	// アウトライン用
+	CreatePostEffectMaskPipeline();
 	// コンピュートパイプラインの生成
 	CreateComputePipeline();
 }
@@ -50,6 +51,18 @@ void ObjectCommon::SetOutlinePipelineState() {
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
 	dxCommon_->GetCommandList()->SetPipelineState(outlinePipelineState.Get()); // PSOを設定
 	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけ良い
+	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void ObjectCommon::SetPostEffectMaskPipelineState() {
+	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
+	dxCommon_->GetCommandList()->SetPipelineState(postEffectMaskPipelineState.Get());
+	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void ObjectCommon::SetPostEffectMaskAnimationPipelineState() {
+	dxCommon_->GetCommandList()->SetGraphicsRootSignature(animationRootSignature.Get());
+	dxCommon_->GetCommandList()->SetPipelineState(postEffectMaskAnimationPipelineState.Get());
 	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
@@ -638,6 +651,56 @@ void ObjectCommon::CreateGraphicsOutlinePipeline() {
 	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&outlinePipelineState));
 	assert(SUCCEEDED(hr));
+}
+
+void ObjectCommon::CreatePostEffectMaskPipeline() {
+	Microsoft::WRL::ComPtr<IDxcBlob> maskPixelShader =
+		dxCommon_->CompileShader(L"Resource/shaders/PostEffectMask.PS.hlsl", L"ps_6_0");
+	assert(maskPixelShader != nullptr);
+
+	auto createPipeline = [this, &maskPixelShader](
+		ID3D12RootSignature* rootSignatureForPipeline,
+		const D3D12_INPUT_LAYOUT_DESC& inputLayout,
+		IDxcBlob* vertexShader,
+		Microsoft::WRL::ComPtr<ID3D12PipelineState>* destination) {
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
+		desc.pRootSignature = rootSignatureForPipeline;
+		desc.InputLayout = inputLayout;
+		desc.VS = { vertexShader->GetBufferPointer(), vertexShader->GetBufferSize() };
+		desc.PS = { maskPixelShader->GetBufferPointer(), maskPixelShader->GetBufferSize() };
+		desc.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		desc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
+		desc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
+		desc.DepthStencilState = dxCommon_->depthStencilDesc;
+		// 通常描画が残した深度と一致するピクセルだけを出力し、深度は変更しない。
+		desc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_EQUAL;
+		desc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+		desc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		desc.NumRenderTargets = 1;
+		desc.RTVFormats[0] = DXGI_FORMAT_R8_UNORM;
+		desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		desc.SampleDesc.Count = 1;
+		desc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+		ID3D12PipelineState* pipelineState = nullptr;
+		HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(
+			&desc, IID_PPV_ARGS(&pipelineState));
+		assert(SUCCEEDED(hr));
+		destination->Attach(pipelineState);
+	};
+
+	D3D12_INPUT_LAYOUT_DESC staticInputLayout{};
+	staticInputLayout.pInputElementDescs = inputElementDescs;
+	staticInputLayout.NumElements = _countof(inputElementDescs);
+	Microsoft::WRL::ComPtr<IDxcBlob> staticVertexShader =
+		dxCommon_->CompileShader(L"Resource/shaders/Object3D.VS.hlsl", L"vs_6_0");
+	createPipeline(rootSignature.Get(), staticInputLayout, staticVertexShader.Get(), &postEffectMaskPipelineState);
+
+	D3D12_INPUT_LAYOUT_DESC skinningInputLayout{};
+	skinningInputLayout.pInputElementDescs = animationInputElementDescs;
+	skinningInputLayout.NumElements = _countof(animationInputElementDescs);
+	Microsoft::WRL::ComPtr<IDxcBlob> skinningVertexShader =
+		dxCommon_->CompileShader(L"Resource/shaders/SkinningObject3d.VS.hlsl", L"vs_6_0");
+	createPipeline(animationRootSignature.Get(), skinningInputLayout, skinningVertexShader.Get(), &postEffectMaskAnimationPipelineState);
 }
 
 void ObjectCommon::CreateComputePipeline() {

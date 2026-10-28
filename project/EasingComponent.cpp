@@ -16,8 +16,9 @@ void EasingComponent::Configure(const EasingData& data) {
 	playing_ = settings_.playOnStart;
 }
 
-void EasingComponent::SetDeltaTime(float deltaTime) {
-	deltaTime_ = (std::max)(0.0f, deltaTime);
+void EasingComponent::SetDeltaTime(float gameDeltaTime, float unscaledDeltaTime) {
+	const float selectedDeltaTime = settings_.useGameTime ? gameDeltaTime : unscaledDeltaTime;
+	deltaTime_ = (std::max)(0.0f, selectedDeltaTime);
 }
 
 void EasingComponent::Restart() {
@@ -209,6 +210,10 @@ bool DrawEasingComponentInspector(EasingComponent& component) {
 	}
 
 	changed |= ImGui::DragFloat("Duration (sec)##Easing", &settings.duration, 0.01f, 0.01f, 3600.0f);
+	changed |= ImGui::Checkbox("Use Game Time##Easing", &settings.useGameTime);
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("On: affected by the scene time scale. Off: uses unscaled real time.");
+	}
 	changed |= ImGui::Checkbox("Loop##Easing", &settings.loop);
 	changed |= ImGui::Checkbox("Play On Start##Easing", &settings.playOnStart);
 	if (ImGui::Button("Restart##Easing")) component.Restart();

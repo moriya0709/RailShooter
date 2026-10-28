@@ -103,6 +103,7 @@ void Level::LoadJson(const std::string fileName) {
 			newData.maxDrawDistance = object.value("max_draw_distance", newData.maxDrawDistance);
 			if (object.contains("model_renderer")) {
 				newData.modelOutlineEnabled = object["model_renderer"].value("outline_enabled", newData.modelOutlineEnabled);
+				newData.enablePostEffect = object["model_renderer"].value("enable_post_effect", newData.enablePostEffect);
 				newData.modelOutlineThickness = object["model_renderer"].value("outline_thickness", newData.modelOutlineThickness);
 				newData.modelColorOverrideEnabled = object["model_renderer"].value("color_override_enabled", newData.modelColorOverrideEnabled);
 				newData.modelColorOverrideUnlit = object["model_renderer"].value("color_override_unlit", newData.modelColorOverrideUnlit);
@@ -157,6 +158,7 @@ void Level::LoadJson(const std::string fileName) {
 				newData.textOutlineThickness = textRenderer.value("outline_thickness", newData.textOutlineThickness);
 				newData.textEmissiveIntensity = textRenderer.value("emissive_intensity", newData.textEmissiveIntensity);
 				newData.textCharacterSpacing = textRenderer.value("character_spacing", newData.textCharacterSpacing);
+				newData.textEnablePostEffect = textRenderer.value("enable_post_effect", newData.textEnablePostEffect);
 				if (textRenderer.contains("mesh_offsets") && textRenderer["mesh_offsets"].is_array()) {
 					const auto& meshOffsets = textRenderer["mesh_offsets"];
 					if (meshOffsets.size() == newData.textMeshOffsets.size()) {
@@ -244,6 +246,7 @@ void Level::LoadJson(const std::string fileName) {
 				newData.easing.animateScale = easing.value("scale", newData.easing.animateScale);
 				newData.easing.animateColor = easing.value("color", newData.easing.animateColor);
 				newData.easing.duration = easing.value("duration", newData.easing.duration);
+				newData.easing.useGameTime = easing.value("use_game_time", newData.easing.useGameTime);
 				newData.easing.loop = easing.value("loop", newData.easing.loop);
 				newData.easing.playOnStart = easing.value("play_on_start", newData.easing.playOnStart);
 				auto readVector3 = [&easing](const char* key, Vector3& value) {
@@ -404,6 +407,7 @@ void Level::SaveJson(const std::string fileName) {
 		}
 		if (std::find(obj.components.begin(), obj.components.end(), "ModelRenderer") != obj.components.end()) {
 			newObjJson["model_renderer"]["outline_enabled"] = obj.modelOutlineEnabled;
+			newObjJson["model_renderer"]["enable_post_effect"] = obj.enablePostEffect;
 			newObjJson["model_renderer"]["outline_thickness"] = obj.modelOutlineThickness;
 			newObjJson["model_renderer"]["outline_color"] = { obj.modelOutlineColor.x, obj.modelOutlineColor.y, obj.modelOutlineColor.z, obj.modelOutlineColor.w };
 			newObjJson["model_renderer"]["color_override_enabled"] = obj.modelColorOverrideEnabled;
@@ -452,6 +456,7 @@ void Level::SaveJson(const std::string fileName) {
 			newObjJson["text_renderer"]["emissive_color"] = { obj.textEmissiveColor.x, obj.textEmissiveColor.y, obj.textEmissiveColor.z };
 			newObjJson["text_renderer"]["emissive_intensity"] = obj.textEmissiveIntensity;
 			newObjJson["text_renderer"]["character_spacing"] = obj.textCharacterSpacing;
+			newObjJson["text_renderer"]["enable_post_effect"] = obj.textEnablePostEffect;
 			newObjJson["text_renderer"]["mesh_offsets"] = nlohmann::json::array();
 			for (const Vector2& offset : obj.textMeshOffsets) {
 				newObjJson["text_renderer"]["mesh_offsets"].push_back({ offset.x, offset.y });
@@ -480,6 +485,7 @@ void Level::SaveJson(const std::string fileName) {
 			easing["scale"] = obj.easing.animateScale;
 			easing["color"] = obj.easing.animateColor;
 			easing["duration"] = obj.easing.duration;
+			easing["use_game_time"] = obj.easing.useGameTime;
 			easing["loop"] = obj.easing.loop;
 			easing["play_on_start"] = obj.easing.playOnStart;
 			easing["start_position"] = { obj.easing.startPosition.x, obj.easing.startPosition.y, obj.easing.startPosition.z };

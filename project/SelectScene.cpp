@@ -10,6 +10,7 @@
 #include "ObjectRailMovementComponent.h"
 #include "ParticleComponent.h"
 #include "EnemySpawnerComponent.h"
+#include "EasingComponent.h"
 #include "EnemyNormal.h"
 #include "SpriteRendererComponent.h"
 #include "TextRendererComponent.h"
@@ -80,7 +81,7 @@ void SelectScene::Initialize() {
 
 }
 
-void SelectScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTime) {
+void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 	// 入力取得
 	auto input = Input::GetInstance();
 	// カメラ更新
@@ -319,6 +320,9 @@ void SelectScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTi
 	for (auto& object : levelObjects) {
 		if (auto* railMovement = object->GetComponent<ObjectRailMovementComponent>()) {
 			railMovement->SetDeltaTime(deltaTime);
+		}
+		if (auto* easing = object->GetComponent<EasingComponent>()) {
+			easing->SetDeltaTime(deltaTime, unscaledDeltaTime);
 		}
 		if (auto* enemy = object->GetComponent<Enemy>()) {
 			enemy->SetUpdateContext(camera->GetTranslate(), cameraProgress);
@@ -687,6 +691,10 @@ void SelectScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTi
 		ImGui::Checkbox("rayMarchingIsRialLight", &rayMarchingIsRialLight);
 		ImGui::Checkbox("rayMarchingIsAnimeLight", &rayMarchingIsAnimeLight);
 		ImGui::Checkbox("rayMarchingIsMotionBlur", &rayMarchingIsMotionBlur);
+		bool rayMarchingPostEffect = RayMarching::GetInstance()->IsPostEffectEnabled();
+		if (ImGui::Checkbox("RayMarching Post Effect", &rayMarchingPostEffect)) {
+			RayMarching::GetInstance()->SetEnablePostEffect(rayMarchingPostEffect);
+		}
 		ImGui::DragFloat("rayMarchingCloudOpacity", &rayMarchingCloudOpacity, 0.001f, 0.0f, 0.1f);
 		ImGui::Checkbox("isStorm", &isStorm);
 		ImGui::DragFloat("thunderFrequency", &thunderFrequency, 0.001f, 0.0f, 10.0f);
@@ -923,6 +931,7 @@ void SelectScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTi
 				textRenderer->SetOutlineColor(copyData.textOutlineColor);
 				textRenderer->SetEmissive(copyData.textEmissiveColor, copyData.textEmissiveIntensity);
 				textRenderer->SetCharacterSpacing(copyData.textCharacterSpacing);
+				textRenderer->SetEnablePostEffect(copyData.textEnablePostEffect);
 				textRenderer->SetMeshOffsets(copyData.textMeshOffsets);
 			}
 			if (sourceObject->GetComponent<RailPointComponent>()) copyObject->AddComponent<RailPointComponent>();
@@ -944,6 +953,7 @@ void SelectScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTi
 				enemy->SetTransform(copyData.transform);
 			}
 			copyObject->SetActive(copyData.active);
+		copyObject->SetEnablePostEffect(copyData.enablePostEffect);
 			copyObject->Initialize();
 			selectedObject = copyObject.get();
 			levelObjects.push_back(std::move(copyObject));
@@ -1257,6 +1267,13 @@ void SelectScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTi
 						renderer->SetEnabled(enabled);
 					}
 					bool outlineEnabled = renderer->IsOutlineEnabled();
+					bool enablePostEffect = selectedObject->IsPostEffectEnabled();
+					if (ImGui::Checkbox("Enable Post Effect##ModelRenderer", &enablePostEffect)) {
+						selectedObject->SetEnablePostEffect(enablePostEffect);
+						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+							level->GetLevelData()->objects[selectedIndex].enablePostEffect = enablePostEffect;
+						}
+					}
 					if (ImGui::Checkbox("Outline OnOff##ModelRenderer", &outlineEnabled)) {
 						renderer->SetOutlineEnabled(outlineEnabled);
 						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
@@ -1413,6 +1430,15 @@ void SelectScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTi
 					if (ImGui::Checkbox("Enabled##TextRenderer", &enabled)) {
 						textRenderer->SetEnabled(enabled);
 					}
+				bool enablePostEffect = textRenderer->IsPostEffectEnabled();
+				if (ImGui::Checkbox("Enable Post Effect##TextRenderer", &enablePostEffect)) {
+					textRenderer->SetEnablePostEffect(enablePostEffect);
+					// OFF時も黒いマスクを書き、背後のレイマーチングのマスクを消す。
+					selectedObject->SetEnablePostEffect(true);
+					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+						level->GetLevelData()->objects[selectedIndex].textEnablePostEffect = enablePostEffect;
+					}
+				}
 
 					char textBuffer[1024]{};
 					strncpy_s(textBuffer, textRenderer->GetText().c_str(), _TRUNCATE);
@@ -1959,6 +1985,21 @@ void SelectScene::Draw3D() {
 		}
 	}
 
+}
+
+void SelectScene::DrawPostEffectMask() {
+	for (const auto& object : levelObjects) {
+		object->DrawPostEffectMask();
+	}
+	for (const auto& preview : spawnerPreviewObjects) {
+		preview->DrawPostEffectMask();
+	}
+	for (const auto& preview : pathPreviewObjects) {
+		preview->DrawPostEffectMask();
+	}
+	for (const auto& enemyObject : enemies) {
+		enemyObject->DrawPostEffectMask();
+	}
 }
 
 void SelectScene::Finalize() {

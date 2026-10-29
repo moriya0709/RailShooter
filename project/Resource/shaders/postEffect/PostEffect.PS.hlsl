@@ -18,6 +18,7 @@
 #include "RandomNoise.hlsli"
 #include "EyeBlink.hlsli"
 #include "MonitorOff.hlsli"
+#include "Glitch.hlsli"
 
 //* 上記のファイルで何故か日本語が使えない *//
 
@@ -107,7 +108,7 @@ struct EffectData
     int isVignette; // ビネットのON/OFF
     float vignetteIntensity; // ビネットの強さ
     
-    float3 vignetteColor;   // 色
+    float3 vignetteColor; // 色
     float pad7;
     
     
@@ -141,29 +142,29 @@ struct EffectData
     float grayscaleProgress; // 白黒化の進行度 (0.0=カラー, 1.0=完全な白黒)
     
     // アウトライン
-    int isOutline;  // ON/OFF
+    int isOutline; // ON/OFF
     float outlineThreshold; // 境界値
     float2 pad11;
     
-    float4 outlineColor;    // 色
+    float4 outlineColor; // 色
     
     // 平滑化
-    int isBoxFilter;   // ON/OFF
+    int isBoxFilter; // ON/OFF
     float3 pad12;
     
     // ディゾルブ
-    int isDissolve;     // ON/OFF
-    float dissolveThreshold;    // 境界値
-    float dissolveEdgeWidth;    // エッジの幅
-    float dissolveNoiseScale;   // ノイズの細かさ
+    int isDissolve; // ON/OFF
+    float dissolveThreshold; // 境界値
+    float dissolveEdgeWidth; // エッジの幅
+    float dissolveNoiseScale; // ノイズの細かさ
     
     float3 dissolveNoiseColor; // ノイズの色
     float pad14;
-    float3 dissolveEdgeColor;   // エッジの色
+    float3 dissolveEdgeColor; // エッジの色
     float pad15;
     
     // ランダムノイズ
-    int isRandomNoise;  // ON/OFF
+    int isRandomNoise; // ON/OFF
     float3 pad16;
     
     // 目を閉じるエフェクト (アイブリンク)
@@ -176,6 +177,12 @@ struct EffectData
     float monitorOffProgress; // 進行度 (0.0 = 通常, 1.0 = 完全に消える)
     float2 monitorOffCenter; // 消える最終地点 (X, Y 共に 0.0 ～ 1.0。中央は 0.5, 0.5)
     
+    // グリッチノイズ
+    int isGlitch; // ON/OFF
+    float glitchIntensity; // 歪みと色ズレの強さ (0.0 ～ 1.0)
+    float glitchWaveSpeed; // アニメーションの波の速さ (目安: 5.0f 程度)
+    float glitchWaveThreshold; // エフェクトが止まる境界値 (0.0fにすると常に止まらない)
+
 };
 ConstantBuffer<EffectData> gEffectData : register(b0);
 
@@ -235,6 +242,12 @@ float4 main(VSOutput input) : SV_TARGET
     // 通常描画＆最終合成
     if (gPassId == 0)
     {
+        // グリッチノイズ
+        if (gEffectData.isGlitch)
+        {
+            // ベースカラーをグリッチで歪んだ色で上書きする
+            color.rgb = ApplyGlitch(input.uv,gCurrentTexture,gSampler,gEffectData.time,gEffectData.glitchIntensity,gEffectData.glitchWaveSpeed,gEffectData.glitchWaveThreshold);
+        }
         
         // スピードディストーション
         if (gEffectData.isSpeedDistortion)
@@ -301,7 +314,7 @@ float4 main(VSOutput input) : SV_TARGET
         // ビネット
         if (gEffectData.isVignette)
         {
-            color.rgb = Vignette(color, gEffectData.vignetteIntensity, gEffectData.vignetteColor,input.uv);
+            color.rgb = Vignette(color, gEffectData.vignetteIntensity, gEffectData.vignetteColor, input.uv);
         }
 
         // ディスタンスフォグ

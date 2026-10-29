@@ -160,6 +160,12 @@ struct EffectData {
 	float monitorOffProgress; // 進行度 (0.0 = 通常, 1.0 = 完全に消える)
 	Vector2 monitorOffCenter; // 消える最終地点 (X, Y 共に 0.0 ～ 1.0。中央は 0.5, 0.5)
 
+	// グリッチノイズ
+	int isGlitch; // ON/OFF
+	float glitchIntensity; // 歪みと色ズレの強さ (0.0 ～ 1.0)
+	float glitchWaveSpeed;      // アニメーションの波の速さ (目安: 5.0f 程度)
+	float glitchWaveThreshold;  // エフェクトが止まる境界値 (0.0fにすると常に止まらない)
+	
 };
 
 // 各パスのレンダーターゲットとSRVインデックスをまとめる構造体
@@ -288,6 +294,11 @@ public:
 	void SetMonitorOff(bool isMonitorOff) { effectData->isMonitorOff = isMonitorOff; }
 	void SetMonitorOffProgress(float progress) { effectData->monitorOffProgress = progress; }
 	void SetMonitorOffCenter(const Vector2& center) { effectData->monitorOffCenter = center; }
+	// グリッチノイズ
+	void SetGlitch(bool isGlitch) { effectData->isGlitch = isGlitch; }
+	void SetGlitchIntensity(float intensity) { effectData->glitchIntensity = intensity; }
+	void SetGlitchWaveSpeed(float speed) { effectData->glitchWaveSpeed = speed; }
+	void SetGlitchWaveThreshold(float threshold) { effectData->glitchWaveThreshold = threshold; }
 
 	// エフェクトの強さ
 	void SetIntensity(float intensity) { effectData->intensity = intensity; }

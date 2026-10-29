@@ -192,19 +192,14 @@ void Player::RemoveBulletTarget(const Enemy* enemy) {
 void Player::OnCollision(int damage) {
 	hitTimer_ = 0.2f; // 衝突時に0.2秒間（60FPSで約12フレーム）タイマーをセット
 
-	if (hp_ <= 0) {
-		currentState = Death;
-		return;
-	}
-
 	hp_ = (std::max)(0, hp_ - damage);
-	// HP が 0 になった被弾そのもので死亡状態へ遷移する。
-	// 以前は次の被弾まで Death にならず、デスパーティクルも起動しなかった。
-	if (hp_ == 0) {
-		currentState = Death;
-	}
+	//if (hp_ == 0) {
+	//	currentState = Death;
+	//	return;
+	//}
 
-	//PostEffect::GetInstance()->SetDamageEffectRatio(1.0f);
+	PostEffect::GetInstance()->SetDamageEffectRatio(0.4f);
+	CameraManager::GetInstance()->GetActiveCamera()->StartShake(0.5f, 0.2f);
 }
 
 OBB Player::GetOBB() {

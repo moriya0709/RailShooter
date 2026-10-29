@@ -84,7 +84,7 @@ public:
 	float deltaTime_ = 1.0f / 60.0f;
 
 	// HP
-	int hp = 1;
+	int hp = 100;
 
 };
 

@@ -1,4 +1,6 @@
-﻿#include "Camera.h"
+﻿#include <random>
+
+#include "Camera.h"
 #include "WindowAPI.h"
 #include "Input.h"
 
@@ -17,15 +19,46 @@ Camera::Camera()
 {}
 
 void Camera::Update() {
+	Vector3 effectiveTranslate = transform.translate;
+
+	// シェイクの更新処理
+	if (isShake_) {
+		// 1フレームの経過時間を引く (※ 60FPS固定を想定。可変フレームレートの場合はdeltaTimeを引数で渡してください)
+		shakeTimer_ -= 1.0f / 60.0f;
+
+		if (shakeTimer_ <= 0.0f) {
+			// シェイク終了
+			isShake_ = false;
+			shakeOffset_ = { 0.0f, 0.0f, 0.0f };
+		} else {
+			// 乱数生成器 (パフォーマンスを考慮するならメンバ変数として保持しても良いです)
+			std::random_device rd;
+			std::mt19937 gen(rd());
+			std::uniform_real_distribution<float> dis(-shakeMagnitude_, shakeMagnitude_);
+
+			// 時間経過による揺れの減衰 (徐々に揺れを小さくする)
+			float power = shakeTimer_ / shakeDuration_;
+
+			shakeOffset_.x = dis(gen) * power;
+			shakeOffset_.y = dis(gen) * power;
+			shakeOffset_.z = dis(gen) * power;
+
+			// 計算用の座標にオフセットを足す
+			effectiveTranslate.x += shakeOffset_.x;
+			effectiveTranslate.y += shakeOffset_.y;
+			effectiveTranslate.z += shakeOffset_.z;
+		}
+	}
+
 	// ビュー行列
-	worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, effectiveTranslate);
 	viewMatrix = Inverse(worldMatrix);
 
 	// プロジェクション行列
-	projectionMatrix = MakePerspectiveFovMatrix(fovY_,aspectRatio_,nearClip_,farClip_);
+	projectionMatrix = MakePerspectiveFovMatrix(fovY_, aspectRatio_, nearClip_, farClip_);
 
 	// 合成行列
-	viewProjectionMatrix = Multiply(viewMatrix,projectionMatrix);
+	viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 
 }
 
@@ -77,6 +110,13 @@ void Camera::DebugCameraUpdate() {
 
 	// 変動した Transform をもとに行列を再計算[cite: 5]
 	Update();
+}
+
+void Camera::StartShake(float duration, float magnitude) {
+	isShake_ = true;
+	shakeDuration_ = duration;
+	shakeTimer_ = duration;
+	shakeMagnitude_ = magnitude;
 }
 
 // シングルトンインスタンスの取得

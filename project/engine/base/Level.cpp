@@ -303,7 +303,10 @@ void Level::LoadJson(const std::string fileName) {
 				newData.components.push_back("ModelRenderer");
 			}
 
-			// SPAWNER だった場合、spawnDataList をJSONから復元する
+			// SPAWNER だった場合、起動範囲と spawnDataList をJSONから復元する。
+			if (objType == "SPAWNER" || objType == "spawner") {
+				newData.spawnDistance = object.value("spawnDistance", 20.0f);
+			}
 			if ((objType == "SPAWNER" || objType == "spawner") && object.contains("spawnDataList")) {
 				for (const auto& spawnItem : object["spawnDataList"]) {
 					SpawnData data;
@@ -314,7 +317,8 @@ void Level::LoadJson(const std::string fileName) {
 					data.offset.y = (float)spawnItem["offset"][1];
 					data.offset.z = (float)spawnItem["offset"][2];
 
-					data.type = spawnItem["type"].get<std::string>();
+					data.type = spawnItem.value("type", std::string{"NORMAL"});
+					data.enemyTemplate = spawnItem.value("enemyTemplate", std::string{});
 
 					// movePattern があれば読み込む（なければ STRAIGHT）
 					if (spawnItem.contains("movePattern")) {
@@ -535,6 +539,7 @@ void Level::SaveJson(const std::string fileName) {
 		// SPAWNER だった場合のみ、spawnDataList をJSON配列として保存
 		if (obj.type == "SPAWNER" || obj.type == "spawner") {
 			nlohmann::json spawnArray = nlohmann::json::array();
+			newObjJson["spawnDistance"] = obj.spawnDistance;
 
 			for (const auto& spawn : obj.spawnDataList) {
 				nlohmann::json spawnItem;
@@ -545,6 +550,9 @@ void Level::SaveJson(const std::string fileName) {
 
 				// type の保存d
 				spawnItem["type"] = spawn.type;
+				if (!spawn.enemyTemplate.empty()) {
+					spawnItem["enemyTemplate"] = spawn.enemyTemplate;
+				}
 				// movePattern の保存
 				spawnItem["movePattern"] = spawn.movePattern;
 

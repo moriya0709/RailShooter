@@ -426,6 +426,7 @@
     <None Include="Resource\shaders\postEffect\DistanceFog.hlsli" />
     <None Include="Resource\shaders\postEffect\DoF.hlsli" />
     <None Include="Resource\shaders\postEffect\EyeBlink.hlsli" />
+    <None Include="Resource\shaders\postEffect\Glitch.hlsli" />
     <None Include="Resource\shaders\postEffect\Grayscale.hlsli" />
     <None Include="Resource\shaders\postEffect\HeightFog.hlsli" />
     <None Include="Resource\shaders\postEffect\Inversion.hlsli" />

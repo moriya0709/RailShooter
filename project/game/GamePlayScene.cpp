@@ -102,8 +102,10 @@ void GamePlayScene::Initialize() {
 	trailEffect = std::make_shared<TrailEffect>();
 	trailEffect->Initialize("Resource/trail/trail.png", trailTransform, width, trailMaxLifeTime);
 
-	//	フェードイン
+	// フェードイン
 	StartFadeIn(isFadeIn, isFadeOut);
+	isGlitch = true;
+	PostEffect::GetInstance()->SetGlitch(isGlitch);
 
 }
 
@@ -348,12 +350,6 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				transform->SetRotate(player->GetRotate());
 			}
 		}
-	} else {
-		if (isMonitorOff) {
-			if (monitorOffProgress > 0.0f) {
-				monitorOffProgress -= 1.0f / 20.0f;
-			}
-		}
 	}
 
 	// シーンに存在するすべての敵の更新処理
@@ -455,36 +451,45 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	// スタート演出
 
 	// HUDの演出
-	if (isStartAction && !isFadeIn) {
+	if (isStartAction) {
 		auto* reticle_1 = GameObject::FindByName("reticle_1");
 		auto* reticle_2 = GameObject::FindByName("reticle_2");
 		auto* reticle_3 = GameObject::FindByName("reticle_3");
 		auto* monitor_1 = GameObject::FindByName("monitor_1");
-		auto* monitorAction_1 = GameObject::FindByName("monitorAction_1");
-
+		
 		auto* reticle_1Easing = reticle_1->GetComponent<EasingComponent>();
 		auto* reticle_2Easing = reticle_2->GetComponent<EasingComponent>();
 		auto* reticle_3Easing = reticle_3->GetComponent<EasingComponent>();
-		auto* monitorActionEasing = monitorAction_1->GetComponent<EasingComponent>();
-
-		reticle_1->SetActive(true);
+		
+		if (!isGlitch) {
+			reticle_1->SetActive(true);
+		}
 		if (reticle_1Easing && !reticle_1Easing->IsPlaying()) {
 			reticle_2->SetActive(true);
 		}
 		if (reticle_2Easing && !reticle_2Easing->IsPlaying()) {
 			reticle_3->SetActive(true);
 		}
-		if (reticle_3Easing && !reticle_3Easing->IsPlaying()) {
-			monitor_1->SetActive(false);
-			monitorAction_1->SetActive(true);
+
+		// グリッチノイズ
+		if (isGlitch) {
+			if (glitchIntensity > 0.0f) {
+				glitchIntensity -= 1.0f / fadeTime;
+			} else {
+				isGlitch = false;
+				PostEffect::GetInstance()->SetGlitch(isGlitch);
+			}
+			PostEffect::GetInstance()->SetGlitchIntensity(glitchIntensity);
 		}
-		if (monitorActionEasing && !monitorActionEasing->IsPlaying() &&
-			!StartRailFirst_ && !railCamera->IsRailActive()) {
+
+		if (reticle_3Easing && !reticle_3Easing->IsPlaying() && !StartRailFirst_ && !railCamera->IsRailActive()) {
 			railCamera->StartRail();
 			StartRailFirst_ = railCamera->IsRailActive();
 			if (StartRailFirst_) {
 				isRadialBlur = true;
 			}
+			fadeTime = 30.0f;
+			cockpit->SetEnablePostEffect(true);
 		}
 
 		const std::string& groupName = level->GetLevelData()->activeRailCameraGroup;
@@ -515,7 +520,6 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					reticle_1->SetActive(false);
 					reticle_2->SetActive(false);
 					reticle_3->SetActive(false);
-					monitorAction_1->SetActive(false);
 
 					StartFadeIn(isFadeIn, isFadeOut);
 				} else {
@@ -528,7 +532,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	}
 
 	// フェード処理
-	UpdateFade(isFadeIn, isFadeOut, intensity);
+	UpdateFade(isFadeIn, isFadeOut, intensity, fadeTime);
 
 #pragma region ライティング
 	// *ライティング* //
@@ -606,11 +610,11 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
 	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
 	// 色収差
-	PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
-	PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
+	//PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
+	//PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
 	// ビネット
-	PostEffect::GetInstance()->SetVignette(isVignette);
-	PostEffect::GetInstance()->SetVignetteIntensity(vignetteIntensity);
+	//PostEffect::GetInstance()->SetVignette(isVignette);
+	//PostEffect::GetInstance()->SetVignetteIntensity(vignetteIntensity);
 	PostEffect::GetInstance()->SetVignetteColor(vignetteColor);
 	// スピードディストーション
 	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
@@ -654,6 +658,8 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	PostEffect::GetInstance()->SetMonitorOff(isMonitorOff);
 	PostEffect::GetInstance()->SetMonitorOffProgress(monitorOffProgress);
 	PostEffect::GetInstance()->SetMonitorOffCenter(monitorOffCenter);
+	// エフェクトの強さ
+	PostEffect::GetInstance()->SetIntensity(intensity);
 
 #pragma endregion
 
@@ -1045,7 +1051,14 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					ImGui::EndCombo();
 				}
 
-				// Y軸回転（Yaw）の調整ドラッグバーを追加
+				// X軸回転（Pitch: 上下）の調整
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(80.0f);
+				if (ImGui::DragFloat("Pitch", &item.localRotate.x, 1.0f, -360.0f, 360.0f, "%.0f deg")) {
+					sequenceChanged = true;
+				}
+
+				// Y軸回転（Yaw: 左右）の調整
 				ImGui::SameLine();
 				ImGui::SetNextItemWidth(80.0f);
 				if (ImGui::DragFloat("Yaw", &item.localRotate.y, 1.0f, -360.0f, 360.0f, "%.0f deg")) {
@@ -1400,7 +1413,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 		}
 		if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
 			auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
-			spawner->Configure(copyData.spawnDataList, spawnDistance, railCamera.get());
+			spawner->Configure(copyData.spawnDataList, copyData.spawnDistance, railCamera.get());
 		}
 		if (sourceObject->GetComponent<Enemy>()) {
 			auto* enemy = copyObject->AddComponent<EnemyNormal>();
@@ -2251,7 +2264,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			}
 			if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
 				auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();
-				spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+				spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, railCamera.get());
 				addSerializedComponent("EnemySpawner");
 			}
 			if ((objectData.type == "EMPTY" || objectData.type == "empty") &&
@@ -2312,8 +2325,13 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			if (auto* spawnerComponent = selectedObject->GetComponent<EnemySpawnerComponent>()) {
 				ImGui::Separator();
 				ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "◆ Spawner Settings");
+				if (ImGui::DragFloat("Activation Range", &currentObjData.spawnDistance, 0.5f, 0.0f, 10000.0f, "%.1f")) {
+					spawnerComponent->SetSpawnDistance(currentObjData.spawnDistance);
+				}
+				ImGui::SameLine();
+				ImGui::TextDisabled("camera distance");
 				if (ImGui::Button("Apply Spawner Settings")) {
-					spawnerComponent->SetSpawnList(currentObjData.spawnDataList);
+					spawnerComponent->Configure(currentObjData.spawnDataList, currentObjData.spawnDistance, railCamera.get());
 				}
 
 				if (ImGui::Button("Add Enemy to Spawner")) {
@@ -2339,6 +2357,13 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					ImGui::DragFloat("Spawn Time(s)", &sData.spawnTime, 0.1f, 0.0f, 100.0f);
 					// 2. 座標オフセット
 					ImGui::DragFloat3("Offset XYZ", &sData.offset.x, 0.1f);
+					// EnemyNormal を持つ EMPTY 名を指定すると、下の旧 Type より優先して
+					// その EMPTY のモデル・見た目を複製してスポーンする。
+					char enemyTemplateName[128]{};
+					strncpy_s(enemyTemplateName, sData.enemyTemplate.c_str(), _TRUNCATE);
+					if (ImGui::InputText("Enemy Template (EMPTY)", enemyTemplateName, IM_ARRAYSIZE(enemyTemplateName))) {
+						sData.enemyTemplate = enemyTemplateName;
+					}
 
 					// 3. 敵のタイプ（Comboボックス）
 					// 現在の sData.type が、配列の何番目と一致するかを探す
@@ -2911,7 +2936,7 @@ void GamePlayScene::CreateLevel() {
 
 			// ゲームロジック用のスポナーも同じ GameObject にアタッチする。
 			auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
-			spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+			spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, railCamera.get());
 			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
 				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
 				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
@@ -3008,7 +3033,7 @@ void GamePlayScene::CreateLevel() {
 			}
 			if (hasComponent("EnemySpawner")) {
 				auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
-				spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+				spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, railCamera.get());
 			}
 			if (hasComponent("Player")) {
 				player = gameObject->AddComponent<Player>();

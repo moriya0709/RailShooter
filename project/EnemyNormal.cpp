@@ -32,8 +32,8 @@ void EnemyNormal::Initialize() {
 		auto* renderer = GetGameObject()->GetComponent<ModelRendererComponent>();
 		if (!renderer) {
 			renderer = GetGameObject()->AddComponent<ModelRendererComponent>();
+			renderer->SetModel("ball.gltf");
 		}
-		renderer->SetModel("ball.gltf");
 	}
 
 	// 初期位置を保持

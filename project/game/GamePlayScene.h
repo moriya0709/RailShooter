@@ -141,9 +141,9 @@ private:
 	bool isFullScreenCA = false; // 画面全体の色収差ON/OFF
 	float fullScreenCAIntensity = 0.02f; // 画面全体の色収差の強さ
 	// ビネット
-	bool isVignette = true; // ビネットのON/OFF
+	bool isVignette = false; // ビネットのON/OFF
 	float vignetteIntensity = 0.5f; // ビネットの強さ
-	Vector3 vignetteColor = { 0.0f, 0.0f, 0.0f };   // 色
+	Vector3 vignetteColor = { 1.0f, 0.0f, 0.0f };   // 色
 
 	// スピードディストーション
 	bool isSpeedDistortion = false; // スピードディストーションのON/OFF
@@ -191,12 +191,16 @@ private:
 
 	// 目を閉じるエフェクト (アイブリンク)
 	bool isEyeBlink = false; // ON/OFF
-	float eyeBlinkProgress = -0.5f; // 閉じる進行度 (0.0 = 全開, 1.0 = 完全に閉じる)
+	float eyeBlinkProgress = 1.5f; // 閉じる進行度 (0.0 = 全開, 1.0 = 完全に閉じる)
 
 	// モニターオフ (ブラウン管)
 	bool isMonitorOff = false; // ON/OFF
 	float monitorOffProgress = 0.0f; // 進行度 (0.0 = 通常, 1.0 = 完全に消える)
 	Vector2 monitorOffCenter = { 0.5f, 0.5f }; // 消える最終地点 (X, Y 共に 0.0 ～ 1.0。中央は 0.5, 0.5)
+
+	// グリッチノイズ
+	bool isGlitch = false; // ON/OFF
+	float glitchIntensity = 1.0f; // 歪みと色ズレの強さ (0.0 ～ 1.0)
 
 	float intensity = 0.0f; // エフェクトの強さ
 
@@ -287,6 +291,7 @@ private:
 	bool StartRailFirst_ = false;
 	bool isFadeIn = false;
 	bool isFadeOut = false;
+	float fadeTime = 120.0f;
 
 	// デス演出
 	bool isDeathAction = false;

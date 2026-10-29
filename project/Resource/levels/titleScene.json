@@ -142,7 +142,7 @@
                 ],
                 "color_override_enabled": true,
                 "color_override_unlit": true,
-                "enable_post_effect": true,
+                "enable_post_effect": false,
                 "outline_color": [
                     1.0,
                     0.0,

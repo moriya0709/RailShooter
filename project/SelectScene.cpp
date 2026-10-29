@@ -946,7 +946,7 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 			}
 			if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
 				auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
-				spawner->Configure(copyData.spawnDataList, spawnDistance, railCamera.get());
+				spawner->Configure(copyData.spawnDataList, copyData.spawnDistance, railCamera.get());
 			}
 			if (sourceObject->GetComponent<Enemy>()) {
 				auto* enemy = copyObject->AddComponent<EnemyNormal>();
@@ -1740,7 +1740,7 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 				}
 				if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
 					auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();
-					spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+					spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, railCamera.get());
 					addSerializedComponent("EnemySpawner");
 				}
 				if ((objectData.type == "EMPTY" || objectData.type == "empty") &&
@@ -1785,8 +1785,13 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 				if (auto* spawnerComponent = selectedObject->GetComponent<EnemySpawnerComponent>()) {
 					ImGui::Separator();
 					ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "◆ Spawner Settings");
+					if (ImGui::DragFloat("Activation Range", &currentObjData.spawnDistance, 0.5f, 0.0f, 10000.0f, "%.1f")) {
+						spawnerComponent->SetSpawnDistance(currentObjData.spawnDistance);
+					}
+					ImGui::SameLine();
+					ImGui::TextDisabled("camera distance");
 					if (ImGui::Button("Apply Spawner Settings")) {
-						spawnerComponent->SetSpawnList(currentObjData.spawnDataList);
+						spawnerComponent->Configure(currentObjData.spawnDataList, currentObjData.spawnDistance, railCamera.get());
 					}
 
 					if (ImGui::Button("Add Enemy to Spawner")) {
@@ -1812,6 +1817,13 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 						ImGui::DragFloat("Spawn Time(s)", &sData.spawnTime, 0.1f, 0.0f, 100.0f);
 						// 2. 座標オフセット
 						ImGui::DragFloat3("Offset XYZ", &sData.offset.x, 0.1f);
+					// EnemyNormal を持つ EMPTY 名を指定すると、下の旧 Type より優先して
+					// その EMPTY のモデル・見た目を複製してスポーンする。
+					char enemyTemplateName[128]{};
+					strncpy_s(enemyTemplateName, sData.enemyTemplate.c_str(), _TRUNCATE);
+					if (ImGui::InputText("Enemy Template (EMPTY)", enemyTemplateName, IM_ARRAYSIZE(enemyTemplateName))) {
+						sData.enemyTemplate = enemyTemplateName;
+					}
 
 						// 3. 敵のタイプ（Comboボックス）
 						// 現在の sData.type が、配列の何番目と一致するかを探す

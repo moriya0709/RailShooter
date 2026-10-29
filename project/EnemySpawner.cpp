@@ -1,6 +1,60 @@
 ﻿#include "EnemySpawner.h"
 #include "EnemyNormal.h"
+#include "ModelRendererComponent.h"
+#include "ParticleComponent.h"
 #include "RailCamera.h"
+
+namespace {
+
+// レベル上の EnemyNormal 付き EMPTY を、実行時に使う敵のテンプレートとして複製する。
+// テンプレート自体は active=false にしておけばゲーム画面には現れない。
+std::unique_ptr<GameObject> CreateEnemyFromTemplate(const SpawnData& data, Transform spawnTransform) {
+	GameObject* const templateObject = GameObject::FindByName(data.enemyTemplate);
+	if (!templateObject || !templateObject->GetComponent<EnemyNormal>()) {
+		return nullptr;
+	}
+
+	const Transform& templateTransform = templateObject->GetTransform()->transform;
+	spawnTransform.scale = templateTransform.scale;
+	spawnTransform.rotate.x += templateTransform.rotate.x;
+	spawnTransform.rotate.y += templateTransform.rotate.y;
+	spawnTransform.rotate.z += templateTransform.rotate.z;
+
+	auto enemyObject = std::make_unique<GameObject>(data.enemyTemplate + "_Spawned");
+	enemyObject->GetTransform()->transform = spawnTransform;
+	enemyObject->SetEnablePostEffect(templateObject->IsPostEffectEnabled());
+
+	if (const auto* sourceRenderer = templateObject->GetComponent<ModelRendererComponent>()) {
+		auto* renderer = enemyObject->AddComponent<ModelRendererComponent>();
+		if (sourceRenderer->HasLod()) {
+			renderer->SetLodModels(sourceRenderer->GetLodHighModelPath(), sourceRenderer->GetLodMediumModelPath(), sourceRenderer->GetLodLowModelPath());
+			renderer->SetLodDistances(sourceRenderer->GetLodMediumDistance(), sourceRenderer->GetLodLowDistance());
+		} else {
+			renderer->SetModel(sourceRenderer->GetModelPath());
+		}
+		renderer->SetMaxDrawDistance(sourceRenderer->GetMaxDrawDistance());
+		renderer->SetTextureOverride(sourceRenderer->GetTextureOverridePath());
+		renderer->SetOutlineEnabled(sourceRenderer->IsOutlineEnabled());
+		renderer->SetOutlineThickness(sourceRenderer->GetOutlineThickness());
+		renderer->SetOutlineColor(sourceRenderer->GetOutlineColor());
+		renderer->SetColorOverrideEnabled(sourceRenderer->IsColorOverrideEnabled());
+		renderer->SetColorOverride(sourceRenderer->GetColorOverride());
+		renderer->SetColorOverrideUnlit(sourceRenderer->IsColorOverrideUnlit());
+		renderer->SetToonShadingEnabled(sourceRenderer->IsToonShadingEnabled());
+	}
+
+	if (const auto* sourceParticle = templateObject->GetComponent<ParticleComponent>()) {
+		enemyObject->AddComponent<ParticleComponent>()->Configure(sourceParticle->GetSettings());
+	}
+
+	auto* enemy = enemyObject->AddComponent<EnemyNormal>();
+	enemy->SetTransform(spawnTransform);
+	enemyObject->SetActive(true);
+	enemyObject->Initialize();
+	return enemyObject;
+}
+
+} // namespace
 
 void EnemySpawner::Initialize(const Transform& transform, const std::vector<SpawnData>& spawnList, float distance) {
 	transform_ = transform;
@@ -38,8 +92,20 @@ std::vector<std::unique_ptr<GameObject>> EnemySpawner::Update(float deltaTime, c
 			std::unique_ptr<GameObject> enemyObject;
 			Enemy* enemy = nullptr;
 
-			// ★ファクトリー処理：文字列(type)を見てクラスを切り替える
-			if (data.type == "NORMAL") {
+			// スポーン地点は常にスポナー + リストのオフセット。テンプレートの位置は
+			// エディタ上の保管場所として扱い、スポーン位置には使わない。
+			Transform spawnTrans = transform_;
+			spawnTrans.translate.x += data.offset.x;
+			spawnTrans.translate.y += data.offset.y;
+			spawnTrans.translate.z += data.offset.z;
+
+			// EMPTY テンプレート指定を優先する。未指定の既存データだけは従来の type を使う。
+			if (!data.enemyTemplate.empty()) {
+				enemyObject = CreateEnemyFromTemplate(data, spawnTrans);
+				if (enemyObject) {
+					enemy = enemyObject->GetComponent<Enemy>();
+				}
+			} else if (data.type == "NORMAL") {
 				enemyObject = std::make_unique<GameObject>("EnemyNormal");
 				enemy = enemyObject->AddComponent<EnemyNormal>();
 			} else if (data.type == "FAST") {
@@ -48,12 +114,6 @@ std::vector<std::unique_ptr<GameObject>> EnemySpawner::Update(float deltaTime, c
 
 			// 生成に成功した場合の初期化処理
 			if (enemy) {
-				// スポナーの基本座標に、指定されたオフセット（ズレ）を足す
-				Transform spawnTrans = transform_;
-				spawnTrans.translate.x += data.offset.x;
-				spawnTrans.translate.y += data.offset.y;
-				spawnTrans.translate.z += data.offset.z;
-
 				// 座標をセット
 				enemy->SetTransform(spawnTrans);
 				// 移動パターンをセット

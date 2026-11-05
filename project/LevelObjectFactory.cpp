@@ -89,6 +89,8 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 	std::vector<std::unique_ptr<GameObject>>& destination,
 	CameraComponent*& sceneCamera,
 	GameObject*& sceneCameraObject) {
+	// 起動範囲は ObjectData ごとに保存する。引数は既存の呼び出し互換用。
+	(void)spawnDistance;
 	for (ObjectData& objectData : objectDataList) {
 		const bool isMesh = objectData.type == "MESH" || objectData.type == "mesh";
 		const bool isRail = objectData.type == "RAIL" || objectData.type == "rail";
@@ -115,7 +117,7 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 		} else if (isSpawner) {
 			ConfigureModelRenderer(*gameObject->AddComponent<ModelRendererComponent>(), objectData, "cube.gltf");
 			auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
-			spawner->Configure(objectData.spawnDataList, spawnDistance, &railCamera);
+			spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, &railCamera);
 			ConfigureRailMovement(*gameObject, objectData);
 		} else {
 			if (HasComponent(objectData, "ModelRenderer")) {
@@ -170,7 +172,7 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 			}
 			if (HasComponent(objectData, "EnemySpawner")) {
 				auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
-				spawner->Configure(objectData.spawnDataList, spawnDistance, &railCamera);
+				spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, &railCamera);
 			}
 			if (HasComponent(objectData, "EnemyNormal")) {
 				auto* enemy = gameObject->AddComponent<EnemyNormal>();

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <windows.h>
 #include <cstdint>
 #include <string>
@@ -227,8 +227,12 @@ struct MotionBlur {
 struct SpawnData {
     float spawnTime;   // スポナー起動からの経過時間（秒）
     Vector3 offset;    // スポナーの中心座標からのズレ（X, Y, Z）
-    std::string type;  // 敵の種類（例："NORMAL", "FAST", "BOSS" など）
+	// 旧レベル互換用。enemyTemplate が空の場合だけ使用する。
+    std::string type;
+	// EnemyNormal を持つ EMPTY オブジェクトの名前。指定時はこのテンプレートを複製してスポーンする。
+	std::string enemyTemplate;
 	std::string movePattern; // 敵の移動パターン
+	float pathSpeed = 1.0f; // PATH移動の速度倍率
     std::vector<Vector3> controlPoints;   // パス移動用の制御点リスト
 };
 
@@ -250,6 +254,7 @@ struct RailCameraGroupData {
 	RailCameraDirectionMode directionMode = RailCameraDirectionMode::FollowPath;
 	Vector3 targetPosition = { 0.0f, 0.0f, 0.0f };
     std::vector<TrackSequenceItem> presetSequence;
+    float railSpeed = 1.0f;
 };
 
 // EasingComponent が保持する、レベル保存可能なアニメーション設定。
@@ -363,7 +368,9 @@ struct ObjectData {
 	// ParticleComponent 専用。
 	ParticleComponentData particle;
 
-    // スポナー専用の敵配置データリスト
+	// スポナー専用。カメラがこの距離まで近づくと出現タイマーを開始する。
+	float spawnDistance = 20.0f;
+	// スポナー専用の敵配置データリスト
     std::vector<SpawnData> spawnDataList;
 };
 

@@ -29,7 +29,9 @@ private:
 
 	static constexpr uint32_t kPreviewWidth = 512;
 	static constexpr uint32_t kPreviewHeight = 512;
-	static constexpr uint32_t kPreviewRtvIndex = 15;
+	// PostEffect が RTV 3〜15（object mask を含む）を使用するため、
+	// プレビューは重複しない次のスロットを使う。
+	static constexpr uint32_t kPreviewRtvIndex = 16;
 	static constexpr uint32_t kPreviewDsvIndex = 1;
 	static constexpr char kPreviewGroupName[] = "ParticlePreview";
 

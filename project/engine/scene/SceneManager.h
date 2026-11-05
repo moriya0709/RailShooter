@@ -15,6 +15,7 @@ public:
 	float GetTimeScale() const { return timeScale_; }
 	// 描画
 	void Draw2D();
+	void DrawPostEffectExcluded2D();
 	void Draw3D();
 	void DrawPostEffectMask();
 

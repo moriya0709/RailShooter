@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <memory>
 #include <utility>
 #include <list>
@@ -31,8 +31,9 @@ public:
 
 	// 移動パターンの設定
 	void SetMovePattern(const std::string& pattern) override { movePattern = pattern; }
+	void SetPathSpeed(float value) override { pathSpeed = (std::max)(0.0f, value); }
 	// 制御点の設定
-	void SetControlPoints(const std::vector<Vector3>& points) override { controlPoints = points; }
+	void SetControlPoints(const std::vector<Vector3>& points) override;
 	// レール追従用の制御点をセット
 	void SetRailPoints(const std::vector<Vector3>& points) override { railPoints = points; }
 	// レール追従用のオフセットをセットd
@@ -67,11 +68,16 @@ public:
 	Vector3 initialPosition{ 0.0f, 0.0f, 0.0f }; // スポーン時の初期座標
 	// 制御点
 	std::vector<Vector3> controlPoints; // 辿るべき座標のリスト
+	// スポーン地点を必要に応じて先頭に加えた、実際に辿る PATH 用の点列。
+	std::vector<Vector3> pathRoutePoints;
+	float pathSpeed = 1.0f;
 	float pathProgress = 0.0f;          // 現在の進行度 (0.0 ～ ポイント数-1)
+	bool pathReachedEnd_ = false;
 	// レール追従(RAIL_FORWARD)用の変数
 	std::vector<Vector3> railPoints;    // レールカメラの制御点リスト
 	// 既存の短い先行距離を維持し、視野内でレール追従させる。
 	float railOffsetProgress = 0.05f;
+	Vector3 previousPosition{ 0.0f, 0.0f, 0.0f }; // 前フレームの座標
 
 	// 弾
 	std::list<std::unique_ptr<GameObject>> bulletObjects_;
@@ -84,7 +90,8 @@ public:
 	float deltaTime_ = 1.0f / 60.0f;
 
 	// HP
-	int hp = 1;
+	int hp = 10;
 
+	void BuildPathRoute();
 };
 

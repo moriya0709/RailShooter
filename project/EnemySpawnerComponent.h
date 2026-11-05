@@ -27,8 +27,13 @@ public:
 	}
 
 	const std::vector<SpawnData>& GetSpawnList() const { return spawnList_; }
+	float GetSpawnDistance() const { return spawnDistance_; }
 	void SetSpawnList(const std::vector<SpawnData>& spawnList) {
 		spawnList_ = spawnList;
+		Reinitialize();
+	}
+	void SetSpawnDistance(float distance) {
+		spawnDistance_ = distance;
 		Reinitialize();
 	}
 	// レールを最初から再生する時に、出現済み状態と待機タイマーを初期状態へ戻す。

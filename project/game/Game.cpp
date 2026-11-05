@@ -168,6 +168,11 @@ void Game::Draw() {
 	// ポストエフェクト描画
 	PostEffect::GetInstance()->PostDraw();
 	PostEffect::GetInstance()->Draw();
+
+	// ポストエフェクト対象外の UI は、最終合成済みのバックバッファへ直接重ねる。
+	// これによりゲームオーバー演出の文字はブルーム・グレースケール等の影響を受けない。
+	SpriteCommon::GetInstance()->SetOverlayPipelineState();
+	SceneManager::GetInstance()->DrawPostEffectExcluded2D();
 	
 	// 専用の3D RenderTextureへプレビュー用グループだけを描画する。
 	particlePreviewEditor_->Render();

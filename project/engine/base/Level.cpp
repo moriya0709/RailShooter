@@ -1,4 +1,4 @@
-﻿#include "Level.h"
+#include "Level.h"
 #include "Logger.h"
 
 void Level::LoadJson(const std::string fileName) {
@@ -43,6 +43,7 @@ void Level::LoadJson(const std::string fileName) {
 			if (!group.is_object() || !group.contains("name") || !group["name"].is_string()) continue;
 			RailCameraGroupData settings{};
 			settings.groupName = group["name"].get<std::string>();
+			settings.railSpeed = (std::max)(0.0f, group.value("rail_speed", 1.0f));
 			const int mode = group.value("direction_mode", static_cast<int>(RailCameraDirectionMode::FollowPath));
 			settings.directionMode = static_cast<RailCameraDirectionMode>(std::clamp(mode, 0, 2));
 			if (group.contains("target_position") && group["target_position"].is_array() && group["target_position"].size() == 3) {
@@ -303,8 +304,13 @@ void Level::LoadJson(const std::string fileName) {
 				newData.components.push_back("ModelRenderer");
 			}
 
-			// SPAWNER だった場合、spawnDataList をJSONから復元する
-			if ((objType == "SPAWNER" || objType == "spawner") && object.contains("spawnDataList")) {
+			// 型が EMPTY でも EnemySpawner コンポーネントを持つならスポナーとして扱う。
+			const bool isSpawner = objType == "SPAWNER" || objType == "spawner" ||
+				std::find(newData.components.begin(), newData.components.end(), "EnemySpawner") != newData.components.end();
+			if (isSpawner) {
+				newData.spawnDistance = object.value("spawnDistance", 20.0f);
+			}
+			if (isSpawner && object.contains("spawnDataList")) {
 				for (const auto& spawnItem : object["spawnDataList"]) {
 					SpawnData data;
 					data.spawnTime = spawnItem["spawnTime"].get<float>();
@@ -314,7 +320,8 @@ void Level::LoadJson(const std::string fileName) {
 					data.offset.y = (float)spawnItem["offset"][1];
 					data.offset.z = (float)spawnItem["offset"][2];
 
-					data.type = spawnItem["type"].get<std::string>();
+					data.type = spawnItem.value("type", std::string{"NORMAL"});
+					data.enemyTemplate = spawnItem.value("enemyTemplate", std::string{});
 
 					// movePattern があれば読み込む（なければ STRAIGHT）
 					if (spawnItem.contains("movePattern")) {
@@ -323,6 +330,7 @@ void Level::LoadJson(const std::string fileName) {
 						data.movePattern = "STRAIGHT";
 					}
 
+					data.pathSpeed = (std::max)(0.0f, spawnItem.value("pathSpeed", 1.0f));
 					// controlPoints があれば配列として読み込む
 					if (spawnItem.contains("controlPoints")) {
 						for (const auto& cp : spawnItem["controlPoints"]) {
@@ -382,6 +390,7 @@ void Level::SaveJson(const std::string fileName) {
 		// preset_sequence に上記の seqArray をセットする
 		deserialized["rail_camera_groups"].push_back({
 			{ "name", group.groupName },
+			{ "rail_speed", group.railSpeed },
 			{ "direction_mode", static_cast<int>(group.directionMode) },
 			{ "target_position", { group.targetPosition.x, group.targetPosition.y, group.targetPosition.z }},
 			{ "preset_sequence", seqArray } // ← ここを変更
@@ -532,9 +541,12 @@ void Level::SaveJson(const std::string fileName) {
 			obj.transform.scale.y
 		};
 
-		// SPAWNER だった場合のみ、spawnDataList をJSON配列として保存
-		if (obj.type == "SPAWNER" || obj.type == "spawner") {
+		// 型が EMPTY でも EnemySpawner コンポーネントを持つならスポーン設定を保存する。
+		const bool isSpawner = obj.type == "SPAWNER" || obj.type == "spawner" ||
+			std::find(obj.components.begin(), obj.components.end(), "EnemySpawner") != obj.components.end();
+		if (isSpawner) {
 			nlohmann::json spawnArray = nlohmann::json::array();
+			newObjJson["spawnDistance"] = obj.spawnDistance;
 
 			for (const auto& spawn : obj.spawnDataList) {
 				nlohmann::json spawnItem;
@@ -545,8 +557,12 @@ void Level::SaveJson(const std::string fileName) {
 
 				// type の保存d
 				spawnItem["type"] = spawn.type;
+				if (!spawn.enemyTemplate.empty()) {
+					spawnItem["enemyTemplate"] = spawn.enemyTemplate;
+				}
 				// movePattern の保存
 				spawnItem["movePattern"] = spawn.movePattern;
+				spawnItem["pathSpeed"] = spawn.pathSpeed;
 
 				// controlPoints の保存
 				nlohmann::json cpArray = nlohmann::json::array();

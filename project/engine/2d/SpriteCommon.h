@@ -13,6 +13,8 @@ public:
 
 	// 共通描画設定
 	void SetCommonPipelineState();
+	// ポストエフェクトの最終合成後、sRGB バックバッファへ UI を重ねるための設定。
+	void SetOverlayPipelineState();
 	// enabled が false の場合は、透明でない部分へマスク値 0 を書き込む。
 	// 背後のレイマーチング等が書いたマスクを上書きするために必要。
 	void SetPostEffectMaskPipelineState(bool enabled = true);
@@ -40,6 +42,7 @@ private:
 
 	// グラフィックスパイプライン
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> overlayPipelineState = nullptr;
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> postEffectMaskPipelineState = nullptr;
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> postEffectMaskDisabledPipelineState = nullptr;
 

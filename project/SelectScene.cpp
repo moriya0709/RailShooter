@@ -1,4 +1,4 @@
-﻿#include "SelectScene.h"
+#include "SelectScene.h"
 #include "ObjectCommon.h"
 #include "SpriteCommon.h"
 #include "SceneManager.h"
@@ -223,6 +223,7 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 	// 2. ★ GameObject の座標を RailCamera の制御点として毎フレーム上書き（同期）する
 	if (railCamera) {
 		RailCameraGroupData& railSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), activeRailGroupName_);
+		railCamera->SetRailSpeed(railSettings.railSpeed);
 		railCamera->SetDirectionMode(railSettings.directionMode);
 		railCamera->SetTargetPosition(railSettings.targetPosition);
 		railCamera->points.clear(); // 一旦リセット
@@ -946,7 +947,7 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 			}
 			if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
 				auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
-				spawner->Configure(copyData.spawnDataList, spawnDistance, railCamera.get());
+				spawner->Configure(copyData.spawnDataList, copyData.spawnDistance, railCamera.get());
 			}
 			if (sourceObject->GetComponent<Enemy>()) {
 				auto* enemy = copyObject->AddComponent<EnemyNormal>();
@@ -1639,19 +1640,152 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 				}
 			}
 
-			if (auto* spawner = selectedObject->GetComponent<EnemySpawnerComponent>()) {
-				if (ImGui::CollapsingHeader("Enemy Spawner")) {
-					bool enabled = spawner->IsEnabled();
-					if (ImGui::Checkbox("Enabled##EnemySpawner", &enabled)) {
-						spawner->SetEnabled(enabled);
-					}
-				}
-			}
 			if (auto* collider = selectedObject->GetComponent<ColliderComponent>()) {
 				if (selectedIndex != -1) {
 					LevelEditorCommon::DrawColliderInspector(*collider, level->GetLevelData()->objects[selectedIndex]);
 				}
 			}
+
+
+			// =========================================================================
+			// SPAWNER 専用のタイムライン編集 UI
+			// =========================================================================
+			if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+				// 参照として取得し、直接書き換えられるようにする
+				ObjectData& currentObjData = level->GetLevelData()->objects[selectedIndex];
+
+				if (auto* spawnerComponent = selectedObject->GetComponent<EnemySpawnerComponent>()) {
+					if (ImGui::CollapsingHeader("Enemy Spawner", ImGuiTreeNodeFlags_DefaultOpen)) {
+						bool enabled = spawnerComponent->IsEnabled();
+						if (ImGui::Checkbox("Enabled##EnemySpawner", &enabled)) {
+							spawnerComponent->SetEnabled(enabled);
+						}
+						ImGui::Separator();
+					ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "◆ Spawner Settings");
+					if (ImGui::DragFloat("Activation Range", &currentObjData.spawnDistance, 0.5f, 0.0f, 10000.0f, "%.1f")) {
+						spawnerComponent->SetSpawnDistance(currentObjData.spawnDistance);
+					}
+					ImGui::SameLine();
+					ImGui::TextDisabled("camera distance");
+					if (ImGui::Button("Apply Changes to Spawner")) {
+						spawnerComponent->Configure(currentObjData.spawnDataList, currentObjData.spawnDistance, railCamera.get());
+					}
+					if (ImGui::IsItemHovered()) {
+						ImGui::SetTooltip("Apply the edited spawn list and activation range to the running spawner.");
+					}
+
+					if (ImGui::Button("Add Enemy to Spawner")) {
+						// 初期値として追加
+						currentObjData.spawnDataList.push_back({ 0.0f, { 0.0f, 0.0f, 0.0f }, "NORMAL" });
+					}
+
+					ImGui::Spacing();
+
+					// プルダウン（Combo）に表示する敵の種類のリスト
+					const char* enemyTypes[] = { "NORMAL", "FAST", "BOSS" };
+					// プルダウン（Combo）に表示する移動パターンのリスト
+					const char* movePatterns[] = { "IDRE", "STRAIGHT", "WAVE", "HOMING", "PATH", "RAIL_FORWARD" };
+
+					// 登録されている敵のリストをループ表示
+					for (size_t i = 0; i < currentObjData.spawnDataList.size(); ++i) {
+						ImGui::PushID(static_cast<int>(i));
+						auto& sData = currentObjData.spawnDataList[i];
+
+						ImGui::Text("Enemy [%zu]", i);
+
+						// 1. 出現タイミング
+						ImGui::DragFloat("Spawn Time(s)", &sData.spawnTime, 0.1f, 0.0f, 100.0f);
+						// 2. 座標オフセット
+						ImGui::DragFloat3("Offset XYZ", &sData.offset.x, 0.1f);
+					// EnemyNormal を持つ EMPTY 名を指定すると、下の旧 Type より優先して
+					// その EMPTY のモデル・見た目を複製してスポーンする。
+					char enemyTemplateName[128]{};
+					strncpy_s(enemyTemplateName, sData.enemyTemplate.c_str(), _TRUNCATE);
+					if (ImGui::InputText("Enemy Template (EMPTY)", enemyTemplateName, IM_ARRAYSIZE(enemyTemplateName))) {
+						sData.enemyTemplate = enemyTemplateName;
+					}
+
+						// 3. 敵のタイプ（Comboボックス）
+						// 現在の sData.type が、配列の何番目と一致するかを探す
+						int currentTypeIndex = 0;
+						for (int j = 0; j < IM_ARRAYSIZE(enemyTypes); j++) {
+							if (sData.type == enemyTypes[j]) {
+								currentTypeIndex = j;
+								break;
+							}
+						}
+
+						// プルダウンのUIを表示し、変更があったら sData.type に文字列を書き戻す
+						if (ImGui::Combo("Type", &currentTypeIndex, enemyTypes, IM_ARRAYSIZE(enemyTypes))) {
+							sData.type = enemyTypes[currentTypeIndex];
+						}
+
+						// 2. ★移動パターンの選択 (PATH を選択すると制御点編集が展開)
+						int currentPatternIndex = 0;
+						for (int j = 0; j < IM_ARRAYSIZE(movePatterns); j++) {
+							if (sData.movePattern == movePatterns[j]) { currentPatternIndex = j; break; }
+						}
+						if (ImGui::Combo("Move Pattern", &currentPatternIndex, movePatterns, IM_ARRAYSIZE(movePatterns))) {
+							sData.movePattern = movePatterns[currentPatternIndex];
+						}
+
+						// 3. ★移動パターンが "PATH" の場合のみ制御点(controlPoints)の編集UIを表示
+						if (sData.movePattern == "PATH") {
+							if (ImGui::TreeNode("Path Control Points")) {
+
+								// 制御点追加ボタン
+								if (ImGui::Button("+ Add Control Point")) {
+									Vector3 newPoint;
+
+									if (sData.controlPoints.empty()) {
+										// 制御点が0個の場合：スポナーの座標 ＋ エネミーのオフセット をワールド座標として算出
+										newPoint.x = currentObjData.transform.translate.x + sData.offset.x;
+										newPoint.y = currentObjData.transform.translate.y + sData.offset.y;
+										newPoint.z = currentObjData.transform.translate.z + sData.offset.z;
+									} else {
+										// 既に制御点がある場合：最後の制御点をベースにする
+										newPoint = sData.controlPoints.back();
+									}
+
+									sData.controlPoints.push_back(newPoint);
+								}
+
+								// 各制御点の編集と削除
+								for (size_t cpIdx = 0; cpIdx < sData.controlPoints.size(); ++cpIdx) {
+									ImGui::PushID(static_cast<int>(cpIdx));
+
+									// 座標調整ドラッグバー
+									std::string label = "P[" + std::to_string(cpIdx) + "]";
+									ImGui::DragFloat3(label.c_str(), &sData.controlPoints[cpIdx].x, 0.1f);
+
+									// 制御点削除ボタン
+									ImGui::SameLine();
+									if (ImGui::Button("Delete")) {
+										sData.controlPoints.erase(sData.controlPoints.begin() + cpIdx);
+										ImGui::PopID();
+										break;
+									}
+
+									ImGui::PopID();
+								}
+								ImGui::TreePop();
+							}
+						}
+
+						// 4. 削除ボタン
+						if (ImGui::Button("Delete")) {
+							currentObjData.spawnDataList.erase(currentObjData.spawnDataList.begin() + i);
+							ImGui::PopID();
+							break; // リストのサイズが変わるのでループを抜ける
+						}
+
+						ImGui::Separator();
+						ImGui::PopID();
+					}
+					}
+				}
+			}
+
 			if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
 				LevelEditorCommon::DrawComponentRemovalInspector(*selectedObject, level->GetLevelData()->objects[selectedIndex]);
 			}
@@ -1740,7 +1874,7 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 				}
 				if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
 					auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();
-					spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+					spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, railCamera.get());
 					addSerializedComponent("EnemySpawner");
 				}
 				if ((objectData.type == "EMPTY" || objectData.type == "empty") &&
@@ -1754,142 +1888,6 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 					auto* enemy = selectedObject->AddComponent<EnemyNormal>();
 					enemy->SetTransform(selectedObject->GetTransform()->transform);
 					addSerializedComponent("EnemyNormal");
-				}
-			}
-
-			// オブジェクト削除ボタン（誤誤爆防止のために赤色スタイル適用）
-			ImGui::Spacing();
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.1f, 0.1f, 1.0f));
-
-			if (selectedIndex != -1 && ImGui::Button("Delete Object", ImVec2(-1, 0))) {
-				if (selectedIndex != -1) {
-					level->GetLevelData()->objects.erase(level->GetLevelData()->objects.begin() + selectedIndex);
-					levelObjects.erase(levelObjects.begin() + selectedIndex);
-				}
-				selectedObject = nullptr;
-				ImGui::PopStyleColor(3);
-				ImGui::End();
-				return;
-			}
-			ImGui::PopStyleColor(3);
-
-			// =========================================================================
-			// SPAWNER 専用のタイムライン編集 UI
-			// =========================================================================
-			if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
-				// 参照として取得し、直接書き換えられるようにする
-				ObjectData& currentObjData = level->GetLevelData()->objects[selectedIndex];
-
-				if (auto* spawnerComponent = selectedObject->GetComponent<EnemySpawnerComponent>()) {
-					ImGui::Separator();
-					ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "◆ Spawner Settings");
-					if (ImGui::Button("Apply Spawner Settings")) {
-						spawnerComponent->SetSpawnList(currentObjData.spawnDataList);
-					}
-
-					if (ImGui::Button("Add Enemy to Spawner")) {
-						// 初期値として追加
-						currentObjData.spawnDataList.push_back({ 0.0f, { 0.0f, 0.0f, 0.0f }, "NORMAL" });
-					}
-
-					ImGui::Spacing();
-
-					// プルダウン（Combo）に表示する敵の種類のリスト
-					const char* enemyTypes[] = { "NORMAL", "FAST", "BOSS" };
-					// プルダウン（Combo）に表示する移動パターンのリスト
-					const char* movePatterns[] = { "IDRE", "STRAIGHT", "WAVE", "HOMING", "PATH", "RAIL_FORWARD" };
-
-					// 登録されている敵のリストをループ表示
-					for (size_t i = 0; i < currentObjData.spawnDataList.size(); ++i) {
-						ImGui::PushID(static_cast<int>(i));
-						auto& sData = currentObjData.spawnDataList[i];
-
-						ImGui::Text("Enemy [%zu]", i);
-
-						// 1. 出現タイミング
-						ImGui::DragFloat("Spawn Time(s)", &sData.spawnTime, 0.1f, 0.0f, 100.0f);
-						// 2. 座標オフセット
-						ImGui::DragFloat3("Offset XYZ", &sData.offset.x, 0.1f);
-
-						// 3. 敵のタイプ（Comboボックス）
-						// 現在の sData.type が、配列の何番目と一致するかを探す
-						int currentTypeIndex = 0;
-						for (int j = 0; j < IM_ARRAYSIZE(enemyTypes); j++) {
-							if (sData.type == enemyTypes[j]) {
-								currentTypeIndex = j;
-								break;
-							}
-						}
-
-						// プルダウンのUIを表示し、変更があったら sData.type に文字列を書き戻す
-						if (ImGui::Combo("Type", &currentTypeIndex, enemyTypes, IM_ARRAYSIZE(enemyTypes))) {
-							sData.type = enemyTypes[currentTypeIndex];
-						}
-
-						// 2. ★移動パターンの選択 (PATH を選択すると制御点編集が展開)
-						int currentPatternIndex = 0;
-						for (int j = 0; j < IM_ARRAYSIZE(movePatterns); j++) {
-							if (sData.movePattern == movePatterns[j]) { currentPatternIndex = j; break; }
-						}
-						if (ImGui::Combo("Move Pattern", &currentPatternIndex, movePatterns, IM_ARRAYSIZE(movePatterns))) {
-							sData.movePattern = movePatterns[currentPatternIndex];
-						}
-
-						// 3. ★移動パターンが "PATH" の場合のみ制御点(controlPoints)の編集UIを表示
-						if (sData.movePattern == "PATH") {
-							if (ImGui::TreeNode("Path Control Points")) {
-
-								// 制御点追加ボタン
-								if (ImGui::Button("+ Add Control Point")) {
-									Vector3 newPoint;
-
-									if (sData.controlPoints.empty()) {
-										// 制御点が0個の場合：スポナーの座標 ＋ エネミーのオフセット をワールド座標として算出
-										newPoint.x = currentObjData.transform.translate.x + sData.offset.x;
-										newPoint.y = currentObjData.transform.translate.y + sData.offset.y;
-										newPoint.z = currentObjData.transform.translate.z + sData.offset.z;
-									} else {
-										// 既に制御点がある場合：最後の制御点をベースにする
-										newPoint = sData.controlPoints.back();
-									}
-
-									sData.controlPoints.push_back(newPoint);
-								}
-
-								// 各制御点の編集と削除
-								for (size_t cpIdx = 0; cpIdx < sData.controlPoints.size(); ++cpIdx) {
-									ImGui::PushID(static_cast<int>(cpIdx));
-
-									// 座標調整ドラッグバー
-									std::string label = "P[" + std::to_string(cpIdx) + "]";
-									ImGui::DragFloat3(label.c_str(), &sData.controlPoints[cpIdx].x, 0.1f);
-
-									// 制御点削除ボタン
-									ImGui::SameLine();
-									if (ImGui::Button("Delete")) {
-										sData.controlPoints.erase(sData.controlPoints.begin() + cpIdx);
-										ImGui::PopID();
-										break;
-									}
-
-									ImGui::PopID();
-								}
-								ImGui::TreePop();
-							}
-						}
-
-						// 4. 削除ボタン
-						if (ImGui::Button("Delete")) {
-							currentObjData.spawnDataList.erase(currentObjData.spawnDataList.begin() + i);
-							ImGui::PopID();
-							break; // リストのサイズが変わるのでループを抜ける
-						}
-
-						ImGui::Separator();
-						ImGui::PopID();
-					}
 				}
 			}
 
@@ -1923,12 +1921,23 @@ void SelectScene::Draw2D() {
 			}
 		}
 		if (auto* textRenderer = levelObject->GetComponent<TextRendererComponent>()) {
-			if (levelObject->IsActive() && textRenderer->IsEnabled()) {
+			if (levelObject->IsActive() && textRenderer->IsEnabled() && textRenderer->IsPostEffectEnabled()) {
 				textRenderer->DrawTextSprite();
 			}
 		}
 	}
 }
+
+void SelectScene::DrawPostEffectExcluded2D() {
+	for (const auto& levelObject : levelObjects) {
+		if (auto* textRenderer = levelObject->GetComponent<TextRendererComponent>()) {
+			if (levelObject->IsActive() && textRenderer->IsEnabled() && !textRenderer->IsPostEffectEnabled()) {
+				textRenderer->DrawTextSprite();
+			}
+		}
+	}
+}
+
 void SelectScene::Draw3D() {
 	// スカイボックス
 	//Skybox::GetInstance()->Draw();
@@ -2214,10 +2223,7 @@ void SelectScene::GizmoUpdate(bool showEditorControls) {
 		}
 	}
 
-	if (!showEditorControls) {
-		return;
-	}
-
+	// Settings パネルが非表示でも、選択中スポナーの出現地点は Game ビューに表示し続ける。
 	// 敵の出現地点のプレビュー表示
 	if (selectedObject != nullptr) {
 		// 選択中オブジェクトのインデックスを探す

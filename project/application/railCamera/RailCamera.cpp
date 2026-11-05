@@ -55,12 +55,12 @@ void RailCamera::Update() {
 	}
 }
 
-void RailCamera::StartRail() {
+void RailCamera::StartRail(float startDistance) {
 	if (!CanStartRail()) {
 		return;
 	}
 
-	railT = 0.0f;
+	railT = startDistance;
 	isRail = true;
 	++startRevision_;
 }
@@ -355,8 +355,35 @@ void RailCamera::UpdateCameraDirection() {
 	// forwardからオイラー角を計算
 	float yaw = atan2f(forward.x, forward.z);
 	float pitch = atan2f(-forward.y, sqrtf(forward.x * forward.x + forward.z * forward.z));
-	cameraTransform.rotate = { pitch, yaw ,0.0f };
+	
+	// 旋回に応じたロール角の計算
+	// Yawの変化量を計算 (現在のYaw - 前フレームのYaw)
+	float deltaYaw = yaw - previousYaw;
+
+	// ※ Yawが -π(180度) から +π へ飛ぶような境界またぎ（360度ループ等）の補正
+	if (deltaYaw > std::numbers::pi_v<float>) {
+		deltaYaw -= 2.0f * std::numbers::pi_v<float>;
+	} else if (deltaYaw < -std::numbers::pi_v<float>) {
+		deltaYaw += 2.0f * std::numbers::pi_v<float>;
+	}
+
+	// Yawの変化量から目標のロール角を計算
+
+	// 右に曲がる(deltaYaw > 0)ときは、機体を右(Z軸マイナス)に傾ける
+	float targetRoll = -deltaYaw * rollSensitivity;
+
+	// クランプ（最大角度制限）
+	targetRoll = std::clamp(targetRoll, -maxRollAngle, maxRollAngle);
+
+	// 現在のロール角から目標ロール角へ滑らかに補間
+	float lerpSpeed = 0.1f;
+	currentRoll = std::lerp(currentRoll, targetRoll, lerpSpeed);
+
+	// 今回のYawを次フレームのために保存
+	previousYaw = yaw;
+	
 	// カメラ回転を更新
+	cameraTransform.rotate = { pitch, yaw ,currentRoll };
 	camera->SetRotate(cameraTransform.rotate);
 }
 

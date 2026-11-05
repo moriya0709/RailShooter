@@ -232,7 +232,12 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	effectData->isMonitorOff = false; // モニターオフON/OFF
 	effectData->monitorOffProgress = 0.0f; // 進行度
 	effectData->monitorOffCenter = { 0.5f, 0.5f }; // 消える最終地点
-
+	// グリッチノイズ
+	effectData->isGlitch = false; // グリッチノイズON/OFF
+	effectData->glitchIntensity = 1.0f; // グリッチノイズの強さ
+	effectData->glitchWaveSpeed = 5.0f; // アニメーションの波の速さ
+	effectData->glitchWaveThreshold = 0.0f; // エフェクトが止まる境界値
+	
 	effectData->intensity = 1.0f;
 
 }
@@ -266,10 +271,8 @@ void PostEffect::Update(Camera* camera) {
 	effectData->lensFlareGhostDispersal = baseDist + (maxDist - baseDist) * lerpFactor;
 	
 
-	// 集中線のアニメーション制御
-	if (effectData->isConcentrationLines) {
-		effectData->time += 1.0f / 60.0f;
-	}
+	// アニメーション制御
+	effectData->time += 1.0f / 60.0f;
 
 	// ダメージエフェクト
 	DamageEffectUpdate();
@@ -287,16 +290,16 @@ void PostEffect::DamageEffectUpdate() {
 			if (damageEffectRatio_ <= 0.0f) {
 				damageEffectRatio_ = 0.0f;
 				// 完全に終わったら両方のフラグをOFFにして軽くする
-				SetFullScreenCA(false);
-				SetVignette(false);
+				SetGlitch(false);
+				//SetVignette(false);
 			} else {
 				// エフェクト再生中ならフラグをON
-				SetFullScreenCA(true);
-				SetVignette(true);
+				SetGlitch(true);
+				//SetVignette(true);
 
 				// 進行度
-				SetFullScreenCAIntensity(damageEffectRatio_ * 0.1f);
-				SetVignetteIntensity(damageEffectRatio_ * 0.8f);
+				SetGlitchIntensity(damageEffectRatio_);
+				//SetVignetteIntensity(damageEffectRatio_ * 0.8f);
 			}
 		}
 	}

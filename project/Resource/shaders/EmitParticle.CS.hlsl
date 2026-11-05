@@ -77,20 +77,37 @@ void main(uint3 DTid : SV_DispatchThreadID)
         return;
 
 
-    uint currentFreeCount;
-    // 空き数を1減らし、減らす前の空き数を取得する
-    InterlockedAdd(gFreeListIndex[0], -1, currentFreeCount);
-    
-    // 空きがなかった場合（0以下になった場合）の安全対策
-    if (currentFreeCount == 0)
+    // 空きリストから 1 枠を安全に予約する。
+    // InterlockedAdd で 0 から減算して後で戻す方式だと、同時に走る別スレッドが
+    // uint のアンダーフロー値を空き数として読み、範囲外の FreeList を参照してしまう。
+    // CAS で「空きがある場合だけ」デクリメントすることで、満員時は安全に射出を捨てる。
+    uint expectedFreeCount;
+    InterlockedAdd(gFreeListIndex[0], 0, expectedFreeCount);
+
+    uint particleIndex;
+    while (expectedFreeCount != 0)
     {
-        // 減らしすぎた分を元に戻して処理を終了する
-        InterlockedAdd(gFreeListIndex[0], 1);
+        uint observedFreeCount;
+        InterlockedCompareExchange(
+            gFreeListIndex[0],
+            expectedFreeCount,
+            expectedFreeCount - 1,
+            observedFreeCount);
+
+        if (observedFreeCount == expectedFreeCount)
+        {
+            particleIndex = gFreeList[expectedFreeCount - 1];
+            break;
+        }
+
+        // 他スレッドが先に空き数を更新したので、最新値で再試行する。
+        expectedFreeCount = observedFreeCount;
+    }
+
+    if (expectedFreeCount == 0)
+    {
         return;
     }
-    
-    // FreeListから実際のパーティクルインデックスを取得
-    uint particleIndex = gFreeList[currentFreeCount - 1];
 
     // *ランダム座標* //
     

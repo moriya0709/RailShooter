@@ -27,6 +27,11 @@ void PlayerBulletNormal::Initialize(const Vector3 position, Enemy* target, const
 		cameraWorld.m[2][2]
 	};
 
+	// 発射時からロックオン対象へ向けることで、ホーミングを即時に開始する。
+	if (target_ && !target_->IsDead()) {
+		forward = target_->GetTranslate() - position;
+	}
+
 	// スケールの影響を受けないよう正規化して、速度を掛ける。
 	const float forwardLength = std::sqrt(forward.x * forward.x + forward.y * forward.y + forward.z * forward.z);
 	if (forwardLength > 0.001f) {
@@ -58,35 +63,35 @@ void PlayerBulletNormal::Update() {
 		isDead_ = true; // 寿命が来たら消滅フラグを立てる
 	}
 
-	// ロックオン対象に誘導処理
+	// 発射直後から毎フレーム、ロックオン対象へ進行方向を補正する。
 	if (target_ && !target_->IsDead()) {
 		Vector3 dir = target_->GetTranslate() - transform.translate;
 		float length = std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
 
 		if (length > 0.001f) {
-			// 1. ターゲットへの方向ベクトルを正規化
-			dir.x /= length; dir.y /= length; dir.z /= length;
+			dir.x /= length;
+			dir.y /= length;
+			dir.z /= length;
 
-			// 2. 誘導の強さ（0.01f ～ 0.1f 程度がおすすめ。高すぎると往復します）
-			float homingPower = 0.05f * frameScale;
+			const float currentHomingPower = homingPower * frameScale;
+			projectileVelocity_.x += dir.x * currentHomingPower;
+			projectileVelocity_.y += dir.y * currentHomingPower;
+			projectileVelocity_.z += dir.z * currentHomingPower;
 
-			// 3. 現在の速度にターゲット方向の力を加算
-			projectileVelocity_.x += dir.x * homingPower;
-			projectileVelocity_.y += dir.y * homingPower;
-			projectileVelocity_.z += dir.z * homingPower;
-
-			// 4. 加算後の速度ベクトルを再度正規化し、元の speed を掛けて速さを一定に保つ
-			float vLen = std::sqrt(projectileVelocity_.x * projectileVelocity_.x + projectileVelocity_.y * projectileVelocity_.y + projectileVelocity_.z * projectileVelocity_.z);
-			if (vLen > 0.001f) {
-				projectileVelocity_.x = (projectileVelocity_.x / vLen) * speed;
-				projectileVelocity_.y = (projectileVelocity_.y / vLen) * speed;
-				projectileVelocity_.z = (projectileVelocity_.z / vLen) * speed;
+			const float velocityLength = std::sqrt(
+				projectileVelocity_.x * projectileVelocity_.x +
+				projectileVelocity_.y * projectileVelocity_.y +
+				projectileVelocity_.z * projectileVelocity_.z);
+			if (velocityLength > 0.001f) {
+				projectileVelocity_.x = (projectileVelocity_.x / velocityLength) * speed;
+				projectileVelocity_.y = (projectileVelocity_.y / velocityLength) * speed;
+				projectileVelocity_.z = (projectileVelocity_.z / velocityLength) * speed;
 			}
 		}
 	} else {
-		// 敵が死んだ場合はターゲットを外して直進させる
 		target_ = nullptr;
 	}
+
 	velocity.x = projectileVelocity_.x + inheritedVelocity_.x;
 	velocity.y = projectileVelocity_.y + inheritedVelocity_.y;
 	velocity.z = projectileVelocity_.z + inheritedVelocity_.z;

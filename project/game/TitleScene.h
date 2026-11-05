@@ -39,6 +39,7 @@ public:
 	void Update(float deltaTime, float unscaledDeltaTime) override;
 	// 描画
 	void Draw2D() override;
+	void DrawPostEffectExcluded2D() override;
 	void Draw3D() override;
 	void DrawPostEffectMask() override;
 	// 終了
@@ -141,7 +142,7 @@ private:
 	bool isFullScreenCA = false; // 画面全体の色収差ON/OFF
 	float fullScreenCAIntensity = 0.02f; // 画面全体の色収差の強さ
 	// ビネット
-	bool isVignette = true; // ビネットのON/OFF
+	bool isVignette = false; // ビネットのON/OFF
 	float vignetteIntensity = 0.5f; // ビネットの強さ
 	Vector3 vignetteColor = { 0.0f, 0.0f, 0.0f };   // 色
 
@@ -198,6 +199,11 @@ private:
 	float monitorOffProgress = 0.0f; // 進行度 (0.0 = 通常, 1.0 = 完全に消える)
 	Vector2 monitorOffCenter = { 0.5f, 0.5f }; // 消える最終地点 (X, Y 共に 0.0 ～ 1.0。中央は 0.5, 0.5)
 
+	// グリッチノイズ
+	bool isGlitch = false; // ON/OFF
+	float glitchIntensity = 1.0f; // 歪みと色ズレの強さ (0.0 ～ 1.0)
+	float glitchWaveSpeed = 5.0f;      // アニメーションの波の速さ (目安: 5.0f 程度)
+	float glitchWaveThreshold = 0.0f;  // エフェクトが止まる境界値 (0.0fにすると常に止まらない)
 
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;

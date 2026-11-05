@@ -1,4 +1,4 @@
-﻿#include "GamePlayScene.h"
+#include "GamePlayScene.h"
 #include "ObjectCommon.h"
 #include "SpriteCommon.h"
 #include "SceneManager.h"
@@ -26,6 +26,75 @@
 #include <cctype>
 #include <filesystem>
 #include <iterator>
+
+#if defined(ENABLE_PATH_DEBUG_VISUALS)
+namespace {
+
+constexpr int kPathDebugSegmentsPerSection = 16;
+
+// EnemyNormal::Update の PATH 補間と同じ端点処理で、曲線上の座標を取得する。
+Vector3 EvaluateEnemyPath(const std::vector<Vector3>& controlPoints, float progress) {
+	const float maxProgress = static_cast<float>(controlPoints.size() - 1);
+	progress = std::clamp(progress, 0.0f, maxProgress);
+
+	const size_t index = (std::min)(
+		static_cast<size_t>(progress), controlPoints.size() - 2);
+	const float t = progress - static_cast<float>(index);
+	const size_t p0Index = index == 0 ? 0 : index - 1;
+	const size_t p3Index = (std::min)(index + 2, controlPoints.size() - 1);
+
+	return CatmullRomSpline(
+		controlPoints[p0Index], controlPoints[index],
+		controlPoints[index + 1], controlPoints[p3Index], t);
+}
+
+void AddEnemyPathDebugLine(Line& line, const std::vector<Vector3>& controlPoints) {
+	if (controlPoints.size() < 2) {
+		return;
+	}
+
+	const int segmentCount =
+		static_cast<int>(controlPoints.size() - 1) * kPathDebugSegmentsPerSection;
+	Vector3 previous = EvaluateEnemyPath(controlPoints, 0.0f);
+	for (int segment = 1; segment <= segmentCount; ++segment) {
+		const float progress = static_cast<float>(controlPoints.size() - 1) *
+			static_cast<float>(segment) / static_cast<float>(segmentCount);
+		const Vector3 current = EvaluateEnemyPath(controlPoints, progress);
+		line.AddLine(previous, current);
+		previous = current;
+	}
+}
+
+void AddSpawnerPathDebugLines(Line& line,
+	const std::vector<std::unique_ptr<GameObject>>& levelObjects) {
+	for (const auto& object : levelObjects) {
+		const auto* spawner = object->GetComponent<EnemySpawnerComponent>();
+		if (!spawner) {
+			continue;
+		}
+
+		for (const SpawnData& spawnData : spawner->GetSpawnList()) {
+			if (spawnData.movePattern == "PATH" && !spawnData.controlPoints.empty()) {
+				// EnemyNormal と同様、スポーン地点が最初の制御点と違う場合は
+				// その間も経路として可視化する。
+				std::vector<Vector3> pathRoutePoints = spawnData.controlPoints;
+				Vector3 spawnPosition = object->GetTransform()->transform.translate;
+				spawnPosition.x += spawnData.offset.x;
+				spawnPosition.y += spawnData.offset.y;
+				spawnPosition.z += spawnData.offset.z;
+				const Vector3 delta = spawnPosition - pathRoutePoints.front();
+				const float distanceSquared = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z;
+				if (distanceSquared > 0.000001f) {
+					pathRoutePoints.insert(pathRoutePoints.begin(), spawnPosition);
+				}
+				AddEnemyPathDebugLine(line, pathRoutePoints);
+			}
+		}
+	}
+}
+
+} // namespace
+#endif
 
 void GamePlayScene::Initialize() {
 
@@ -98,12 +167,20 @@ void GamePlayScene::Initialize() {
 	debugLineHit->Initialize(camera->GetCamera());
 	debugLineHit->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f }); // 赤色を固定セット
 
+#if defined(ENABLE_PATH_DEBUG_VISUALS)
+	pathDebugLine = std::make_unique<Line>();
+	pathDebugLine->Initialize(camera->GetCamera());
+	pathDebugLine->SetColor({ 0.0f, 0.8f, 1.0f, 1.0f }); // PATH は水色で表示
+#endif
+
 	// トレイルエフェクト
 	trailEffect = std::make_shared<TrailEffect>();
 	trailEffect->Initialize("Resource/trail/trail.png", trailTransform, width, trailMaxLifeTime);
 
-	//	フェードイン
+	// フェードイン
 	StartFadeIn(isFadeIn, isFadeOut);
+	isGlitch = true;
+	PostEffect::GetInstance()->SetGlitch(isGlitch);
 
 }
 
@@ -119,6 +196,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	// 2. ★ GameObject の座標を RailCamera の制御点として毎フレーム上書き（同期）する
 	if (railCamera) {
 		RailCameraGroupData& railSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), activeRailGroupName_);
+		railCamera->SetRailSpeed(railSettings.railSpeed);
 		railCamera->SetDirectionMode(railSettings.directionMode);
 		railCamera->SetTargetPosition(railSettings.targetPosition);
 		railCamera->points.clear(); // 一旦リセット
@@ -192,8 +270,11 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 		const bool isMouseInGameView = ImGuiFunction::GetInstance()->ShouldDrawDockableWindow("Game") &&
 			mousePosition.x >= gameViewPosition.x && mousePosition.x < gameViewPosition.x + gameViewSize.x &&
 			mousePosition.y >= gameViewPosition.y && mousePosition.y < gameViewPosition.y + gameViewSize.y;
-		// ImGui の捕捉状態ではなく、Game ビューの中にカーソルがあるかで判定する。
-		if (isMouseInGameView) {
+		// カメラは中ドラッグ／ホイール操作中だけ入力を読む。これにより、カメラを
+		// 動かした後に ImGui 側へ移ったマウス操作を DirectInput が継続して扱わない。
+		const bool isDebugCameraInputActive = input->IsMouseButtonPressed(2) ||
+			input->GetMouseWheel() != 0;
+		if (isMouseInGameView && isDebugCameraInputActive) {
 			camera->DebugCameraUpdate();
 		}
 	} else
@@ -348,12 +429,6 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				transform->SetRotate(player->GetRotate());
 			}
 		}
-	} else {
-		if (isMonitorOff) {
-			if (monitorOffProgress > 0.0f) {
-				monitorOffProgress -= 1.0f / 20.0f;
-			}
-		}
 	}
 
 	// シーンに存在するすべての敵の更新処理
@@ -409,6 +484,10 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	// 毎フレーム描画前に前フレームの線データをクリア
 	debugLineNormal->Clear();
 	debugLineHit->Clear();
+#if defined(ENABLE_PATH_DEBUG_VISUALS)
+	pathDebugLine->Clear();
+	AddSpawnerPathDebugLines(*pathDebugLine, levelObjects);
+#endif
 #ifdef _DEBUG
 	// プレイヤーの当たり判定を登録
 	if (player->IsHit()) {
@@ -455,36 +534,45 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	// スタート演出
 
 	// HUDの演出
-	if (isStartAction && !isFadeIn) {
+	if (isStartAction) {
 		auto* reticle_1 = GameObject::FindByName("reticle_1");
 		auto* reticle_2 = GameObject::FindByName("reticle_2");
 		auto* reticle_3 = GameObject::FindByName("reticle_3");
 		auto* monitor_1 = GameObject::FindByName("monitor_1");
-		auto* monitorAction_1 = GameObject::FindByName("monitorAction_1");
-
+		
 		auto* reticle_1Easing = reticle_1->GetComponent<EasingComponent>();
 		auto* reticle_2Easing = reticle_2->GetComponent<EasingComponent>();
 		auto* reticle_3Easing = reticle_3->GetComponent<EasingComponent>();
-		auto* monitorActionEasing = monitorAction_1->GetComponent<EasingComponent>();
-
-		reticle_1->SetActive(true);
+		
+		if (!isGlitch) {
+			reticle_1->SetActive(true);
+		}
 		if (reticle_1Easing && !reticle_1Easing->IsPlaying()) {
 			reticle_2->SetActive(true);
 		}
 		if (reticle_2Easing && !reticle_2Easing->IsPlaying()) {
 			reticle_3->SetActive(true);
 		}
-		if (reticle_3Easing && !reticle_3Easing->IsPlaying()) {
-			monitor_1->SetActive(false);
-			monitorAction_1->SetActive(true);
+
+		// グリッチノイズ
+		if (isGlitch) {
+			if (glitchIntensity > 0.0f) {
+				glitchIntensity -= 1.0f / fadeTime;
+			} else {
+				isGlitch = false;
+				PostEffect::GetInstance()->SetGlitch(isGlitch);
+			}
+			PostEffect::GetInstance()->SetGlitchIntensity(glitchIntensity);
 		}
-		if (monitorActionEasing && !monitorActionEasing->IsPlaying() &&
-			!StartRailFirst_ && !railCamera->IsRailActive()) {
+
+		if (reticle_3Easing && !reticle_3Easing->IsPlaying() && !StartRailFirst_ && !railCamera->IsRailActive()) {
 			railCamera->StartRail();
 			StartRailFirst_ = railCamera->IsRailActive();
 			if (StartRailFirst_) {
 				isRadialBlur = true;
 			}
+			fadeTime = 30.0f;
+			cockpit->SetEnablePostEffect(true);
 		}
 
 		const std::string& groupName = level->GetLevelData()->activeRailCameraGroup;
@@ -515,7 +603,6 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					reticle_1->SetActive(false);
 					reticle_2->SetActive(false);
 					reticle_3->SetActive(false);
-					monitorAction_1->SetActive(false);
 
 					StartFadeIn(isFadeIn, isFadeOut);
 				} else {
@@ -528,7 +615,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	}
 
 	// フェード処理
-	UpdateFade(isFadeIn, isFadeOut, intensity);
+	UpdateFade(isFadeIn, isFadeOut, intensity, fadeTime);
 
 #pragma region ライティング
 	// *ライティング* //
@@ -606,11 +693,11 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
 	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
 	// 色収差
-	PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
-	PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
+	//PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
+	//PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
 	// ビネット
-	PostEffect::GetInstance()->SetVignette(isVignette);
-	PostEffect::GetInstance()->SetVignetteIntensity(vignetteIntensity);
+	//PostEffect::GetInstance()->SetVignette(isVignette);
+	//PostEffect::GetInstance()->SetVignetteIntensity(vignetteIntensity);
 	PostEffect::GetInstance()->SetVignetteColor(vignetteColor);
 	// スピードディストーション
 	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
@@ -654,6 +741,8 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	PostEffect::GetInstance()->SetMonitorOff(isMonitorOff);
 	PostEffect::GetInstance()->SetMonitorOffProgress(monitorOffProgress);
 	PostEffect::GetInstance()->SetMonitorOffCenter(monitorOffCenter);
+	// エフェクトの強さ
+	PostEffect::GetInstance()->SetIntensity(intensity);
 
 #pragma endregion
 
@@ -1017,6 +1106,10 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 
 		ImGui::Separator();
 		ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "Track Editor");
+		RailCameraGroupData& speedSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), activeRailGroupName_);
+		if (ImGui::DragFloat("Rail Speed", &speedSettings.railSpeed, 0.1f, 0.0f, 1000.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp)) {
+			railCamera->SetRailSpeed(speedSettings.railSpeed);
+		}
 
 		if (!activeRailGroupName_.empty()) {
 			RailCameraGroupData& activeGroupSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), activeRailGroupName_);
@@ -1024,6 +1117,9 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 
 			ImGui::Text("Sequence for [%s]", activeRailGroupName_.c_str());
 			ImGui::Indent();
+
+			// プリセットごとの開始ポイントのインデックスを追跡する変数
+			int currentPointIndex = 0;
 
 			// 配置済みプリセットのリスト表示・置き換え・並び替え
 			for (size_t i = 0; i < activeGroupSettings.presetSequence.size(); ++i) {
@@ -1045,11 +1141,25 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					ImGui::EndCombo();
 				}
 
-				// Y軸回転（Yaw）の調整ドラッグバーを追加
+				// X軸回転（Pitch: 上下）の調整
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(80.0f);
+				if (ImGui::DragFloat("Pitch", &item.localRotate.x, 1.0f, -360.0f, 360.0f, "%.0f deg")) {
+					sequenceChanged = true;
+				}
+
+				// Y軸回転（Yaw: 左右）の調整
 				ImGui::SameLine();
 				ImGui::SetNextItemWidth(80.0f);
 				if (ImGui::DragFloat("Yaw", &item.localRotate.y, 1.0f, -360.0f, 360.0f, "%.0f deg")) {
 					sequenceChanged = true;
+				}
+
+				// ここから再生するボタン
+				ImGui::SameLine();
+				if (ImGui::Button("Play")) {
+					// 現在のインデックスから再生スタート
+					railCamera->StartRail(static_cast<float>(currentPointIndex));
 				}
 
 				ImGui::SameLine();
@@ -1066,6 +1176,18 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				if (ImGui::Button("Delete")) {
 					activeGroupSettings.presetSequence.erase(activeGroupSettings.presetSequence.begin() + i);
 					sequenceChanged = true;
+				}
+
+				// 次のプリセットの開始インデックスを計算
+				const RailPresetData* targetPreset = nullptr;
+				for (const auto& p : level->GetRailPresets()) {
+					if (p.presetName == item.presetName) {
+						targetPreset = &p;
+						break;
+					}
+				}
+				if (targetPreset && !targetPreset->localTransforms.empty()) {
+					currentPointIndex += (static_cast<int>(targetPreset->localTransforms.size()) - 1);
 				}
 
 				ImGui::PopID();
@@ -1400,7 +1522,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 		}
 		if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
 			auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
-			spawner->Configure(copyData.spawnDataList, spawnDistance, railCamera.get());
+			spawner->Configure(copyData.spawnDataList, copyData.spawnDistance, railCamera.get());
 		}
 		if (sourceObject->GetComponent<Enemy>()) {
 			auto* enemy = copyObject->AddComponent<EnemyNormal>();
@@ -2121,19 +2243,153 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			}
 		}
 
-		if (auto* spawner = selectedObject->GetComponent<EnemySpawnerComponent>()) {
-			if (ImGui::CollapsingHeader("Enemy Spawner")) {
-				bool enabled = spawner->IsEnabled();
-				if (ImGui::Checkbox("Enabled##EnemySpawner", &enabled)) {
-					spawner->SetEnabled(enabled);
-				}
-			}
-		}
 		if (auto* collider = selectedObject->GetComponent<ColliderComponent>()) {
 			if (selectedIndex != -1) {
 				LevelEditorCommon::DrawColliderInspector(*collider, level->GetLevelData()->objects[selectedIndex]);
 			}
 		}
+
+
+		// =========================================================================
+		// SPAWNER 専用のタイムライン編集 UI
+		// =========================================================================
+		if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+			// 参照として取得し、直接書き換えられるようにする
+			ObjectData& currentObjData = level->GetLevelData()->objects[selectedIndex];
+
+			if (auto* spawnerComponent = selectedObject->GetComponent<EnemySpawnerComponent>()) {
+				if (ImGui::CollapsingHeader("Enemy Spawner", ImGuiTreeNodeFlags_DefaultOpen)) {
+					bool enabled = spawnerComponent->IsEnabled();
+					if (ImGui::Checkbox("Enabled##EnemySpawner", &enabled)) {
+						spawnerComponent->SetEnabled(enabled);
+					}
+					ImGui::Separator();
+				ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "◆ Spawner Settings");
+				if (ImGui::DragFloat("Activation Range", &currentObjData.spawnDistance, 0.5f, 0.0f, 10000.0f, "%.1f")) {
+					spawnerComponent->SetSpawnDistance(currentObjData.spawnDistance);
+				}
+				ImGui::SameLine();
+				ImGui::TextDisabled("camera distance");
+				if (ImGui::Button("Apply Changes to Spawner")) {
+					spawnerComponent->Configure(currentObjData.spawnDataList, currentObjData.spawnDistance, railCamera.get());
+				}
+				if (ImGui::IsItemHovered()) {
+					ImGui::SetTooltip("Apply the edited spawn list and activation range to the running spawner.");
+				}
+
+				if (ImGui::Button("Add Enemy to Spawner")) {
+					// 初期値として追加
+					currentObjData.spawnDataList.push_back({ 0.0f, { 0.0f, 0.0f, 0.0f }, "NORMAL" });
+				}
+
+				ImGui::Spacing();
+
+				// プルダウン（Combo）に表示する敵の種類のリスト
+				const char* enemyTypes[] = { "NORMAL", "FAST", "BOSS" };
+				// プルダウン（Combo）に表示する移動パターンのリスト
+				const char* movePatterns[] = { "IDRE", "STRAIGHT", "WAVE", "HOMING", "PATH", "RAIL_FORWARD" };
+
+				// 登録されている敵のリストをループ表示
+				for (size_t i = 0; i < currentObjData.spawnDataList.size(); ++i) {
+					ImGui::PushID(static_cast<int>(i));
+					auto& sData = currentObjData.spawnDataList[i];
+
+					ImGui::Text("Enemy [%zu]", i);
+
+					// 1. 出現タイミング
+					ImGui::DragFloat("Spawn Time(s)", &sData.spawnTime, 0.1f, 0.0f, 100.0f);
+					// 2. 座標オフセット
+					ImGui::DragFloat3("Offset XYZ", &sData.offset.x, 0.1f);
+					// EnemyNormal を持つ EMPTY 名を指定すると、下の旧 Type より優先して
+					// その EMPTY のモデル・見た目を複製してスポーンする。
+					char enemyTemplateName[128]{};
+					strncpy_s(enemyTemplateName, sData.enemyTemplate.c_str(), _TRUNCATE);
+					if (ImGui::InputText("Enemy Template (EMPTY)", enemyTemplateName, IM_ARRAYSIZE(enemyTemplateName))) {
+						sData.enemyTemplate = enemyTemplateName;
+					}
+
+					// 3. 敵のタイプ（Comboボックス）
+					// 現在の sData.type が、配列の何番目と一致するかを探す
+					int currentTypeIndex = 0;
+					for (int j = 0; j < IM_ARRAYSIZE(enemyTypes); j++) {
+						if (sData.type == enemyTypes[j]) {
+							currentTypeIndex = j;
+							break;
+						}
+					}
+
+					// プルダウンのUIを表示し、変更があったら sData.type に文字列を書き戻す
+					if (ImGui::Combo("Type", &currentTypeIndex, enemyTypes, IM_ARRAYSIZE(enemyTypes))) {
+						sData.type = enemyTypes[currentTypeIndex];
+					}
+
+					// 2. ★移動パターンの選択 (PATH を選択すると制御点編集が展開)
+					int currentPatternIndex = 0;
+					for (int j = 0; j < IM_ARRAYSIZE(movePatterns); j++) {
+						if (sData.movePattern == movePatterns[j]) { currentPatternIndex = j; break; }
+					}
+					if (ImGui::Combo("Move Pattern", &currentPatternIndex, movePatterns, IM_ARRAYSIZE(movePatterns))) {
+						sData.movePattern = movePatterns[currentPatternIndex];
+					}
+
+					// 3. ★移動パターンが "PATH" の場合のみ制御点(controlPoints)の編集UIを表示
+					if (sData.movePattern == "PATH") {
+						ImGui::DragFloat("Path Speed Multiplier", &sData.pathSpeed, 0.05f, 0.0f, 100.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+						if (ImGui::TreeNode("Path Control Points")) {
+
+							// 制御点追加ボタン
+							if (ImGui::Button("+ Add Control Point")) {
+								Vector3 newPoint;
+
+								if (sData.controlPoints.empty()) {
+									// 制御点が0個の場合：スポナーの座標 ＋ エネミーのオフセット をワールド座標として算出
+									newPoint.x = currentObjData.transform.translate.x + sData.offset.x;
+									newPoint.y = currentObjData.transform.translate.y + sData.offset.y;
+									newPoint.z = currentObjData.transform.translate.z + sData.offset.z;
+								} else {
+									// 既に制御点がある場合：最後の制御点をベースにする
+									newPoint = sData.controlPoints.back();
+								}
+
+								sData.controlPoints.push_back(newPoint);
+							}
+
+							// 各制御点の編集と削除
+							for (size_t cpIdx = 0; cpIdx < sData.controlPoints.size(); ++cpIdx) {
+								ImGui::PushID(static_cast<int>(cpIdx));
+
+								// 座標調整ドラッグバー
+								std::string label = "P[" + std::to_string(cpIdx) + "]";
+								ImGui::DragFloat3(label.c_str(), &sData.controlPoints[cpIdx].x, 0.1f);
+
+								// 制御点削除ボタン
+								ImGui::SameLine();
+								if (ImGui::Button("Delete")) {
+									sData.controlPoints.erase(sData.controlPoints.begin() + cpIdx);
+									ImGui::PopID();
+									break;
+								}
+
+								ImGui::PopID();
+							}
+							ImGui::TreePop();
+						}
+					}
+
+					// 4. 削除ボタン
+					if (ImGui::Button("Delete")) {
+						currentObjData.spawnDataList.erase(currentObjData.spawnDataList.begin() + i);
+						ImGui::PopID();
+						break; // リストのサイズが変わるのでループを抜ける
+					}
+
+					ImGui::Separator();
+					ImGui::PopID();
+				}
+				}
+			}
+		}
+
 		if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
 			LevelEditorCommon::DrawComponentRemovalInspector(*selectedObject, level->GetLevelData()->objects[selectedIndex]);
 		}
@@ -2251,7 +2507,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			}
 			if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
 				auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();
-				spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+				spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, railCamera.get());
 				addSerializedComponent("EnemySpawner");
 			}
 			if ((objectData.type == "EMPTY" || objectData.type == "empty") &&
@@ -2273,150 +2529,6 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				auto* enemy = selectedObject->AddComponent<EnemyNormal>();
 				enemy->SetTransform(selectedObject->GetTransform()->transform);
 				addSerializedComponent("EnemyNormal");
-			}
-		}
-
-		// オブジェクト削除ボタン（誤誤爆防止のために赤色スタイル適用）
-		ImGui::Spacing();
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.1f, 0.1f, 1.0f));
-
-		if ((selectedIndex != -1 || selectedObject == playerObject) && ImGui::Button("Delete Object", ImVec2(-1, 0))) {
-			if (selectedObject == playerObject) {
-				// Keep a hidden fallback alive so gameplay code never retains a dangling Player pointer.
-				defaultPlayerObject = std::make_unique<GameObject>("Deleted Player Fallback");
-				playerObject = defaultPlayerObject.get();
-				player = playerObject->AddComponent<Player>();
-				playerObject->SetActive(false);
-				playerObject->Initialize();
-			}
-			if (selectedIndex != -1) {
-				level->GetLevelData()->objects.erase(level->GetLevelData()->objects.begin() + selectedIndex);
-				levelObjects.erase(levelObjects.begin() + selectedIndex);
-			}
-			selectedObject = nullptr;
-			ImGui::PopStyleColor(3);
-			ImGui::End();
-			return;
-		}
-		ImGui::PopStyleColor(3);
-
-		// =========================================================================
-		// SPAWNER 専用のタイムライン編集 UI
-		// =========================================================================
-		if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
-			// 参照として取得し、直接書き換えられるようにする
-			ObjectData& currentObjData = level->GetLevelData()->objects[selectedIndex];
-
-			if (auto* spawnerComponent = selectedObject->GetComponent<EnemySpawnerComponent>()) {
-				ImGui::Separator();
-				ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "◆ Spawner Settings");
-				if (ImGui::Button("Apply Spawner Settings")) {
-					spawnerComponent->SetSpawnList(currentObjData.spawnDataList);
-				}
-
-				if (ImGui::Button("Add Enemy to Spawner")) {
-					// 初期値として追加
-					currentObjData.spawnDataList.push_back({ 0.0f, { 0.0f, 0.0f, 0.0f }, "NORMAL" });
-				}
-
-				ImGui::Spacing();
-
-				// プルダウン（Combo）に表示する敵の種類のリスト
-				const char* enemyTypes[] = { "NORMAL", "FAST", "BOSS" };
-				// プルダウン（Combo）に表示する移動パターンのリスト
-				const char* movePatterns[] = { "IDRE", "STRAIGHT", "WAVE", "HOMING", "PATH", "RAIL_FORWARD" };
-
-				// 登録されている敵のリストをループ表示
-				for (size_t i = 0; i < currentObjData.spawnDataList.size(); ++i) {
-					ImGui::PushID(static_cast<int>(i));
-					auto& sData = currentObjData.spawnDataList[i];
-
-					ImGui::Text("Enemy [%zu]", i);
-
-					// 1. 出現タイミング
-					ImGui::DragFloat("Spawn Time(s)", &sData.spawnTime, 0.1f, 0.0f, 100.0f);
-					// 2. 座標オフセット
-					ImGui::DragFloat3("Offset XYZ", &sData.offset.x, 0.1f);
-
-					// 3. 敵のタイプ（Comboボックス）
-					// 現在の sData.type が、配列の何番目と一致するかを探す
-					int currentTypeIndex = 0;
-					for (int j = 0; j < IM_ARRAYSIZE(enemyTypes); j++) {
-						if (sData.type == enemyTypes[j]) {
-							currentTypeIndex = j;
-							break;
-						}
-					}
-
-					// プルダウンのUIを表示し、変更があったら sData.type に文字列を書き戻す
-					if (ImGui::Combo("Type", &currentTypeIndex, enemyTypes, IM_ARRAYSIZE(enemyTypes))) {
-						sData.type = enemyTypes[currentTypeIndex];
-					}
-
-					// 2. ★移動パターンの選択 (PATH を選択すると制御点編集が展開)
-					int currentPatternIndex = 0;
-					for (int j = 0; j < IM_ARRAYSIZE(movePatterns); j++) {
-						if (sData.movePattern == movePatterns[j]) { currentPatternIndex = j; break; }
-					}
-					if (ImGui::Combo("Move Pattern", &currentPatternIndex, movePatterns, IM_ARRAYSIZE(movePatterns))) {
-						sData.movePattern = movePatterns[currentPatternIndex];
-					}
-
-					// 3. ★移動パターンが "PATH" の場合のみ制御点(controlPoints)の編集UIを表示
-					if (sData.movePattern == "PATH") {
-						if (ImGui::TreeNode("Path Control Points")) {
-
-							// 制御点追加ボタン
-							if (ImGui::Button("+ Add Control Point")) {
-								Vector3 newPoint;
-
-								if (sData.controlPoints.empty()) {
-									// 制御点が0個の場合：スポナーの座標 ＋ エネミーのオフセット をワールド座標として算出
-									newPoint.x = currentObjData.transform.translate.x + sData.offset.x;
-									newPoint.y = currentObjData.transform.translate.y + sData.offset.y;
-									newPoint.z = currentObjData.transform.translate.z + sData.offset.z;
-								} else {
-									// 既に制御点がある場合：最後の制御点をベースにする
-									newPoint = sData.controlPoints.back();
-								}
-
-								sData.controlPoints.push_back(newPoint);
-							}
-
-							// 各制御点の編集と削除
-							for (size_t cpIdx = 0; cpIdx < sData.controlPoints.size(); ++cpIdx) {
-								ImGui::PushID(static_cast<int>(cpIdx));
-
-								// 座標調整ドラッグバー
-								std::string label = "P[" + std::to_string(cpIdx) + "]";
-								ImGui::DragFloat3(label.c_str(), &sData.controlPoints[cpIdx].x, 0.1f);
-
-								// 制御点削除ボタン
-								ImGui::SameLine();
-								if (ImGui::Button("Delete")) {
-									sData.controlPoints.erase(sData.controlPoints.begin() + cpIdx);
-									ImGui::PopID();
-									break;
-								}
-
-								ImGui::PopID();
-							}
-							ImGui::TreePop();
-						}
-					}
-
-					// 4. 削除ボタン
-					if (ImGui::Button("Delete")) {
-						currentObjData.spawnDataList.erase(currentObjData.spawnDataList.begin() + i);
-						ImGui::PopID();
-						break; // リストのサイズが変わるのでループを抜ける
-					}
-
-					ImGui::Separator();
-					ImGui::PopID();
-				}
 			}
 		}
 
@@ -2455,12 +2567,25 @@ void GamePlayScene::Draw2D() {
 			}
 		}
 		if (auto* textRenderer = levelObject->GetComponent<TextRendererComponent>()) {
-			if (levelObject->IsActive() && textRenderer->IsEnabled()) {
+			if (levelObject->IsActive() && textRenderer->IsEnabled() && textRenderer->IsPostEffectEnabled()) {
 				textRenderer->DrawTextSprite();
 			}
 		}
 	}
 }
+
+void GamePlayScene::DrawPostEffectExcluded2D() {
+	// 対象外 UI は HDR シーンバッファへは描かない。最終合成後に描くことで、
+	// マスク方式では防げないブルームのにじみや画面全体エフェクトも受けなくなる。
+	for (const auto& levelObject : levelObjects) {
+		if (auto* textRenderer = levelObject->GetComponent<TextRendererComponent>()) {
+			if (levelObject->IsActive() && textRenderer->IsEnabled() && !textRenderer->IsPostEffectEnabled()) {
+				textRenderer->DrawTextSprite();
+			}
+		}
+	}
+}
+
 void GamePlayScene::Draw3D() {
 	// スカイボックス
 	//Skybox::GetInstance()->Draw();
@@ -2497,6 +2622,12 @@ void GamePlayScene::Draw3D() {
 	debugLineHit->Update();
 	debugLineHit->Draw();
 
+#endif
+
+#if defined(ENABLE_PATH_DEBUG_VISUALS)
+	LineCommon::GetInstance()->SetCommonPipelineState();
+	pathDebugLine->Update();
+	pathDebugLine->Draw();
 #endif
 
 	railCamera->EditorDraw();
@@ -2911,7 +3042,7 @@ void GamePlayScene::CreateLevel() {
 
 			// ゲームロジック用のスポナーも同じ GameObject にアタッチする。
 			auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
-			spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+			spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, railCamera.get());
 			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
 				auto* railMovement = gameObject->AddComponent<ObjectRailMovementComponent>();
 				railMovement->Configure(objectData.objectRailPoints, objectData.objectRailSpeed,
@@ -3008,7 +3139,7 @@ void GamePlayScene::CreateLevel() {
 			}
 			if (hasComponent("EnemySpawner")) {
 				auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
-				spawner->Configure(objectData.spawnDataList, spawnDistance, railCamera.get());
+				spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, railCamera.get());
 			}
 			if (hasComponent("Player")) {
 				player = gameObject->AddComponent<Player>();
@@ -3225,10 +3356,7 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 		}
 	}
 
-	if (!showEditorControls) {
-		return;
-	}
-
+	// Settings パネルが非表示でも、選択中スポナーの出現地点は Game ビューに表示し続ける。
 	// 敵の出現地点のプレビュー表示
 	if (selectedObject != nullptr) {
 		// 選択中オブジェクトのインデックスを探す

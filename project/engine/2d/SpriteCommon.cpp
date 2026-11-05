@@ -27,6 +27,15 @@ void SpriteCommon::SetCommonPipelineState() {
 	dxCommon_->GetCommandList()->SetDescriptorHeaps(1, heaps);
 }
 
+void SpriteCommon::SetOverlayPipelineState() {
+	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
+	dxCommon_->GetCommandList()->SetPipelineState(overlayPipelineState.Get());
+	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	ID3D12DescriptorHeap* heaps[] = { dxCommon_->srvDescriptorHeap.Get() };
+	dxCommon_->GetCommandList()->SetDescriptorHeaps(1, heaps);
+}
+
 void SpriteCommon::SetPostEffectMaskPipelineState(bool enabled) {
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
 	dxCommon_->GetCommandList()->SetPipelineState(
@@ -179,6 +188,14 @@ void SpriteCommon::CreateGraphicsPipeline() {
 	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
+
+	// PostEffect::Draw の最終合成後は sRGB バックバッファが RT になる。
+	// HDR シーン用 PSO をそのまま使うと RTV フォーマットが一致せず描画できない。
+	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
+		IID_PPV_ARGS(&overlayPipelineState));
+	assert(SUCCEEDED(hr));
+	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R16G16B16A16_FLOAT;
 
 	Microsoft::WRL::ComPtr<IDxcBlob> maskPixelShader =
 		dxCommon_->CompileShader(L"Resource/shaders/SpriteMask.PS.hlsl", L"ps_6_0");

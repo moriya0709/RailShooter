@@ -8,7 +8,9 @@
 #include "CameraManager.h"
 
 std::unique_ptr <ParticleManager> ParticleManager::instance = nullptr;
-constexpr uint32_t kMaxParticleInstance = 1024;
+// 1 グループあたりの同時生存数。空きリストとインスタンスバッファはこの数で確保する。
+// エフェクトのバースト時に 1,024 個で即座に枯渇しないよう、余裕を持たせる。
+constexpr uint32_t kMaxParticleInstance = 4096;
 // 乱数生成器の初期化
 std::random_device seedGenerator;
 std::mt19937 randomEngine(seedGenerator());
@@ -456,7 +458,11 @@ void ParticleManager::Emit(
 	if (emitter->count == 0) {
 		return;
 	}
-	assert(emitDataAllocationCount_ < kMaxEmitDispatchesPerFrame);
+	// Emit ごとに別の定数バッファ領域を使用する。上限に達した場合も
+	// デバッグ実行を停止させず、この射出だけを安全にスキップする。
+	if (emitDataAllocationCount_ >= kMaxEmitDispatchesPerFrame) {
+		return;
+	}
 
 	// 同一フレームの各 Dispatch に固有の CBV スロットを割り当てる。
 	// 共有すると、左右ミサイルの後の Emit が先の座標を上書きしてしまう。

@@ -570,6 +570,9 @@
     <None Include="Resource\shaders\postEffect\MonitorOff.hlsli">
       <Filter>シェーダー ファイル\postEffect</Filter>
     </None>
+    <None Include="Resource\shaders\postEffect\Glitch.hlsli">
+      <Filter>シェーダー ファイル\postEffect</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ヘッダー ファイル">

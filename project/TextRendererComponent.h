@@ -19,7 +19,7 @@ public:
 	void Update() override;
 	void Draw() override {}
 	void DrawPostEffectMask() override;
-	// テキストだけをポストエフェクト対象にするか。通常描画には影響しない。
+	// false のテキストはポストエフェクトの最終合成後に UI として重ねて描く。
 	void SetEnablePostEffect(bool enabled) { enablePostEffect_ = enabled; }
 	bool IsPostEffectEnabled() const { return enablePostEffect_; }
 	// Call from a 2D draw pass after SpriteCommon has been configured.

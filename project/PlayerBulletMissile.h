@@ -58,7 +58,7 @@ private:
 	float deathTimer = 0.0f; // 消滅までの時間
 	static constexpr float kLifeTime = 5.0f; // 弾の寿命（秒）
 	Enemy* target_ = nullptr;	// ロックオン対象の敵
-	int damage = 1; // 弾のダメージ量
+	int damage = 10; // 弾のダメージ量
 
 	// ホーミングを開始する敵との距離
 	float homingPower = 2.0f; // ホーミングの強さ

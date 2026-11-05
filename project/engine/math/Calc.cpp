@@ -723,10 +723,10 @@ void StartFadeOut(bool& isFadeIn, bool& isFadeOut) {
     isFadeIn = false; // フェードインをキャンセル
 }
 
-void UpdateFade(bool& isFadeIn, bool& isFadeOut, float& intensity) {// フェードイン処理
+void UpdateFade(bool& isFadeIn, bool& isFadeOut, float& intensity,float time) {// フェードイン処理
     if (isFadeIn) {
         if (intensity < 1.0f) {
-            intensity += 1.0f / 30.0f;
+            intensity += 1.0f / time;
             PostEffect::GetInstance()->SetIntensity(intensity);
         } else {
             intensity = 1.0f; // 確実に1.0にする
@@ -738,7 +738,7 @@ void UpdateFade(bool& isFadeIn, bool& isFadeOut, float& intensity) {// フェー
     // フェードアウト処理
     if (isFadeOut) {
         if (intensity > 0.0f) {
-            intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
+            intensity = (std::max)(0.0f, intensity - 1.0f / time);
             PostEffect::GetInstance()->SetIntensity(intensity);
         } else {
             intensity = 0.0f; // 確実に0.0にする

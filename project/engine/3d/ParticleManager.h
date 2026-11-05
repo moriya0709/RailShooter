@@ -295,7 +295,9 @@ private:
 	static constexpr uint32_t kCameraDataStride = (sizeof(ParticleCameraData) + 255u) & ~255u;
 	static constexpr uint32_t kCameraDataSlotCount = static_cast<uint32_t>(CameraDataSlot::Count);
 	static constexpr uint32_t kEmitDataStride = (sizeof(Emitter) + 255u) & ~255u;
-	static constexpr uint32_t kMaxEmitDispatchesPerFrame = 256;
+	// Emit ごとに専用 CBV スロットが必要。多数のエミッタが同じフレームに
+	// 発火しても、固定上限でアサート停止しないよう余裕を確保する。
+	static constexpr uint32_t kMaxEmitDispatchesPerFrame = 1024;
 
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;

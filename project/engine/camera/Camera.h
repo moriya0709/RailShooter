@@ -13,6 +13,9 @@ public:
 	// デバック用のカメラ操作
 	void DebugCameraUpdate();
 
+	// シェイク (duration: 継続時間, magnitude: 揺れの強さ)
+	void StartShake(float duration, float magnitude);
+
 	// setter
 	void SetFovY(float fovY) { fovY_ = fovY; }
 	void SetAspectRatio(float aspectRatio) { aspectRatio_ = aspectRatio; }
@@ -57,6 +60,13 @@ private:
 	float zoomSpeed = 0.05f;
 	float panSpeed = 0.05f;
 	float rotateSpeed = 0.005f;
+
+	// シェイク用変数
+	bool isShake_ = false;
+	float shakeDuration_ = 0.0f;
+	float shakeTimer_ = 0.0f;
+	float shakeMagnitude_ = 0.0f;
+	Vector3 shakeOffset_ = { 0.0f, 0.0f, 0.0f };
 
 	// シングルトンインスタンス
 	static Camera* instance;

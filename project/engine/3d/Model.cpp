@@ -1,4 +1,4 @@
-﻿#include "Model.h"
+#include "Model.h"
 #include "DirectXCommon.h"
 #include "TextureManager.h"
 #include "SkyBox.h"
@@ -15,6 +15,8 @@
 #include <assimp/matrix4x4.h>
 #include <assimp/quaternion.h>
 #include <cassert>
+#include <stdexcept>
+#include "Logger.h"
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -567,8 +569,15 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 
 	// ファイルを読み込む
 	const aiScene* scene = importer.ReadFile(filePath.c_str(), pFlags);
-	assert(scene != nullptr && "ファイルの読み込みに失敗しました。");
-	assert(scene->HasMeshes());
+	if (!scene || !scene->HasMeshes()) {
+        const std::string error = "[Model] Failed to load " + filePath + ": " + importer.GetErrorString();
+        Logger::Log(error + "\n");
+        // Keep the editor usable when an imported asset is invalid.
+        if (filePath != "Resource/cube/cube.gltf") {
+            return LoadModelFile("Resource/cube", "cube.gltf");
+        }
+        throw std::runtime_error(error);
+    }
 
 	// シーンの全マテリアルを先に読み込む。テクスチャがない場合は白を使い、
 	// MTL の Kd（基本色）だけで正しく描画できるようにする。

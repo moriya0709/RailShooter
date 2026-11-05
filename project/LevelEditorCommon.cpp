@@ -1,4 +1,4 @@
-#include "LevelEditorCommon.h"
+﻿#include "LevelEditorCommon.h"
 
 #include "GameObject.h"
 #include "Level.h"
@@ -219,6 +219,14 @@ void UpdateEnemyCollisions(Player& player,
 			if (DidPlayerBulletHitEnemy(enemyObb, *bullet)) {
 				enemy->OnCollisionBullet(bullet->GetDamage());
 				bullet->OnCollision();
+
+				// ヒットエフェクト
+				if (auto* hitParticle = enemyObject->GetComponent<ParticleComponent>()) {
+					enemy->GetTranslate();
+					hitParticle->Emit();
+
+
+				}
 			}
 		}
 		const auto& enemyBullets = enemy->GetBullets();

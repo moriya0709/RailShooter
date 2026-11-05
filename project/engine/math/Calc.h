@@ -188,5 +188,5 @@ Vector3 CatmullRomSpline(const Vector3& p0, const Vector3& p1, const Vector3& p2
 void StartFadeIn(bool& isFadeIn,bool& isFadeOut);
 void StartFadeOut(bool& isFadeIn, bool& isFadeOut);
 // 毎フレーム呼び出す更新関数
-void UpdateFade(bool& isFadeIn, bool& isFadeOut,float& intensity);
+void UpdateFade(bool& isFadeIn, bool& isFadeOut,float& intensity, float time);
 

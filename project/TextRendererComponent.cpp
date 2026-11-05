@@ -191,12 +191,10 @@ void TextRendererComponent::DrawTextSprite() {
 }
 
 void TextRendererComponent::DrawPostEffectMask() {
-	if (!sprite_) {
+	if (!sprite_ || !enablePostEffect_) {
 		return;
 	}
-	// OFF のときも不透明な文字領域には 0 を書く。これにより背後の空や
-	// モデルのマスク値を上書きし、文字だけを確実に対象外にできる。
-	SpriteCommon::GetInstance()->SetPostEffectMaskPipelineState(enablePostEffect_);
+	SpriteCommon::GetInstance()->SetPostEffectMaskPipelineState();
 	if (outlineEnabled_) {
 		for (const auto& outlineSprite : outlineSprites_) {
 			outlineSprite->DrawPostEffectMask();

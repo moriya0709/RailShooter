@@ -41,6 +41,9 @@ public:
 	virtual void SetRailPoints(const std::vector<Vector3>& points) = 0;
 	// レール追従用のオフセットの設定
 	virtual void SetRailOffsetProgress(float offset) = 0;
+	// PATH移動の速度倍率
+	virtual void SetPathSpeed(float speed) = 0;
+
 
 	virtual const std::list<EnemyBullet*>& GetBullets() = 0;
 

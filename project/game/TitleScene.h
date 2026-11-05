@@ -39,6 +39,7 @@ public:
 	void Update(float deltaTime, float unscaledDeltaTime) override;
 	// 描画
 	void Draw2D() override;
+	void DrawPostEffectExcluded2D() override;
 	void Draw3D() override;
 	void DrawPostEffectMask() override;
 	// 終了

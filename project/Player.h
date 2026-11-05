@@ -70,8 +70,9 @@ private:
 
 
     // --- パラメーター設定 ---
-    float maxRollAngle = 0.26f; // 最大ロール角 (約 30度 in radian)
-    float maxPitchAngle = 0.26f; // 最大ピッチ角 (約 15度 in radian)
+    float maxRollAngle = 0.3925f; // 最大ロール角 (約 30度 in radian)
+    float maxPitchAngle = 0.3925f; // 最大ピッチ角 (約 15度 in radian)
+    float maxYawAngle = 0.3925f; // 最大ヨー角 (約 15度 in radian)
 
     // カメラの傾き反映比率 (コクピットの傾きの何%をカメラに伝えるか)
     float cameraTiltRatio = 0.35f;
@@ -86,17 +87,23 @@ private:
     // --- 現在の内部状態 ---
     float currentPitch = 0.0f;
     float currentRoll = 0.0f;
+    float currentYaw = 0.0f;
     Vector3 currentLocalOffset = { 0.0f, 0.0f, 0.0f };
+
+    // 回転の慣性用パラメーター
+    Vector3 angularVelocity = { 0.0f, 0.0f, 0.0f }; // 現在の回転スピード(X:Pitch, Y:Yaw, Z:Roll)
+    float rotAccel = 5.0f;                          // 回転の加速度（入力時の動き出しの重さ）
+    float rotFriction = 10.0f;                       // 回転の摩擦・ブレーキ（滑りやすさ）
 
     // ▼▼▼ 追加：画面内のローカル移動（慣性）パラメーター ▼▼▼
     Vector3 playerPositionOffset = { 0.0f, 0.0f, 0.0f }; // レールからの相対位置
 	Vector2 velocity = { 0.0f, 0.0f };                   // 現在の移動速度
 	// 発射時に弾へ渡す、前フレームにおける自機のワールド移動量。
 	Vector3 launchVelocity_ = { 0.0f, 0.0f, 0.0f };
-    float moveSpeed = 5.0f;                             // 最大速度
+    float moveSpeed = 15.0f;                             // 最大速度
     float inertiaSpeed = 10.0f;                           // 慣性の強さ（値が小さいほど氷の上のように滑る）
-    float moveLimitX = 10.0f;                            // 左右の移動限界
-    float moveLimitY = 10.0f;                            // 上下の移動限界
+    float moveLimitX = 5.0f;                            // 左右の移動限界
+    float moveLimitY = 5.0f;                            // 上下の移動限界
     float cameraFollowRatio = 0.3f;                      // カメラが機体の移動にどれだけ追従するか (0.0=追従なし, 1.0=完全追従)
 
     // 弾

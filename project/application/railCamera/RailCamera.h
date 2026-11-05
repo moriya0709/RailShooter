@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <memory>
+#include <numbers>
 
 #include "Object.h"
 #include "Calc.h"
@@ -52,7 +53,7 @@ public:
 	// StartRail が成功した回数。再スタートも含めて外部イベントを検出するために使う。
 	uint64_t GetStartRevision() const { return startRevision_; }
 	// 先頭からレール移動を開始する。Catmull-Rom のため制御点は 4 個以上必要。
-	void StartRail();
+	void StartRail(float startDistance = 0.0f);
 	void StopRail() { isRail = false; }
 	void SetDeltaTime(float value) { deltaTime = (std::max)(0.0f, value); }
     // 進行度 (railT) を取得する関数
@@ -62,6 +63,9 @@ public:
     void SetTargetPosition(const Vector3& target) { targetPosition = target; }
 	void SetDirectionMode(RailCameraDirectionMode mode) { cameraMode = static_cast<CameraMode>(mode); }
 	RailCameraDirectionMode GetDirectionMode() const { return static_cast<RailCameraDirectionMode>(cameraMode); }
+
+    // レールの再生速度を設定
+    void SetRailSpeed(float speed) { railSpeed = speed; }
 
     // 制御点追加
     void AddPoint(Vector3 pos, Vector3 rotate);
@@ -91,6 +95,11 @@ private:
     float railT = 0.0f;    // 現在位置
     float railSpeed = 1.0f;    // 速度
     float deltaTime = 1 / 60.0f; // フレーム時間
+    // ロール制御用変数
+    float currentRoll = 0.0f;
+    float previousYaw = 0.0f;
+	float rollSensitivity = 15.0f; // 係数
+    float maxRollAngle = 0.5f; // 最大ロール角（ラジアン）約30度弱
 
     Vector3 pos;
 

@@ -1,4 +1,4 @@
-﻿#include "SelectScene.h"
+#include "SelectScene.h"
 #include "ObjectCommon.h"
 #include "SpriteCommon.h"
 #include "SceneManager.h"
@@ -223,6 +223,7 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 	// 2. ★ GameObject の座標を RailCamera の制御点として毎フレーム上書き（同期）する
 	if (railCamera) {
 		RailCameraGroupData& railSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), activeRailGroupName_);
+		railCamera->SetRailSpeed(railSettings.railSpeed);
 		railCamera->SetDirectionMode(railSettings.directionMode);
 		railCamera->SetTargetPosition(railSettings.targetPosition);
 		railCamera->points.clear(); // 一旦リセット
@@ -1639,141 +1640,12 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 				}
 			}
 
-			if (auto* spawner = selectedObject->GetComponent<EnemySpawnerComponent>()) {
-				if (ImGui::CollapsingHeader("Enemy Spawner")) {
-					bool enabled = spawner->IsEnabled();
-					if (ImGui::Checkbox("Enabled##EnemySpawner", &enabled)) {
-						spawner->SetEnabled(enabled);
-					}
-				}
-			}
 			if (auto* collider = selectedObject->GetComponent<ColliderComponent>()) {
 				if (selectedIndex != -1) {
 					LevelEditorCommon::DrawColliderInspector(*collider, level->GetLevelData()->objects[selectedIndex]);
 				}
 			}
-			if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
-				LevelEditorCommon::DrawComponentRemovalInspector(*selectedObject, level->GetLevelData()->objects[selectedIndex]);
-			}
 
-			if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size() &&
-				ImGui::CollapsingHeader("Add Component")) {
-				auto& objectData = level->GetLevelData()->objects[selectedIndex];
-				auto addSerializedComponent = [&objectData](const char* componentName) {
-					if (std::find(objectData.components.begin(), objectData.components.end(), componentName) == objectData.components.end()) {
-						objectData.components.push_back(componentName);
-					}
-					};
-
-				if (!selectedObject->GetComponent<ModelRendererComponent>() && ImGui::Button("Model Renderer")) {
-					auto* renderer = selectedObject->AddComponent<ModelRendererComponent>();
-					renderer->SetModel("cube.gltf");
-					objectData.file_name = "cube.gltf";
-					addSerializedComponent("ModelRenderer");
-				}
-				if (!selectedObject->GetComponent<SpriteRendererComponent>() && ImGui::Button("Sprite Renderer")) {
-					auto* rectTransform = selectedObject->AddComponent<RectTransformComponent>();
-					rectTransform->position = { 960.0f, 540.0f };
-					auto* spriteRenderer = selectedObject->AddComponent<SpriteRendererComponent>();
-					spriteRenderer->SetTexture("Resource/title/title.png");
-					objectData.sprite_file_name = "Resource/title/title.png";
-					objectData.spriteEmissiveColor = { 1.0f, 1.0f, 1.0f };
-					objectData.spriteEmissiveIntensity = 0.0f;
-					objectData.rectPosition = rectTransform->position;
-					objectData.rectRotation = rectTransform->rotation;
-					objectData.rectScale = rectTransform->scale;
-					addSerializedComponent("RectTransform");
-					addSerializedComponent("SpriteRenderer");
-				}
-				if (!selectedObject->GetComponent<TextRendererComponent>() && ImGui::Button("Text Renderer")) {
-					auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>();
-					if (!rectTransform) {
-						rectTransform = selectedObject->AddComponent<RectTransformComponent>();
-						rectTransform->position = { 960.0f, 540.0f };
-					}
-					auto* textRenderer = selectedObject->AddComponent<TextRendererComponent>();
-					textRenderer->SetText("New Text");
-					textRenderer->SetFontFamilyUtf8("Meiryo UI");
-					textRenderer->SetFontSize(32);
-					objectData.text = "New Text";
-					objectData.textFontFamily = "Meiryo UI";
-					objectData.textFontSize = 32;
-					objectData.textColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-					objectData.textMaxWidth = 0.0f;
-					objectData.textBold = false;
-					objectData.textOutlineEnabled = false;
-					objectData.textOutlineThickness = 1.0f;
-					objectData.textOutlineColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-					objectData.textEmissiveColor = { 1.0f, 1.0f, 1.0f };
-					objectData.textEmissiveIntensity = 0.0f;
-					objectData.textCharacterSpacing = 0.0f;
-					objectData.rectPosition = rectTransform->position;
-					objectData.rectRotation = rectTransform->rotation;
-					objectData.rectScale = rectTransform->scale;
-					addSerializedComponent("RectTransform");
-					addSerializedComponent("TextRenderer");
-				}
-				if (!selectedObject->GetComponent<RailPointComponent>() && ImGui::Button("Rail Camera Point")) {
-					selectedObject->AddComponent<RailPointComponent>();
-					addSerializedComponent("RailPoint");
-				}
-				if (!selectedObject->GetComponent<ObjectRailMovementComponent>() && ImGui::Button("Object Rail Movement")) {
-					auto* railMovement = selectedObject->AddComponent<ObjectRailMovementComponent>();
-					const Vector3 start = selectedObject->GetTransform()->GetTranslate();
-					const std::vector<Vector3> points = { start, start + Vector3{ 0.0f, 0.0f, 5.0f } };
-					const Vector3 rotation = selectedObject->GetTransform()->GetRotate();
-					const std::vector<Vector3> rotations = { rotation, rotation };
-					railMovement->Configure(points, 1.0f, true, true, true, rotations, false);
-					objectData.objectRailPoints = points;
-					objectData.objectRailPointRotations = rotations;
-					objectData.objectRailSpeed = 1.0f;
-					objectData.objectRailLoop = true;
-					objectData.objectRailOrientToPath = true;
-					objectData.objectRailUsePointRotations = false;
-					objectData.objectRailPlayOnStart = true;
-					addSerializedComponent("ObjectRailMovement");
-				}
-				if (!selectedObject->GetComponent<ParticleComponent>() && ImGui::Button("Particle")) {
-					objectData.particle = ParticleComponentData{};
-					selectedObject->AddComponent<ParticleComponent>()->Configure(objectData.particle);
-					addSerializedComponent("Particle");
-				}
-				if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
-					auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();
-					spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, railCamera.get());
-					addSerializedComponent("EnemySpawner");
-				}
-				if ((objectData.type == "EMPTY" || objectData.type == "empty") &&
-					!selectedObject->GetComponent<ColliderComponent>() && ImGui::Button("Collider")) {
-					auto* collider = selectedObject->AddComponent<ColliderComponent>();
-					objectData.colliderSize = collider->size;
-					objectData.colliderCenterOffset = collider->centerOffset;
-					addSerializedComponent("Collider");
-				}
-				if (!selectedObject->GetComponent<Enemy>() && ImGui::Button("Enemy Normal")) {
-					auto* enemy = selectedObject->AddComponent<EnemyNormal>();
-					enemy->SetTransform(selectedObject->GetTransform()->transform);
-					addSerializedComponent("EnemyNormal");
-				}
-			}
-
-			// オブジェクト削除ボタン（誤誤爆防止のために赤色スタイル適用）
-			ImGui::Spacing();
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.1f, 0.1f, 1.0f));
-
-			if (selectedIndex != -1 && ImGui::Button("Delete Object", ImVec2(-1, 0))) {
-				if (selectedIndex != -1) {
-					level->GetLevelData()->objects.erase(level->GetLevelData()->objects.begin() + selectedIndex);
-					levelObjects.erase(levelObjects.begin() + selectedIndex);
-				}
-				selectedObject = nullptr;
-				ImGui::PopStyleColor(3);
-				ImGui::End();
-				return;
-			}
-			ImGui::PopStyleColor(3);
 
 			// =========================================================================
 			// SPAWNER 専用のタイムライン編集 UI
@@ -1783,15 +1655,23 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 				ObjectData& currentObjData = level->GetLevelData()->objects[selectedIndex];
 
 				if (auto* spawnerComponent = selectedObject->GetComponent<EnemySpawnerComponent>()) {
-					ImGui::Separator();
+					if (ImGui::CollapsingHeader("Enemy Spawner", ImGuiTreeNodeFlags_DefaultOpen)) {
+						bool enabled = spawnerComponent->IsEnabled();
+						if (ImGui::Checkbox("Enabled##EnemySpawner", &enabled)) {
+							spawnerComponent->SetEnabled(enabled);
+						}
+						ImGui::Separator();
 					ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "◆ Spawner Settings");
 					if (ImGui::DragFloat("Activation Range", &currentObjData.spawnDistance, 0.5f, 0.0f, 10000.0f, "%.1f")) {
 						spawnerComponent->SetSpawnDistance(currentObjData.spawnDistance);
 					}
 					ImGui::SameLine();
 					ImGui::TextDisabled("camera distance");
-					if (ImGui::Button("Apply Spawner Settings")) {
+					if (ImGui::Button("Apply Changes to Spawner")) {
 						spawnerComponent->Configure(currentObjData.spawnDataList, currentObjData.spawnDistance, railCamera.get());
+					}
+					if (ImGui::IsItemHovered()) {
+						ImGui::SetTooltip("Apply the edited spawn list and activation range to the running spawner.");
 					}
 
 					if (ImGui::Button("Add Enemy to Spawner")) {
@@ -1902,6 +1782,112 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 						ImGui::Separator();
 						ImGui::PopID();
 					}
+					}
+				}
+			}
+
+			if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+				LevelEditorCommon::DrawComponentRemovalInspector(*selectedObject, level->GetLevelData()->objects[selectedIndex]);
+			}
+
+			if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size() &&
+				ImGui::CollapsingHeader("Add Component")) {
+				auto& objectData = level->GetLevelData()->objects[selectedIndex];
+				auto addSerializedComponent = [&objectData](const char* componentName) {
+					if (std::find(objectData.components.begin(), objectData.components.end(), componentName) == objectData.components.end()) {
+						objectData.components.push_back(componentName);
+					}
+					};
+
+				if (!selectedObject->GetComponent<ModelRendererComponent>() && ImGui::Button("Model Renderer")) {
+					auto* renderer = selectedObject->AddComponent<ModelRendererComponent>();
+					renderer->SetModel("cube.gltf");
+					objectData.file_name = "cube.gltf";
+					addSerializedComponent("ModelRenderer");
+				}
+				if (!selectedObject->GetComponent<SpriteRendererComponent>() && ImGui::Button("Sprite Renderer")) {
+					auto* rectTransform = selectedObject->AddComponent<RectTransformComponent>();
+					rectTransform->position = { 960.0f, 540.0f };
+					auto* spriteRenderer = selectedObject->AddComponent<SpriteRendererComponent>();
+					spriteRenderer->SetTexture("Resource/title/title.png");
+					objectData.sprite_file_name = "Resource/title/title.png";
+					objectData.spriteEmissiveColor = { 1.0f, 1.0f, 1.0f };
+					objectData.spriteEmissiveIntensity = 0.0f;
+					objectData.rectPosition = rectTransform->position;
+					objectData.rectRotation = rectTransform->rotation;
+					objectData.rectScale = rectTransform->scale;
+					addSerializedComponent("RectTransform");
+					addSerializedComponent("SpriteRenderer");
+				}
+				if (!selectedObject->GetComponent<TextRendererComponent>() && ImGui::Button("Text Renderer")) {
+					auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>();
+					if (!rectTransform) {
+						rectTransform = selectedObject->AddComponent<RectTransformComponent>();
+						rectTransform->position = { 960.0f, 540.0f };
+					}
+					auto* textRenderer = selectedObject->AddComponent<TextRendererComponent>();
+					textRenderer->SetText("New Text");
+					textRenderer->SetFontFamilyUtf8("Meiryo UI");
+					textRenderer->SetFontSize(32);
+					objectData.text = "New Text";
+					objectData.textFontFamily = "Meiryo UI";
+					objectData.textFontSize = 32;
+					objectData.textColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+					objectData.textMaxWidth = 0.0f;
+					objectData.textBold = false;
+					objectData.textOutlineEnabled = false;
+					objectData.textOutlineThickness = 1.0f;
+					objectData.textOutlineColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+					objectData.textEmissiveColor = { 1.0f, 1.0f, 1.0f };
+					objectData.textEmissiveIntensity = 0.0f;
+					objectData.textCharacterSpacing = 0.0f;
+					objectData.rectPosition = rectTransform->position;
+					objectData.rectRotation = rectTransform->rotation;
+					objectData.rectScale = rectTransform->scale;
+					addSerializedComponent("RectTransform");
+					addSerializedComponent("TextRenderer");
+				}
+				if (!selectedObject->GetComponent<RailPointComponent>() && ImGui::Button("Rail Camera Point")) {
+					selectedObject->AddComponent<RailPointComponent>();
+					addSerializedComponent("RailPoint");
+				}
+				if (!selectedObject->GetComponent<ObjectRailMovementComponent>() && ImGui::Button("Object Rail Movement")) {
+					auto* railMovement = selectedObject->AddComponent<ObjectRailMovementComponent>();
+					const Vector3 start = selectedObject->GetTransform()->GetTranslate();
+					const std::vector<Vector3> points = { start, start + Vector3{ 0.0f, 0.0f, 5.0f } };
+					const Vector3 rotation = selectedObject->GetTransform()->GetRotate();
+					const std::vector<Vector3> rotations = { rotation, rotation };
+					railMovement->Configure(points, 1.0f, true, true, true, rotations, false);
+					objectData.objectRailPoints = points;
+					objectData.objectRailPointRotations = rotations;
+					objectData.objectRailSpeed = 1.0f;
+					objectData.objectRailLoop = true;
+					objectData.objectRailOrientToPath = true;
+					objectData.objectRailUsePointRotations = false;
+					objectData.objectRailPlayOnStart = true;
+					addSerializedComponent("ObjectRailMovement");
+				}
+				if (!selectedObject->GetComponent<ParticleComponent>() && ImGui::Button("Particle")) {
+					objectData.particle = ParticleComponentData{};
+					selectedObject->AddComponent<ParticleComponent>()->Configure(objectData.particle);
+					addSerializedComponent("Particle");
+				}
+				if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
+					auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();
+					spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, railCamera.get());
+					addSerializedComponent("EnemySpawner");
+				}
+				if ((objectData.type == "EMPTY" || objectData.type == "empty") &&
+					!selectedObject->GetComponent<ColliderComponent>() && ImGui::Button("Collider")) {
+					auto* collider = selectedObject->AddComponent<ColliderComponent>();
+					objectData.colliderSize = collider->size;
+					objectData.colliderCenterOffset = collider->centerOffset;
+					addSerializedComponent("Collider");
+				}
+				if (!selectedObject->GetComponent<Enemy>() && ImGui::Button("Enemy Normal")) {
+					auto* enemy = selectedObject->AddComponent<EnemyNormal>();
+					enemy->SetTransform(selectedObject->GetTransform()->transform);
+					addSerializedComponent("EnemyNormal");
 				}
 			}
 
@@ -1935,12 +1921,23 @@ void SelectScene::Draw2D() {
 			}
 		}
 		if (auto* textRenderer = levelObject->GetComponent<TextRendererComponent>()) {
-			if (levelObject->IsActive() && textRenderer->IsEnabled()) {
+			if (levelObject->IsActive() && textRenderer->IsEnabled() && textRenderer->IsPostEffectEnabled()) {
 				textRenderer->DrawTextSprite();
 			}
 		}
 	}
 }
+
+void SelectScene::DrawPostEffectExcluded2D() {
+	for (const auto& levelObject : levelObjects) {
+		if (auto* textRenderer = levelObject->GetComponent<TextRendererComponent>()) {
+			if (levelObject->IsActive() && textRenderer->IsEnabled() && !textRenderer->IsPostEffectEnabled()) {
+				textRenderer->DrawTextSprite();
+			}
+		}
+	}
+}
+
 void SelectScene::Draw3D() {
 	// スカイボックス
 	//Skybox::GetInstance()->Draw();
@@ -2226,10 +2223,7 @@ void SelectScene::GizmoUpdate(bool showEditorControls) {
 		}
 	}
 
-	if (!showEditorControls) {
-		return;
-	}
-
+	// Settings パネルが非表示でも、選択中スポナーの出現地点は Game ビューに表示し続ける。
 	// 敵の出現地点のプレビュー表示
 	if (selectedObject != nullptr) {
 		// 選択中オブジェクトのインデックスを探す

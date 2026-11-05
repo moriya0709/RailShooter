@@ -36,6 +36,9 @@ void SceneManager::SetTimeScale(float timeScale) {
 void SceneManager::Draw2D() {
 	scene_->Draw2D();
 }
+void SceneManager::DrawPostEffectExcluded2D() {
+	scene_->DrawPostEffectExcluded2D();
+}
 void SceneManager::Draw3D() {
 	scene_->Draw3D();
 }

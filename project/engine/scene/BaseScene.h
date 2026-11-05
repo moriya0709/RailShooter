@@ -13,6 +13,9 @@ public:
 	virtual void Update(float deltaTime, float unscaledDeltaTime) = 0;
 	// 描画
 	virtual void Draw2D() = 0;
+	// ポストエフェクトの最終合成後にバックバッファへ描く UI。
+	// ここへ描いた要素はブルームや色調補正を含む一切のポストエフェクトを受けない。
+	virtual void DrawPostEffectExcluded2D() {}
 	virtual void Draw3D() = 0;
 	virtual void DrawPostEffectMask() = 0;
 	// 終了

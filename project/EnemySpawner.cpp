@@ -1,4 +1,4 @@
-﻿#include "EnemySpawner.h"
+#include "EnemySpawner.h"
 #include "EnemyNormal.h"
 #include "ModelRendererComponent.h"
 #include "ParticleComponent.h"
@@ -118,6 +118,7 @@ std::vector<std::unique_ptr<GameObject>> EnemySpawner::Update(float deltaTime, c
 				enemy->SetTransform(spawnTrans);
 				// 移動パターンをセット
 				enemy->SetMovePattern(data.movePattern);
+				enemy->SetPathSpeed(data.pathSpeed);
 				// 制御点をセット
 				enemy->SetControlPoints(data.controlPoints);
 

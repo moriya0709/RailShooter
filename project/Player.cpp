@@ -193,10 +193,10 @@ void Player::OnCollision(int damage) {
 	hitTimer_ = 0.2f; // 衝突時に0.2秒間（60FPSで約12フレーム）タイマーをセット
 
 	hp_ = (std::max)(0, hp_ - damage);
-	//if (hp_ == 0) {
-	//	currentState = Death;
-	//	return;
-	//}
+	if (hp_ == 0) {
+		//currentState = Death;
+		return;
+	}
 
 	PostEffect::GetInstance()->SetDamageEffectRatio(0.4f);
 	CameraManager::GetInstance()->GetActiveCamera()->StartShake(0.5f, 0.2f);
@@ -364,32 +364,105 @@ void Player::UpdateNormal(float deltaTime) {
 		}
 	}
 
-	// 1. 傾きなどの目標値算出
-	float targetRoll = -playerInput.axisX * maxRollAngle;
-	float targetPitch = -playerInput.axisY * maxPitchAngle;
+	// 1. 各軸の入力値
+	float pitchInput = -playerInput.axisY;
+	float yawInput = playerInput.axisX;
+	float rollInput = -playerInput.axisX;
 
+	// 現在の角度が「入力している方向の最大値」にどれくらい近いかを計算し、
+	// 最大値に近いほど加速の倍率を落とす(1.0 -> 0.0)ための補助関数
+	auto CalcLimitRatio = [](float current, float maxAngle, float input) {
+		if (input == 0.0f) return 1.0f;
+		// 入力がプラス方向ならプラスの上限、マイナス方向ならマイナスの下限に対する到達割合
+		float ratio = (input > 0.0f) ? (current / maxAngle) : (current / -maxAngle);
+		// 割合を 0.0 ～ 1.0 に収め、限界に近づくほど 0 になるように反転
+		return 1.0f - std::clamp(ratio, 0.0f, 1.0f);
+		};
+
+	// 限界値までの余裕（0.0 ～ 1.0）を計算
+	float pitchRatio = CalcLimitRatio(currentPitch, maxPitchAngle, pitchInput);
+	float yawRatio = CalcLimitRatio(currentYaw, maxYawAngle, yawInput);
+	float rollRatio = CalcLimitRatio(currentRoll, maxRollAngle, rollInput);
+
+	// 入力に応じて角速度を加算（限界に近づくほど ratio が 0 になり加速しなくなる）
+	angularVelocity.x += pitchInput * pitchRatio * rotAccel * deltaTime;
+	angularVelocity.y += yawInput * yawRatio * rotAccel * deltaTime;
+	angularVelocity.z += rollInput * rollRatio * rotAccel * deltaTime;
+
+	// ▼▼▼ 修正：摩擦を動的に変更して慣性を消す ▼▼▼
+	// 基本の摩擦
+	float currentFrictionX = rotFriction;
+	float currentFrictionYZ = rotFriction;
+
+	// 縦入力がない、または現在の回転方向と逆の入力（切り返し）をしている場合は摩擦を強くして慣性を消す
+	if (pitchInput == 0.0f || (angularVelocity.x * pitchInput < 0.0f)) {
+		currentFrictionX = rotFriction * 5.0f; // 摩擦を5倍にして即座に止める
+	}
+	// 横入力がない、または切り返しの場合は摩擦を強くする
+	if (yawInput == 0.0f || (angularVelocity.y * yawInput < 0.0f)) {
+		currentFrictionYZ = rotFriction * 5.0f;
+	}
+
+	// 2. 摩擦（減衰）をかけて、角速度を徐々に 0 に近づける
+	float frictionTX = 1.0f - std::exp(-currentFrictionX * deltaTime);
+	float frictionTYZ = 1.0f - std::exp(-currentFrictionYZ * deltaTime);
+
+	angularVelocity.x = Lerp(angularVelocity.x, 0.0f, frictionTX);
+	angularVelocity.y = Lerp(angularVelocity.y, 0.0f, frictionTYZ);
+	angularVelocity.z = Lerp(angularVelocity.z, 0.0f, frictionTYZ);
+	// ▲▲▲ 修正ここまで ▲▲▲
+
+	// 3. 現在の角度に、計算された角速度を加算
+	currentPitch += angularVelocity.x * deltaTime;
+	currentYaw += angularVelocity.y * deltaTime;
+	currentRoll += angularVelocity.z * deltaTime;
+
+	// 入力がない軸の角度を徐々に 0 に戻す
+	float returnT = 1.0f - std::exp(-rotationSpeed * deltaTime);
+
+	if (playerInput.axisY == 0.0f) {
+		// 縦入力がない場合はピッチ(上下の傾き)を戻す
+		currentPitch = Lerp(currentPitch, 0.0f, returnT);
+	}
+
+	if (playerInput.axisX == 0.0f) {
+		// 横入力がない場合はヨー(首振り)とロール(左右の傾き)を戻す
+		currentYaw = Lerp(currentYaw, 0.0f, returnT);
+		currentRoll = Lerp(currentRoll, 0.0f, returnT);
+	}
+
+	// 4. 回転しすぎないように最大角度で制限（クランプ）
+	// ※限界角度に達したら、ピタッと止まるようにその軸の角速度も 0 にリセットする
+	if (currentPitch <= -maxPitchAngle || currentPitch >= maxPitchAngle) {
+		currentPitch = std::clamp(currentPitch, -maxPitchAngle, maxPitchAngle);
+		angularVelocity.x = 0.0f;
+	}
+	if (currentYaw <= -maxYawAngle || currentYaw >= maxYawAngle) {
+		currentYaw = std::clamp(currentYaw, -maxYawAngle, maxYawAngle);
+		angularVelocity.y = 0.0f;
+	}
+	if (currentRoll <= -maxRollAngle || currentRoll >= maxRollAngle) {
+		currentRoll = std::clamp(currentRoll, -maxRollAngle, maxRollAngle);
+		angularVelocity.z = 0.0f;
+	}
+
+	// 5. G力による位置ズレの処理（そのまま）
 	Vector3 targetOffset = {
 		-playerInput.axisX * maxGForceOffset.x,
 		-playerInput.axisY * maxGForceOffset.y,
 		0.0f
 	};
-
-	// 2. 補間係数 t の計算
-	float rotT = 1.0f - std::exp(-rotationSpeed * deltaTime);
 	float posT = 1.0f - std::exp(-positionSpeed * deltaTime);
-	float moveT = 1.0f - std::exp(-inertiaSpeed * deltaTime); // 慣性用
-
-	// 3. 傾きとG力の補間
-	currentPitch = Lerp(currentPitch, targetPitch, rotT);
-	currentRoll = Lerp(currentRoll, targetRoll, rotT);
 	currentLocalOffset = Lerp(currentLocalOffset, targetOffset, posT);
 
+	// 6. 最終的な回転の適用
 	rotate_.x = baseRot.x + currentPitch; // X軸: ピッチ(上下の傾き)
-	rotate_.y = baseRot.y - currentRoll;  // Y軸: ヨー(カメラと同じ方向を向く)
+	rotate_.y = baseRot.y + currentYaw;   // Y軸: ヨー(左右の首振り)
 	rotate_.z = baseRot.z + currentRoll;  // Z軸: ロール(左右の傾き)
 
-	// --- 4. 自機の移動処理（慣性あり） ---
+	// ▼▼▼ 復活：自機の移動処理（慣性あり） ▼▼▼
 	// 目標とする速度を算出
+	float moveT = 1.0f - std::exp(-inertiaSpeed * deltaTime);
 	Vector2 targetVelocity = {
 		playerInput.axisX * moveSpeed,
 		playerInput.axisY * moveSpeed
@@ -397,18 +470,28 @@ void Player::UpdateNormal(float deltaTime) {
 	velocity.x = Lerp(velocity.x, targetVelocity.x, moveT);
 	velocity.y = Lerp(velocity.y, targetVelocity.y, moveT);
 
+	// 移動量を加算し、画面端に行かないようクランプ
 	playerPositionOffset.x += velocity.x * deltaTime;
 	playerPositionOffset.y += velocity.y * deltaTime;
 	playerPositionOffset.x = std::clamp(playerPositionOffset.x, -moveLimitX, moveLimitX);
 	playerPositionOffset.y = std::clamp(playerPositionOffset.y, -moveLimitY, moveLimitY);
 
+	// ローカル移動量 (playerPositionOffset) と G力によるズレ (currentLocalOffset) を合成
+	Vector3 combinedOffset = {
+		playerPositionOffset.x + currentLocalOffset.x,
+		playerPositionOffset.y + currentLocalOffset.y,
+		playerPositionOffset.z + currentLocalOffset.z
+	};
+
+	// カメラのベース回転を元にワールド座標のズレに変換
 	Matrix4x4 matBaseRot = MakeRotateMatrix(baseRot);
-	Vector3 worldOffset = VectorTransform(playerPositionOffset, matBaseRot);
+	Vector3 worldOffset = VectorTransform(combinedOffset, matBaseRot);
 
 	// ★ 自機の最新座標を確定
 	translate_.x = basePos.x + worldOffset.x;
 	translate_.y = basePos.y + worldOffset.y;
 	translate_.z = basePos.z + worldOffset.z;
+	
 	// 弾の更新単位（1フレーム）と合わせた移動量として保持する。
 	launchVelocity_ = translate_ - previousTranslate;
 

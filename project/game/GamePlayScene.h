@@ -39,6 +39,7 @@ public:
 	void Update(float deltaTime, float unscaledDeltaTime) override;
 	// 描画
 	void Draw2D() override;
+	void DrawPostEffectExcluded2D() override;
 	void Draw3D() override;
 	void DrawPostEffectMask() override;
 	// 終了
@@ -121,7 +122,7 @@ private:
 	float bokehRadius = 5.0f;
 
 	// ブルーム
-	float bloomThreshold = 2.0f;
+	float bloomThreshold = 6.0f;
 	float bloomIntensity = 2.0f;
 	float bloomBlurRadius = 1.0f;
 
@@ -275,6 +276,10 @@ private:
 	// 当たり判定の線
 	std::unique_ptr<Line> debugLineNormal;
 	std::unique_ptr<Line> debugLineHit;
+	// PATH 移動する敵の経路を可視化する開発用ライン。
+#if defined(ENABLE_PATH_DEBUG_VISUALS)
+	std::unique_ptr<Line> pathDebugLine;
+#endif
 
 	std::shared_ptr<TrailEffect> trailEffect;
 	Transform trailTransform = {

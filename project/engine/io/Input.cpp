@@ -43,6 +43,11 @@ void Input::Initialize(WindowAPI* windowAPI) {
 	result = directInput->CreateDevice(GUID_SysMouse, &mouse, nullptr);
 	// データフォーマット設定
 	result = mouse->SetDataFormat(&c_dfDIMouse);
+	// ImGui (Win32 メッセージ) とデバッグカメラ (DirectInput) が同じマウスを
+	// 奪い合わないよう、マウスは常に非排他で取得する。
+	result = mouse->SetCooperativeLevel(
+		windowAPI_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
+	assert(SUCCEEDED(result));
 	// 取得開始
 	mouse->Acquire();
 

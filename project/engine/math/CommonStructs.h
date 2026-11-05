@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <windows.h>
 #include <cstdint>
 #include <string>
@@ -232,6 +232,7 @@ struct SpawnData {
 	// EnemyNormal を持つ EMPTY オブジェクトの名前。指定時はこのテンプレートを複製してスポーンする。
 	std::string enemyTemplate;
 	std::string movePattern; // 敵の移動パターン
+	float pathSpeed = 1.0f; // PATH移動の速度倍率
     std::vector<Vector3> controlPoints;   // パス移動用の制御点リスト
 };
 
@@ -253,6 +254,7 @@ struct RailCameraGroupData {
 	RailCameraDirectionMode directionMode = RailCameraDirectionMode::FollowPath;
 	Vector3 targetPosition = { 0.0f, 0.0f, 0.0f };
     std::vector<TrackSequenceItem> presetSequence;
+    float railSpeed = 1.0f;
 };
 
 // EasingComponent が保持する、レベル保存可能なアニメーション設定。

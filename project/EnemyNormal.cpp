@@ -38,11 +38,34 @@ void EnemyNormal::Initialize() {
 
 	// 初期位置を保持
 	initialPosition = transform.translate;
+	BuildPathRoute();
+}
+
+void EnemyNormal::SetControlPoints(const std::vector<Vector3>& points) {
+	controlPoints = points;
+	pathProgress = 0.0f;
+	pathReachedEnd_ = false;
+	BuildPathRoute();
+}
+
+void EnemyNormal::BuildPathRoute() {
+	pathRoutePoints = controlPoints;
+	if (pathRoutePoints.empty()) {
+		return;
+	}
+
+	// スポーン地点が最初の制御点と異なる場合、そこから最初の制御点までを
+	// PATH の最初の区間として追加する。これにより開始位置への瞬間移動を防ぐ。
+	const Vector3 delta = transform.translate - pathRoutePoints.front();
+	const float distanceSquared = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z;
+	if (distanceSquared > 0.000001f) {
+		pathRoutePoints.insert(pathRoutePoints.begin(), transform.translate);
+	}
 }
 
 void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 	const float deltaTime = deltaTime_;
-		aliveTime += deltaTime;
+	aliveTime += deltaTime;
 
 	// 当たり判定リセット
 	if (hitTimer_ > 0.0f) {
@@ -53,11 +76,14 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 	}
 
 	// =========================================================
-	// ★移動パターンの計算（object->Update() より前に実行）[cite: 8]
+	// ★移動パターンの計算
 	// =========================================================
+
+	// 移動前の座標を保持
+	Vector3 oldPos = transform.translate;
+
 	if (movePattern == "IDRE") {
-	}
-	if (movePattern == "STRAIGHT") {
+	} else if (movePattern == "STRAIGHT") {
 		// まっすぐ奥から手前（Z軸マイナス方向）へ進む
 		transform.translate.z -= speed * deltaTime;
 
@@ -76,65 +102,106 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 			transform.translate.y += dir.y * (speed * 0.5f) * deltaTime;
 			transform.translate.z += dir.z * (speed * 0.5f) * deltaTime;
 		}
-	}else if (movePattern == "PATH" && controlPoints.size() >= 2) {
-		
-		// 進行度を進める
-		pathProgress += (speed * 0.2f) * deltaTime;
+	} else if (movePattern == "PATH" && pathRoutePoints.size() >= 2) {
 
-		int index = static_cast<int>(pathProgress);
-		float t = pathProgress - index;
-
-		// パスの終点に達していない場合
-		if (index < static_cast<int>(controlPoints.size()) - 1) {
-
-			// スプライン計算に必要な前後の 4 つの制御点インデックスを算出（端のオーバーフロー防止）
-			size_t p0_idx = (index == 0) ? 0 : index - 1;
-			size_t p1_idx = index;
-			size_t p2_idx = index + 1;
-			size_t p3_idx = (index + 2 < controlPoints.size()) ? index + 2 : p2_idx;
-
-			// 4つの制御点を取得
-			const Vector3& p0 = controlPoints[p0_idx];
-			const Vector3& p1 = controlPoints[p1_idx];
-			const Vector3& p2 = controlPoints[p2_idx];
-			const Vector3& p3 = controlPoints[p3_idx];
-
-			// ★ スプライン曲線上の座標を設定
-			transform.translate = CatmullRomSpline(p0, p1, p2, p3, t);
-
-		} else {
-			// ★ PATH の終点に到達した時の処理
+		const float finalProgress = static_cast<float>(pathRoutePoints.size() - 1);
+		if (pathReachedEnd_) {
+			// 最後の制御点を少なくとも 1 フレーム描画してから従来どおり終了する。
 			if (!railPoints.empty()) {
-				// レールデータがあれば RAIL_FORWARD モードへ自動遷移
-				movePattern = "RAIL_FORWARD";
-
-			} else {
-				// レールデータが無い場合のみ削除
 				isDead_ = true;
+			}
+		} else {
+			const float previousProgress = pathProgress;
+			pathProgress += (speed * pathSpeed) * deltaTime;
+
+			// フレーム間で制御点をまたいだ場合も、その点を一度は正確に通過する。
+			const int previousSection = static_cast<int>(previousProgress);
+			const int currentSection = static_cast<int>(pathProgress);
+			if (currentSection > previousSection && currentSection < static_cast<int>(finalProgress)) {
+				pathProgress = static_cast<float>(currentSection);
+			}
+
+			if (pathProgress >= finalProgress) {
+				pathProgress = finalProgress;
+				transform.translate = pathRoutePoints.back();
+				pathReachedEnd_ = true;
+			} else {
+				const int index = static_cast<int>(pathProgress);
+				const float t = pathProgress - static_cast<float>(index);
+
+				// スプライン計算に必要な前後の 4 つの制御点インデックスを算出（端のオーバーフロー防止）
+				size_t p0_idx = (index == 0) ? 0 : index - 1;
+				size_t p1_idx = index;
+				size_t p2_idx = index + 1;
+				size_t p3_idx = (index + 2 < pathRoutePoints.size()) ? index + 2 : p2_idx;
+
+				// 4つの制御点を取得
+				const Vector3& p0 = pathRoutePoints[p0_idx];
+				const Vector3& p1 = pathRoutePoints[p1_idx];
+				const Vector3& p2 = pathRoutePoints[p2_idx];
+				const Vector3& p3 = pathRoutePoints[p3_idx];
+
+				// ★ スプライン曲線上の座標を設定
+				transform.translate = CatmullRomSpline(p0, p1, p2, p3, t);
 			}
 		}
 	} else if (movePattern == "RAIL_FORWARD") {
 		if (!railPoints.empty()) {
-			// 敵のレール上の進行度 = プレイヤーの進行度 + 敵固有の先行オフセット
 			float enemyProgress = currentPlayerProgress + railOffsetProgress;
-
-			// 更に、敵自身をXやYに揺らしたい場合は、ここでオフセットを加算することも可能です
-			// float waveOffset = std::sin(aliveTime * 3.0f) * 2.0f;
-
-			// RailCamera と同じ区間計算で座標を取得してセットする。
 			Vector3 basePos = EvaluateRailPath(railPoints, enemyProgress);
 
 			transform.translate.x = basePos.x;
-			transform.translate.y = basePos.y; // ＋ waveOffset (揺らす場合)
+			transform.translate.y = basePos.y;
 			transform.translate.z = basePos.z;
 		}
 	}
 
-	// 座標変更後に 3D オブジェクトへセットして更新dw
+	// =========================================================
+	// ★向き・傾きの計算
+	// =========================================================
+	// 移動前後の差分から進行方向(velocity)を求める
+	Vector3 velocity = {
+		transform.translate.x - oldPos.x,
+		transform.translate.y - oldPos.y,
+		transform.translate.z - oldPos.z
+	};
+
+	// 移動している場合のみ向きを更新
+	float speedSq = velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z;
+	if (speedSq > 0.000001f) {
+		// Y軸回転 (Yaw: 左右の向き) 
+		transform.rotate.y = std::atan2(velocity.x, velocity.z);
+
+		// X軸回転 (Pitch: 上下の向き) 
+		float xzLen = std::sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+		transform.rotate.x = std::atan2(-velocity.y, xzLen);
+
+		// Z軸回転 (Roll: 機体の傾き)
+		if (movePattern == "PATH") {
+			// 今回のX軸方向への移動量をベースに傾きを計算
+			float rollSensitivity = 2.0f; // 感度調整
+			float maxRollAngle = 1.0f;    // 最大角（ラジアン）
+
+			// 右に動いたとき(velocity.x > 0)はマイナス方向に回転させたいので符号を反転
+			float targetRoll = -velocity.x * rollSensitivity;
+			targetRoll = std::clamp(targetRoll, -maxRollAngle, maxRollAngle);
+
+			float lerpSpeed = 0.1f;
+			transform.rotate.z = std::lerp(transform.rotate.z, targetRoll, lerpSpeed);
+		} else {
+			// PATH以外の動きの場合は水平(0.0f)に戻す
+			transform.rotate.z = std::lerp(transform.rotate.z, 0.0f, 0.1f);
+		}
+	}
+
+	// 座標変更後に 3D オブジェクトへセットして更新
 	if (GetGameObject()) {
 		GetGameObject()->GetTransform()->transform = transform;
 	}
 
+	// =========================================================
+	// ★弾の発射処理（元のコードのまま）
+	// =========================================================
 	// 毎フレームクールダウンを減らす
 	if (shotCoolTime > 0.0f) {
 		shotCoolTime -= deltaTime;
@@ -143,7 +210,7 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 	// 弾の生成
 	if (shotCoolTime <= 0) {
 		auto bulletObject = std::make_unique<GameObject>("EnemyBullet");
-		auto* bullet = bulletObject->AddComponent<EnemyNormalBullet>();
+		auto bullet = bulletObject->AddComponent<EnemyNormalBullet>();
 		bullet->Initialize(transform.translate, playerPosition);
 		bulletObject->Initialize();
 		bullets_.push_back(bullet);
@@ -152,18 +219,17 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 		shotCoolTime = 0.5f; // クールタイムをリセット
 	}
 
-
 	// 全ての弾を更新
 	for (auto& bulletObject : bulletObjects_) {
-		if (auto* bullet = bulletObject->GetComponent<EnemyBullet>()) {
+		if (auto bullet = bulletObject->GetComponent<EnemyBullet>()) {
 			bullet->SetDeltaTime(deltaTime);
 		}
 		bulletObject->Update();
 	}
 
-	bullets_.remove_if([](const EnemyBullet* bullet) { return bullet->IsDead(); });
+	bullets_.remove_if([](EnemyBullet* bullet) { return bullet->IsDead(); });	
 	bulletObjects_.remove_if([](const std::unique_ptr<GameObject>& bulletObject) {
-		auto* bullet = bulletObject->GetComponent<EnemyBullet>();
+		auto bullet = bulletObject->GetComponent<EnemyBullet>();
 		return bullet && bullet->IsDead();
 	});
 }

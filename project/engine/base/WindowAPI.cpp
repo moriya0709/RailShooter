@@ -99,13 +99,15 @@ void WindowAPI::Finalize() {
 bool WindowAPI::ProcessMessage() {
 	MSG msg{};
 
-	if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+	// マウス移動などの入力メッセージを 1 件ずつしか取り出さないと、
+	// デバッグカメラ操作中にキューが蓄積し、ImGui のクリック／リリースが
+	// 数フレーム後まで届かなくなる。フレームごとに保留分をすべて処理する。
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+		if (msg.message == WM_QUIT) {
+			return true;
+		}
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
-	}
-
-	if (msg.message == WM_QUIT) {
-		return true;
 	}
 
 	return false;

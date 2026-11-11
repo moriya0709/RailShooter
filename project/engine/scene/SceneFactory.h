@@ -3,11 +3,13 @@
 #include "GamePlayScene.h"
 #include "TitleScene.h"
 #include "SelectScene.h"
+#include "ResultsScene.h"
 
 class SceneFactory : public AbstractSceneFactory {
 public:
 	// シーン識別子を対応する具象シーンへ変換する。未対応名では nullptr を返す。
 	std::unique_ptr<BaseScene> CreateScene(const std::string& sceneName) override;
+	const std::vector<std::string>& GetSceneNames() const override;
 
 private:
 	int currentStyle;

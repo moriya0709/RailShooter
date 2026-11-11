@@ -3,6 +3,8 @@
 #include "EnemyNormalBullet.h"
 #include "GameObject.h"
 #include "ModelRendererComponent.h"
+#include "ScoreManager.h"
+#include "EasingComponent.h"
 
 namespace {
 
@@ -38,6 +40,7 @@ void EnemyNormal::Initialize() {
 
 	// 初期位置を保持
 	initialPosition = transform.translate;
+	hasPreviousPathYaw_ = false;
 	BuildPathRoute();
 }
 
@@ -45,6 +48,7 @@ void EnemyNormal::SetControlPoints(const std::vector<Vector3>& points) {
 	controlPoints = points;
 	pathProgress = 0.0f;
 	pathReachedEnd_ = false;
+	hasPreviousPathYaw_ = false;
 	BuildPathRoute();
 }
 
@@ -109,6 +113,9 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 			// 最後の制御点を少なくとも 1 フレーム描画してから従来どおり終了する。
 			if (!railPoints.empty()) {
 				isDead_ = true;
+				
+				// コンボリセット
+				ScoreManager::GetInstance()->ResetCombo();
 			}
 		} else {
 			const float previousProgress = pathProgress;
@@ -177,21 +184,38 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 		transform.rotate.x = std::atan2(-velocity.y, xzLen);
 
 		// Z軸回転 (Roll: 機体の傾き)
-		if (movePattern == "PATH") {
-			// 今回のX軸方向への移動量をベースに傾きを計算
-			float rollSensitivity = 2.0f; // 感度調整
-			float maxRollAngle = 1.0f;    // 最大角（ラジアン）
+		if (movePattern == "PATH" || movePattern == "RAIL_FORWARD") {
+			// 世界座標の X 移動量ではなく、進行方向そのものの変化量を使う。
+			// 右旋回（Yaw が増加）では負の Roll、左旋回では正の Roll となり、
+			// 常に曲線の内側へ傾く。±π 境界をまたぐ旋回も正しく扱う。
+			float targetRoll = 0.0f;
+			if (hasPreviousPathYaw_ && deltaTime > 0.0f) {
+				float deltaYaw = transform.rotate.y - previousPathYaw_;
+				if (deltaYaw > PI) {
+					deltaYaw -= 2.0f * PI;
+				} else if (deltaYaw < -PI) {
+					deltaYaw += 2.0f * PI;
+				}
 
-			// 右に動いたとき(velocity.x > 0)はマイナス方向に回転させたいので符号を反転
-			float targetRoll = -velocity.x * rollSensitivity;
-			targetRoll = std::clamp(targetRoll, -maxRollAngle, maxRollAngle);
+				const float turnRate = deltaYaw / deltaTime;
+				targetRoll = std::clamp(-turnRate * kBankSensitivity,
+					-kMaxBankAngle, kMaxBankAngle);
+			}
+			previousPathYaw_ = transform.rotate.y;
+			hasPreviousPathYaw_ = true;
 
-			float lerpSpeed = 0.1f;
-			transform.rotate.z = std::lerp(transform.rotate.z, targetRoll, lerpSpeed);
+			const float bankLerp = std::clamp(deltaTime * 8.0f, 0.0f, 1.0f);
+			transform.rotate.z = std::lerp(transform.rotate.z, targetRoll, bankLerp);
 		} else {
-			// PATH以外の動きの場合は水平(0.0f)に戻す
+			// 曲線追従以外の動きの場合は水平(0.0f)に戻す
 			transform.rotate.z = std::lerp(transform.rotate.z, 0.0f, 0.1f);
+			hasPreviousPathYaw_ = false;
 		}
+	} else if (movePattern == "PATH" || movePattern == "RAIL_FORWARD") {
+		// 終点で停止した後も最後のバンク角が残らないよう、水平へ戻す。
+		transform.rotate.z = std::lerp(transform.rotate.z, 0.0f,
+			std::clamp(deltaTime * 8.0f, 0.0f, 1.0f));
+		hasPreviousPathYaw_ = false;
 	}
 
 	// 座標変更後に 3D オブジェクトへセットして更新
@@ -264,6 +288,34 @@ void EnemyNormal::OnCollisionBullet(int damage) {
 	hp -= damage;
 	if (hp <= 0) {
 		isDead_ = true;
+
+		// スコア加算(死亡時)
+		ScoreManager::GetInstance()->AddScore(scoreValueDeath,1);
+		// コンボ加算
+		ScoreManager::GetInstance()->AddCombo();
+
+		// スコア演出用のUIを表示
+		if (auto* comboObject = GameObject::FindByName("ComboText")) {
+			comboObject->SetActive(true);
+			if (auto* comboEasing = comboObject->GetComponent<EasingComponent>()) {
+				comboEasing->Play(0);
+			}
+		}
+		if (auto* comboValueObject = GameObject::FindByName("ComboValueText")) {
+			comboValueObject->SetActive(true);
+			if (auto* comboValueEasing = comboValueObject->GetComponent<EasingComponent>()) {
+				comboValueEasing->Play(0);
+			}
+		}
+		if (auto* killScoreObject = GameObject::FindByName("KillScore")) {
+			killScoreObject->SetActive(true);
+			if (auto* killScoreEasing = killScoreObject->GetComponent<EasingComponent>()) {
+				killScoreEasing->Play(0);
+			}
+		}
+	} else {
+		// スコア加算(ヒット時)
+		ScoreManager::GetInstance()->AddScore(scoreValueHit);
 	}
 }
 
@@ -274,9 +326,9 @@ OBB EnemyNormal::GetOBB() {
 
 	// 2. ハーフサイズ（TransformのScaleを適用）
 	obb.halfExtents = {
-		transform.scale.x * 0.5f,
-		transform.scale.y * 0.5f,
-		transform.scale.z * 0.5f
+		hitRadius.x,
+		hitRadius.y,
+		hitRadius.z
 	};
 
 	// 3. 回転行列から正規化された3軸を取得 (Rotateから回転行列を作成)

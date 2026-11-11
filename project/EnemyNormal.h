@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <memory>
 #include <utility>
 #include <list>
@@ -70,27 +70,37 @@ public:
 	std::vector<Vector3> controlPoints; // 辿るべき座標のリスト
 	// スポーン地点を必要に応じて先頭に加えた、実際に辿る PATH 用の点列。
 	std::vector<Vector3> pathRoutePoints;
-	float pathSpeed = 1.0f;
+	float pathSpeed = 0.125f;
 	float pathProgress = 0.0f;          // 現在の進行度 (0.0 ～ ポイント数-1)
 	bool pathReachedEnd_ = false;
+	// 曲線追従中の旋回量から、曲線の内側へバンクさせるための前フレームの方位。
+	float previousPathYaw_ = 0.0f;
+	bool hasPreviousPathYaw_ = false;
 	// レール追従(RAIL_FORWARD)用の変数
 	std::vector<Vector3> railPoints;    // レールカメラの制御点リスト
 	// 既存の短い先行距離を維持し、視野内でレール追従させる。
 	float railOffsetProgress = 0.05f;
 	Vector3 previousPosition{ 0.0f, 0.0f, 0.0f }; // 前フレームの座標
+	const float kBankSensitivity = 2.0f; // バンク角の感度（値が大きいほど旋回に対してバンクが大きくなる）
+	const float kMaxBankAngle = 1.57f; // カーブ時の最大傾き角
 
 	// 弾
 	std::list<std::unique_ptr<GameObject>> bulletObjects_;
 	std::list<EnemyBullet*> bullets_;
-	float shotCoolTime = 2.0f; // 射撃のクールタイム
+	float shotCoolTime = 20.0f; // 射撃のクールタイム
 
 	// 当たったか
 	bool isHit = false;
 	float hitTimer_ = 0.0f;
 	float deltaTime_ = 1.0f / 60.0f;
+	Vector3 hitRadius = { 0.5f, 0.5f, 0.5f }; // 当たり判定の半径
 
 	// HP
 	int hp = 10;
+
+	// スコア値
+	float scoreValueHit = 100.0f; // ヒット時
+	float scoreValueDeath = 3000.0f; // 死亡時
 
 	void BuildPathRoute();
 };

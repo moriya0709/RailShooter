@@ -149,6 +149,7 @@ private:
 	float rayMarchingCloudTop = -1000.0f;
 	bool rayMarchingIsRialLight = false;
 	bool rayMarchingIsAnimeLight = true;
+	// レイマーチング用コンピュートシェーダーの速度バッファを既定で生成する。
 	bool  rayMarchingIsMotionBlur = false;
 	float  rayMarchingCloudOpacity = 0.002f;
 	bool isStorm = false;

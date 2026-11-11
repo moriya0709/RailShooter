@@ -688,7 +688,7 @@ void TitleScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTim
 		if (ImGui::TreeNode("MotionBlur")) {
 			ImGui::Checkbox("OnOff", &isMotionBlur);
 
-			if (isLensFlare) {
+			if (isMotionBlur) {
 				ImGui::DragInt("motionBlurSamples", &motionBlurSamples, 1, 0, 20);
 				ImGui::DragFloat("motionBlurScale", &motionBlurScale, 0.01f, 0.0f, 10.0f);
 			}
@@ -1020,6 +1020,7 @@ void TitleScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTim
 				renderer->SetColorOverride(copyData.modelColorOverride);
 				renderer->SetColorOverrideUnlit(copyData.modelColorOverrideUnlit);
 				renderer->SetToonShadingEnabled(copyData.modelToonShading);
+				renderer->SetMotionBlurEnabled(copyData.modelMotionBlurEnabled);
 				renderer->SetTextureOverride(copyData.modelTextureOverride);
 			}
 			if (sourceObject->GetComponent<RectTransformComponent>()) {
@@ -1065,7 +1066,7 @@ void TitleScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTim
 					copyData.objectRailPointRotations, copyData.objectRailUsePointRotations);
 			}
 			if (sourceObject->GetComponent<EasingComponent>()) {
-				copyObject->AddComponent<EasingComponent>()->Configure(copyData.easing);
+				copyObject->AddComponent<EasingComponent>()->Configure(copyData.easings);
 			}
 			if (sourceObject->GetComponent<ParticleComponent>()) {
 				copyObject->AddComponent<ParticleComponent>()->Configure(copyData.particle);
@@ -1446,6 +1447,13 @@ void TitleScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTim
 							level->GetLevelData()->objects[selectedIndex].modelToonShading = renderer->IsToonShadingEnabled();
 						}
 					}
+					bool motionBlurEnabled = renderer->IsMotionBlurEnabled();
+					if (ImGui::Checkbox("Motion Blur##ModelRenderer", &motionBlurEnabled)) {
+						renderer->SetMotionBlurEnabled(motionBlurEnabled);
+						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+							level->GetLevelData()->objects[selectedIndex].modelMotionBlurEnabled = motionBlurEnabled;
+						}
+					}
 
 					char modelPath[260]{};
 					strncpy_s(modelPath, renderer->GetModelPath().c_str(), _TRUNCATE);
@@ -1682,7 +1690,7 @@ void TitleScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTim
 			if (auto* easing = selectedObject->GetComponent<EasingComponent>()) {
 				if (ImGui::CollapsingHeader("Easing", ImGuiTreeNodeFlags_DefaultOpen)) {
 					if (DrawEasingComponentInspector(*easing) && selectedIndex != -1) {
-						level->GetLevelData()->objects[selectedIndex].easing = easing->GetSettings();
+						level->GetLevelData()->objects[selectedIndex].easings = easing->GetSettings();
 					}
 				}
 			}
@@ -2021,8 +2029,8 @@ void TitleScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTim
 					} else if (auto* modelRenderer = selectedObject->GetComponent<ModelRendererComponent>(); modelRenderer && modelRenderer->IsColorOverrideEnabled()) {
 						easingData.startColor = easingData.goalColor = modelRenderer->GetColorOverride();
 					}
-					objectData.easing = easingData;
-					selectedObject->AddComponent<EasingComponent>()->Configure(objectData.easing);
+					objectData.easings = { easingData };
+					selectedObject->AddComponent<EasingComponent>()->Configure(objectData.easings);
 					addSerializedComponent("Easing");
 				}
 				if (!selectedObject->GetComponent<ParticleComponent>() && ImGui::Button("Particle")) {

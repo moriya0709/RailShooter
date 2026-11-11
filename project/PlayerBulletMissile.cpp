@@ -35,11 +35,19 @@ void PlayerBulletMissile::Initialize(const Vector3 position, Enemy* target, cons
 	velocity.y = projectileVelocity_.y + inheritedVelocity_.y;
 	velocity.z = projectileVelocity_.z + inheritedVelocity_.z;
 
-	// パーティクルの初期化
+	// トレイルエフェクトの初期化
+	trailEffect = std::make_shared<TrailEffect>();
+	trailEffect->Initialize("Resource/trail/trail.png", transform, width, trailMaxLifeTime);
+	trailEffect->LoadCsv("Resource/trail/missile.csv");
+	trailEffect->SetEmissive(1.0f); // 発光させない
+	TrailEffectManager::GetInstance()->AddTrail(trailEffect);
+
+	// パーティクルエフェクトの初期化
 	particle = std::make_unique<ParticleEmitter>();
 	particle->Initialize("obj", transform, 1, 0.5f);
 	particle->SetActive("obj");
 	particle->LoadParticle("Resource/particle/missile.csv");
+
 }
 
 void PlayerBulletMissile::Update() {
@@ -151,9 +159,13 @@ void PlayerBulletMissile::Update() {
 		GetGameObject()->GetTransform()->transform = transform;
 	}
 
-	// パーティクルの更新
+	// トレイルエフェクトの更新
+	trailEffect->AddPoint(transform.translate);
+	trailEffect->SetTranslate(transform.translate);
+	// パーティクルエフェクトの更新
 	particle->SetTranslate(transform.translate);
 	particle->Update();
+
 }
 
 OBB PlayerBulletMissile::GetOBB() {

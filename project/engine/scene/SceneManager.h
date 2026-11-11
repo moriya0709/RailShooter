@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "BaseScene.h"
 #include "AbstractSceneFactory.h"
@@ -29,6 +30,7 @@ public:
 	// シーンの変更
 	void ChangeScene(const std::string& sceneName);
 	const std::string& GetCurrentSceneName() const { return currentSceneName_; }
+	const std::vector<std::string>& GetSceneNames() const;
 	bool IsSceneChangePending() const { return nextScene_ != nullptr; }
 
 	SceneManager() = default;

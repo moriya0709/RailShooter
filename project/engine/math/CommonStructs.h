@@ -232,7 +232,7 @@ struct SpawnData {
 	// EnemyNormal を持つ EMPTY オブジェクトの名前。指定時はこのテンプレートを複製してスポーンする。
 	std::string enemyTemplate;
 	std::string movePattern; // 敵の移動パターン
-	float pathSpeed = 1.0f; // PATH移動の速度倍率
+	float pathSpeed = 0.125f; // PATH移動の速度倍率（EnemyNormal の speed=8 と合わせて1区間/秒）
     std::vector<Vector3> controlPoints;   // パス移動用の制御点リスト
 };
 
@@ -351,6 +351,8 @@ struct ObjectData {
 	bool modelColorOverrideUnlit = false;
 	// true: セル調、false: 通常のライティング。既存レベルとの互換性のため既定はセル調。
 	bool modelToonShading = true;
+	// true の場合のみ、このモデルの速度をモーションブラー合成に使用する。
+	bool modelMotionBlurEnabled = false;
 	// ModelRenderer ごとのベースカラーテクスチャ上書き。空文字列ならモデル定義を使用。
 	std::string modelTextureOverride;
 	// Unity のように複数の機能を 1 つの GameObject に追加するための型一覧。
@@ -363,8 +365,8 @@ struct ObjectData {
 	bool objectRailOrientToPath = true;
 	bool objectRailUsePointRotations = false;
 	bool objectRailPlayOnStart = true;
-	// EasingComponent 専用。
-	EasingData easing;
+	// EasingComponent 専用。1 オブジェクトに複数の設定を持てる。
+	std::vector<EasingData> easings;
 	// ParticleComponent 専用。
 	ParticleComponentData particle;
 

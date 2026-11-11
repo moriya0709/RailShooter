@@ -8,6 +8,7 @@
 #include "CameraManager.h"
 
 void Player::Initialize() {
+	// レティクルの初期化
 	for (int i = 0; i < 3; ++i) {
 		reticle[i] = std::make_unique<Sprite>();
 	}
@@ -20,6 +21,12 @@ void Player::Initialize() {
 		reticle[i]->SetRotation(reticleRotation[i]);
 		reticle[i]->SetSize(reticleSize[i]);
 	}
+
+	// 矢印の初期化
+	arrow = std::make_unique<Sprite>();
+	arrow->Initialize("Resource/arrow/arrow.png");
+	arrow->SetSize({ 100.0f, 100.0f });
+	arrow->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f });
 
 	// 初期状態を Normal に設定
 	currentState = Normal;
@@ -48,12 +55,24 @@ void Player::Update(float deltaTime) {
 }
 
 void Player::Draw() {
+	// レティクルの描画
 	for (int i = 0; i < 3; ++i) {
 		reticle[i]->Draw();
 	}	
+
+	// 矢印の描画
+	if (isArrowActive) {
+		arrow->Draw();
+	}
 }
 
 void Player::UpdateReticle() {
+	Camera* camera = CameraManager::GetInstance()->GetActiveCamera();
+	const Matrix4x4 viewProjMat = Multiply(
+		camera->GetViewMatrix(),
+		camera->GetProjectionMatrix()
+	);
+
 	// レティクルの回転をプレイヤーの回転に応じて変化させる
 	reticleRotation[0] = rotate_.z * reticleRotationMultiplier[0];
 	reticleRotation[1] = rotate_.z * reticleRotationMultiplier[1];
@@ -63,14 +82,14 @@ void Player::UpdateReticle() {
 	Vector2 targetReticleSize = { 700.0f, 700.0f };
 
 	if (lockedTarget && !lockedTarget->IsDead()) {
-		Camera* camera = CameraManager::GetInstance()->GetActiveCamera();
-		const Matrix4x4 viewProjMat = Multiply(camera->GetViewMatrix(), camera->GetProjectionMatrix());
 		const Vector3 targetPos = lockedTarget->GetTranslate();
-		const float w = targetPos.x * viewProjMat.m[0][3] + targetPos.y * viewProjMat.m[1][3] + targetPos.z * viewProjMat.m[2][3] + viewProjMat.m[3][3];
+		const float clipX = targetPos.x * viewProjMat.m[0][0] + targetPos.y * viewProjMat.m[1][0] + targetPos.z * viewProjMat.m[2][0] + viewProjMat.m[3][0];
+		const float clipY = targetPos.x * viewProjMat.m[0][1] + targetPos.y * viewProjMat.m[1][1] + targetPos.z * viewProjMat.m[2][1] + viewProjMat.m[3][1];
+		const float clipW = targetPos.x * viewProjMat.m[0][3] + targetPos.y * viewProjMat.m[1][3] + targetPos.z * viewProjMat.m[2][3] + viewProjMat.m[3][3];
 
-		if (w > 0.0f) {
-			const float ndcX = (targetPos.x * viewProjMat.m[0][0] + targetPos.y * viewProjMat.m[1][0] + targetPos.z * viewProjMat.m[2][0] + viewProjMat.m[3][0]) / w;
-			const float ndcY = (targetPos.x * viewProjMat.m[0][1] + targetPos.y * viewProjMat.m[1][1] + targetPos.z * viewProjMat.m[2][1] + viewProjMat.m[3][1]) / w;
+		if (clipW > 0.0f) {
+			const float ndcX = clipX / clipW;
+			const float ndcY = clipY / clipW;
 
 			// Sprite は 1920x1080 の仮想スクリーン座標で描画し、Game ビューにも同じ比率で出力される。
 			targetReticlePos = {
@@ -91,12 +110,60 @@ void Player::UpdateReticle() {
 	for (int i = 0; i < 3; ++i) {
 		reticle[i]->SetColor(lockOnTimer >= requiredLockOnTime && lockedTarget != nullptr
 			? Vector4{ 1.0f, 0.0f, 0.0f, 1.0f }
-			: Vector4{ 1.0f, 1.0f, 1.0f, 1.0f });
+			: Vector4{ 0.0f, 1.0f, 0.0f, 1.0f });
 		reticle[i]->SetPosition(reticlePosition[i]);
 		reticle[i]->SetRotation(reticleRotation[i]);
 		reticle[i]->SetSize(reticleSize[i]);
 		reticle[i]->Update();
 	}
+
+	// 矢印はロックオン完了前だけ、レティクル範囲外の最寄りの敵を指す。
+	const Vector2 center = { 960.0f, 440.0f };
+	const float arrowRadius = 400.0f;
+
+	const bool isLockedOn =
+		lockedTarget != nullptr &&
+		lockOnTimer >= requiredLockOnTime;
+
+	isArrowActive = false;
+	if (!isLockedOn && indicatorTarget && !indicatorTarget->IsDead()) {
+		const Vector3 targetPos = indicatorTarget->GetTranslate();
+		const float clipX = targetPos.x * viewProjMat.m[0][0] + targetPos.y * viewProjMat.m[1][0] + targetPos.z * viewProjMat.m[2][0] + viewProjMat.m[3][0];
+		const float clipY = targetPos.x * viewProjMat.m[0][1] + targetPos.y * viewProjMat.m[1][1] + targetPos.z * viewProjMat.m[2][1] + viewProjMat.m[3][1];
+		const float clipW = targetPos.x * viewProjMat.m[0][3] + targetPos.y * viewProjMat.m[1][3] + targetPos.z * viewProjMat.m[2][3] + viewProjMat.m[3][3];
+
+		Vector2 direction = { clipX, -clipY };
+		if (clipW < 0.0f) {
+			direction.x = -direction.x;
+			direction.y = -direction.y;
+		}
+
+		bool isOutsideReticle = clipW <= 0.0f;
+		if (clipW > 0.0f) {
+			const Vector2 screenPos = {
+				(clipX / clipW + 1.0f) * targetReticlePos.x,
+				(1.0f - clipY / clipW) * targetReticlePos.y,
+			};
+			isOutsideReticle =
+				std::abs(screenPos.x - center.x) > lockOnAreaX ||
+				std::abs(screenPos.y - center.y) > lockOnAreaY;
+		}
+
+		const float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+		if (isOutsideReticle && length > 0.001f) {
+			direction.x /= length;
+			direction.y /= length;
+
+			arrow->SetPosition({
+				center.x + direction.x * arrowRadius,
+				center.y + direction.y * arrowRadius,
+			});
+			arrow->SetRotation(std::atan2(direction.y, direction.x));
+			arrow->Update();
+			isArrowActive = true;
+		}
+	}
+
 }
 
 void Player::UpdateLockOn(const std::vector<Enemy*>& enemies) {
@@ -136,12 +203,25 @@ void Player::UpdateLockOn(const std::vector<Enemy*>& enemies) {
 	lockedTarget = nullptr;
 	float closestDist = lockOnRange;
 
-	// 画面中央の座標と、ロックオンを許可する範囲（ピクセル）
-	float centerX = 1920.0f * 0.5f;
-	float centerY = 1080.0f * 0.5f;
+	// 矢印のターゲットもリセット
+	indicatorTarget = nullptr;
+	float closestIndicatorDist = FLT_MAX;
+
+	// レティクルの座標と、ロックオンを許可する範囲（ピクセル）
+	float centerX = reticlePosition[0].x;
+	float centerY = reticlePosition[0].y;
 
 	for (Enemy* enemy : enemies) {
 		if (!enemy || enemy->IsDead()) continue;
+
+		// 矢印のターゲット判定
+		const Vector3 diff = enemy->GetTranslate() - translate_;
+		const float distSq = Dot(diff, diff);
+
+		if (distSq < closestIndicatorDist) {
+			closestIndicatorDist = distSq;
+			indicatorTarget = enemy;
+		}
 
 		Vector3 targetPos = enemy->GetTranslate();
 
@@ -194,7 +274,7 @@ void Player::OnCollision(int damage) {
 
 	hp_ = (std::max)(0, hp_ - damage);
 	if (hp_ == 0) {
-		//currentState = Death;
+		currentState = Death;
 		return;
 	}
 
@@ -278,24 +358,28 @@ void Player::Move() {
 		leftPos.z = translate_.z - right.z * offsetRight;
 
 
-		// 1発目：右の弾を生成
-		auto bulletRightObject = std::make_unique<GameObject>("PlayerBullet");
-		auto* bulletRight = bulletRightObject->AddComponent<PlayerBulletNormal>();
-		bulletRight->Initialize(rightPos, lockedTarget, launchVelocity_);
-		bulletRightObject->Initialize();
-		bullets_.push_back(bulletRight);
-		bulletObjects_.push_back(std::move(bulletRightObject));
+		// ★ 左右フラグに応じて片方だけ発射する
+		if (isNextNormalRight) {
+			auto bulletRightObject = std::make_unique<GameObject>("PlayerBullet");
+			auto* bulletRight = bulletRightObject->AddComponent<PlayerBulletNormal>();
+			bulletRight->Initialize(rightPos, lockedTarget, launchVelocity_);
+			bulletRightObject->Initialize();
+			bullets_.push_back(bulletRight);
+			bulletObjects_.push_back(std::move(bulletRightObject));
+		} else {
+			auto bulletLeftObject = std::make_unique<GameObject>("PlayerBullet");
+			auto* bulletLeft = bulletLeftObject->AddComponent<PlayerBulletNormal>();
+			bulletLeft->Initialize(leftPos, lockedTarget, launchVelocity_);
+			bulletLeftObject->Initialize();
+			bullets_.push_back(bulletLeft);
+			bulletObjects_.push_back(std::move(bulletLeftObject));
+		}
 
-		// 2発目：左の弾を生成
-		auto bulletLeftObject = std::make_unique<GameObject>("PlayerBullet");
-		auto* bulletLeft = bulletLeftObject->AddComponent<PlayerBulletNormal>();
-		bulletLeft->Initialize(leftPos, lockedTarget, launchVelocity_);
-		bulletLeftObject->Initialize();
-		bullets_.push_back(bulletLeft);
-		bulletObjects_.push_back(std::move(bulletLeftObject));
+		// 次の弾は逆から撃つようにフラグを反転
+		isNextNormalRight = !isNextNormalRight;
 
 
-		bulletCoolTime = 0.2f; // クールタイムをリセット
+		bulletCoolTime = kBulletCoolTime; // クールタイムをリセット
 	} else if (input->IsMouseButtonPressed(1)) {
 		// ロックオン完了時に6連射の予約をセット
 		if (lockOnTimer >= requiredLockOnTime && lockedTarget != nullptr) {
@@ -308,7 +392,7 @@ void Player::Move() {
 			lockOnTimer = 0.0f;
 		}
 
-		bulletCoolTime = 0.2f; // クールタイムをリセット
+		bulletCoolTime = kBulletCoolTime; // クールタイムをリセット
 	}
 }
 
@@ -403,13 +487,12 @@ void Player::UpdateNormal(float deltaTime) {
 		currentFrictionYZ = rotFriction * 5.0f;
 	}
 
-	// 2. 摩擦（減衰）をかけて、角速度を徐々に 0 に近づける
-	float frictionTX = 1.0f - std::exp(-currentFrictionX * deltaTime);
-	float frictionTYZ = 1.0f - std::exp(-currentFrictionYZ * deltaTime);
+	// 慣性
+	float frictionT = 1.0f - std::exp(-rotFriction * deltaTime);
 
-	angularVelocity.x = Lerp(angularVelocity.x, 0.0f, frictionTX);
-	angularVelocity.y = Lerp(angularVelocity.y, 0.0f, frictionTYZ);
-	angularVelocity.z = Lerp(angularVelocity.z, 0.0f, frictionTYZ);
+	angularVelocity.x = Lerp(angularVelocity.x, 0.0f, frictionT);
+	angularVelocity.y = Lerp(angularVelocity.y, 0.0f, frictionT);
+	angularVelocity.z = Lerp(angularVelocity.z, 0.0f, frictionT);
 	// ▲▲▲ 修正ここまで ▲▲▲
 
 	// 3. 現在の角度に、計算された角速度を加算
@@ -417,20 +500,7 @@ void Player::UpdateNormal(float deltaTime) {
 	currentYaw += angularVelocity.y * deltaTime;
 	currentRoll += angularVelocity.z * deltaTime;
 
-	// 入力がない軸の角度を徐々に 0 に戻す
-	float returnT = 1.0f - std::exp(-rotationSpeed * deltaTime);
-
-	if (playerInput.axisY == 0.0f) {
-		// 縦入力がない場合はピッチ(上下の傾き)を戻す
-		currentPitch = Lerp(currentPitch, 0.0f, returnT);
-	}
-
-	if (playerInput.axisX == 0.0f) {
-		// 横入力がない場合はヨー(首振り)とロール(左右の傾き)を戻す
-		currentYaw = Lerp(currentYaw, 0.0f, returnT);
-		currentRoll = Lerp(currentRoll, 0.0f, returnT);
-	}
-
+	
 	// 4. 回転しすぎないように最大角度で制限（クランプ）
 	// ※限界角度に達したら、ピタッと止まるようにその軸の角速度も 0 にリセットする
 	if (currentPitch <= -maxPitchAngle || currentPitch >= maxPitchAngle) {

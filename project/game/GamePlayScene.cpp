@@ -1,4 +1,4 @@
-#include "GamePlayScene.h"
+﻿#include "GamePlayScene.h"
 #include "ObjectCommon.h"
 #include "SpriteCommon.h"
 #include "SceneManager.h"
@@ -21,6 +21,7 @@
 #include "SkyBox.h"
 #include "LineCommon.h"
 #include "ModelManager.h"
+#include "ScoreManager.h"
 #include <algorithm>
 #include <cstring>
 #include <cctype>
@@ -182,6 +183,11 @@ void GamePlayScene::Initialize() {
 	isGlitch = true;
 	PostEffect::GetInstance()->SetGlitch(isGlitch);
 
+	// 過去のランキングを読み込んだ上で、今回プレイ分のスコアだけを初期化する。
+	auto* scoreManager = ScoreManager::GetInstance();
+	scoreManager->LoadJSON("score");
+	scoreManager->Initialize();
+
 }
 
 void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
@@ -189,6 +195,8 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
+	// スコア更新
+	ScoreManager::GetInstance()->Update();
 
 	trailEffect->Editor();
 
@@ -530,6 +538,63 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	}
 
 #endif
+	auto* scoreObject = GameObject::FindByName("ScoreValueText");
+	auto* comboObject = GameObject::FindByName("ComboText");
+	auto* comboValueObject = GameObject::FindByName("ComboValueText");
+	auto* killScoreObject = GameObject::FindByName("KillScore");
+
+	if (comboObject && killScoreObject && comboObject->IsActive() && killScoreObject->IsActive() && !isScoreAction) {
+		isScoreAction = true;
+		isScoreEasing_ = false;
+		scoreActiveTime_ = 5.0f; // スコア演出の表示時間をリセット
+	}
+
+	// スコアの更新
+	if (scoreObject) {
+		if (auto* scoreText = scoreObject->GetComponent<TextRendererComponent>()) {
+			scoreText->SetText(std::to_string(ScoreManager::GetInstance()->GetScore()));
+		}
+	}
+
+	if (isScoreAction && comboObject && comboValueObject && killScoreObject) {
+		if (scoreActiveTime_ > 0.0f) {
+			scoreActiveTime_ -= deltaTime;
+		}
+
+		// コンボの更新
+		if (auto* comboValueText = comboValueObject->GetComponent<TextRendererComponent>()) {
+			comboValueText->SetText(std::to_string(ScoreManager::GetInstance()->GetCombo()));
+		}
+
+		// キルスコアの更新
+		if (auto* killScoreText = killScoreObject->GetComponent<TextRendererComponent>()) {
+			killScoreText->SetText(std::to_string(ScoreManager::GetInstance()->GetKillScore()));
+		}
+
+		// スコア演出の終了演出
+		if (scoreActiveTime_ <= 0.0f) {
+			auto* comboEasing = comboObject->GetComponent<EasingComponent>();
+			auto* comboValueEasing = comboValueObject->GetComponent<EasingComponent>();
+			auto* killScoreEasing = killScoreObject->GetComponent<EasingComponent>();
+
+			// IsPlaying() は状態確認だけなので、終了用（2番目）の設定を一度だけ明示的に再生する。
+			if (!isScoreEasing_ && comboEasing && comboValueEasing && killScoreEasing) {
+				comboEasing->Play(1);
+				comboValueEasing->Play(1);
+				killScoreEasing->Play(1);
+				isScoreEasing_ = true;
+			}
+
+			if (!comboEasing || !comboValueEasing || !killScoreEasing ||
+				(isScoreEasing_ && comboEasing->IsFinished() && comboValueEasing->IsFinished() && killScoreEasing->IsFinished())) {
+				isScoreAction = false;
+				isScoreEasing_ = false;
+				comboObject->SetActive(false);
+				comboValueObject->SetActive(false);
+				killScoreObject->SetActive(false);
+			}
+		}
+	}
 
 	// スタート演出
 
@@ -611,6 +676,41 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				}
 
 			}
+		}
+
+		// スキップ処理
+		if (isSkipStartAction) {
+			// そのままステージに切り換え
+			activeRailGroupName_ = "StageRailCamera";
+			level->GetLevelData()->activeRailCameraGroup = activeRailGroupName_;
+			railCamera->StopRail();
+
+			railCamera->StartRail();
+			player->SetMoveEnabled(true); // プレイヤーの移動を有効化
+			isStartAction = false;
+			isRadialBlur = false;
+			isGlitch = false;
+			PostEffect::GetInstance()->SetGlitch(isGlitch);
+			fadeTime = 30.0f;
+			cockpit->SetEnablePostEffect(true);
+
+
+			// HUDの演出を非表示にする
+			reticle_1->SetActive(false);
+			reticle_2->SetActive(false);
+			reticle_3->SetActive(false);
+
+			StartFadeIn(isFadeIn, isFadeOut);
+		}
+	}
+
+	// クリア演出
+	if (activeRailGroupName_ == "StageRailCamera") {
+		if (railCamera->IsRailActive() && railCamera->IsRailFinished()) {
+			auto* scoreManager = ScoreManager::GetInstance();
+			scoreManager->AddHighScore("PLAYER", scoreManager->GetScore());
+			scoreManager->SaveJSON("score");
+			SceneManager::GetInstance()->ChangeScene("RESULTS");
 		}
 	}
 
@@ -949,7 +1049,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	if (ImGui::TreeNode("MotionBlur")) {
 		ImGui::Checkbox("OnOff", &isMotionBlur);
 
-		if (isLensFlare) {
+		if (isMotionBlur) {
 			ImGui::DragInt("motionBlurSamples", &motionBlurSamples, 1, 0, 20);
 			ImGui::DragFloat("motionBlurScale", &motionBlurScale, 0.01f, 0.0f, 10.0f);
 		}
@@ -1470,6 +1570,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			renderer->SetColorOverride(copyData.modelColorOverride);
 			renderer->SetColorOverrideUnlit(copyData.modelColorOverrideUnlit);
 			renderer->SetToonShadingEnabled(copyData.modelToonShading);
+			renderer->SetMotionBlurEnabled(copyData.modelMotionBlurEnabled);
 			renderer->SetTextureOverride(copyData.modelTextureOverride);
 		}
 		if (sourceObject->GetComponent<RectTransformComponent>()) {
@@ -1515,7 +1616,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				copyData.objectRailPointRotations, copyData.objectRailUsePointRotations);
 		}
 		if (sourceObject->GetComponent<EasingComponent>()) {
-			copyObject->AddComponent<EasingComponent>()->Configure(copyData.easing);
+			copyObject->AddComponent<EasingComponent>()->Configure(copyData.easings);
 		}
 		if (sourceObject->GetComponent<ParticleComponent>()) {
 			copyObject->AddComponent<ParticleComponent>()->Configure(copyData.particle);
@@ -1901,6 +2002,13 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 						level->GetLevelData()->objects[selectedIndex].modelToonShading = renderer->IsToonShadingEnabled();
 					}
 				}
+				bool motionBlurEnabled = renderer->IsMotionBlurEnabled();
+				if (ImGui::Checkbox("Motion Blur##ModelRenderer", &motionBlurEnabled)) {
+					renderer->SetMotionBlurEnabled(motionBlurEnabled);
+					if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+						level->GetLevelData()->objects[selectedIndex].modelMotionBlurEnabled = motionBlurEnabled;
+					}
+				}
 
 				char modelPath[260]{};
 				strncpy_s(modelPath, renderer->GetModelPath().c_str(), _TRUNCATE);
@@ -2137,7 +2245,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 		if (auto* easing = selectedObject->GetComponent<EasingComponent>()) {
 			if (ImGui::CollapsingHeader("Easing", ImGuiTreeNodeFlags_DefaultOpen)) {
 				if (DrawEasingComponentInspector(*easing) && selectedIndex != -1) {
-					level->GetLevelData()->objects[selectedIndex].easing = easing->GetSettings();
+					level->GetLevelData()->objects[selectedIndex].easings = easing->GetSettings();
 				}
 			}
 		}
@@ -2334,7 +2442,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 
 					// 3. ★移動パターンが "PATH" の場合のみ制御点(controlPoints)の編集UIを表示
 					if (sData.movePattern == "PATH") {
-						ImGui::DragFloat("Path Speed Multiplier", &sData.pathSpeed, 0.05f, 0.0f, 100.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+						ImGui::DragFloat("Path Speed Multiplier", &sData.pathSpeed, 0.001f, 0.0f, 100.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 						if (ImGui::TreeNode("Path Control Points")) {
 
 							// 制御点追加ボタン
@@ -2491,8 +2599,8 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				} else if (auto* modelRenderer = selectedObject->GetComponent<ModelRendererComponent>(); modelRenderer && modelRenderer->IsColorOverrideEnabled()) {
 					easingData.startColor = easingData.goalColor = modelRenderer->GetColorOverride();
 				}
-				objectData.easing = easingData;
-				selectedObject->AddComponent<EasingComponent>()->Configure(objectData.easing);
+				objectData.easings = { easingData };
+				selectedObject->AddComponent<EasingComponent>()->Configure(objectData.easings);
 				addSerializedComponent("Easing");
 			}
 			if (!selectedObject->GetComponent<ParticleComponent>() && ImGui::Button("Particle")) {
@@ -2912,7 +3020,7 @@ if (groupName.empty()) return;
 void GamePlayScene::CreateLevel() {
 	auto configureEasing = [](GameObject& gameObject, const ObjectData& objectData) {
 		if (std::find(objectData.components.begin(), objectData.components.end(), "Easing") != objectData.components.end()) {
-			gameObject.AddComponent<EasingComponent>()->Configure(objectData.easing);
+			gameObject.AddComponent<EasingComponent>()->Configure(objectData.easings);
 		}
 	};
 	auto configureParticle = [](GameObject& gameObject, const ObjectData& objectData) {
@@ -2958,6 +3066,7 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetColorOverride(objectData.modelColorOverride);
 			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
 			modelRenderer->SetToonShadingEnabled(objectData.modelToonShading);
+			modelRenderer->SetMotionBlurEnabled(objectData.modelMotionBlurEnabled);
 			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
 			hideEditorOnlyModelInRelease(*modelRenderer, objectData);
 			if (std::find(objectData.components.begin(), objectData.components.end(), "ObjectRailMovement") != objectData.components.end()) {
@@ -3002,6 +3111,7 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetColorOverride(objectData.modelColorOverride);
 			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
 			modelRenderer->SetToonShadingEnabled(objectData.modelToonShading);
+			modelRenderer->SetMotionBlurEnabled(objectData.modelMotionBlurEnabled);
 			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
 			hideEditorOnlyModelInRelease(*modelRenderer, objectData);
 			gameObject->AddComponent<RailPointComponent>();
@@ -3038,6 +3148,7 @@ void GamePlayScene::CreateLevel() {
 			modelRenderer->SetColorOverride(objectData.modelColorOverride);
 			modelRenderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
 			modelRenderer->SetToonShadingEnabled(objectData.modelToonShading);
+			modelRenderer->SetMotionBlurEnabled(objectData.modelMotionBlurEnabled);
 			modelRenderer->SetTextureOverride(objectData.modelTextureOverride);
 
 			// ゲームロジック用のスポナーも同じ GameObject にアタッチする。
@@ -3078,6 +3189,7 @@ void GamePlayScene::CreateLevel() {
 				renderer->SetColorOverride(objectData.modelColorOverride);
 				renderer->SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
 				renderer->SetToonShadingEnabled(objectData.modelToonShading);
+				renderer->SetMotionBlurEnabled(objectData.modelMotionBlurEnabled);
 				renderer->SetTextureOverride(objectData.modelTextureOverride);
 				hideEditorOnlyModelInRelease(*renderer, objectData);
 			}

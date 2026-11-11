@@ -37,6 +37,7 @@ void ConfigureModelRenderer(ModelRendererComponent& renderer, ObjectData& object
 	renderer.SetColorOverride(objectData.modelColorOverride);
 	renderer.SetColorOverrideUnlit(objectData.modelColorOverrideUnlit);
 	renderer.SetToonShadingEnabled(objectData.modelToonShading);
+	renderer.SetMotionBlurEnabled(objectData.modelMotionBlurEnabled);
 	renderer.SetTextureOverride(objectData.modelTextureOverride);
 
 	// レールカメラ制御点のモデルはエディタでのみ可視にする。
@@ -71,7 +72,7 @@ void ConfigureEasing(GameObject& gameObject, const ObjectData& objectData) {
 	if (!HasComponent(objectData, "Easing")) {
 		return;
 	}
-	gameObject.AddComponent<EasingComponent>()->Configure(objectData.easing);
+	gameObject.AddComponent<EasingComponent>()->Configure(objectData.easings);
 }
 
 void ConfigureParticle(GameObject& gameObject, const ObjectData& objectData) {

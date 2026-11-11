@@ -39,7 +39,7 @@ private:
 	Vector3 velocity = { 0.0f, 0.0f, 30.0f }; // 弾の速度
 	Vector3 projectileVelocity_ = { 0.0f, 0.0f, 0.5f };
 	Vector3 inheritedVelocity_ = { 0.0f, 0.0f, 0.0f };
-	float speed = 2.0f; // 弾の移動速度
+	float speed = 3.0f; // 弾の移動速度
 	float deathTimer = 0.0f; // 消滅までの時間
 	static constexpr float kLifeTime = 5.0f; // 弾の寿命（秒）
 	Enemy* target_ = nullptr;	// ロックオン対象の敵

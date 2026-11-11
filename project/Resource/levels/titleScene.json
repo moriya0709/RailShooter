@@ -11,9 +11,9 @@
             "name": "MainCamera",
             "transform": {
                 "rotation": [
+                    0.04000002518296242,
                     0.0,
-                    0.0,
-                    0.0
+                    -0.06500005722045898
                 ],
                 "scaling": [
                     1.0,
@@ -21,9 +21,9 @@
                     1.0
                 ],
                 "translation": [
-                    0.0,
-                    -60.0,
-                    1.0
+                    -2.0777390003204346,
+                    -65.8203353881836,
+                    -1.1240978240966797
                 ]
             },
             "type": "EMPTY"
@@ -778,6 +778,7 @@
             "direction_mode": 0,
             "name": "",
             "preset_sequence": [],
+            "rail_speed": 1.0,
             "target_position": [
                 0.0,
                 0.0,

@@ -40,7 +40,7 @@ void ModelRendererComponent::Initialize() {
 	// モーションブラー
 	motionBlurResource = dxCommon_->CreateBufferResource(sizeof(MotionBlur));
 	motionBlurResource->Map(0, nullptr, reinterpret_cast<void**>(&motionBlurData));
-	motionBlurData->isMotionBlur = false;
+	motionBlurData->isMotionBlur = motionBlurEnabled_ ? 1 : 0;
 
 	// Per-renderer data keeps color changes isolated from other instances of the same Model.
 	colorOverrideResource = dxCommon_->CreateBufferResource(sizeof(ModelColorOverride));

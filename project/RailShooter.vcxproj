@@ -88,6 +88,8 @@
     <ClCompile Include="engine\scene\SceneManager.cpp" />
     <ClCompile Include="engine\audio\SoundManager.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp" />
+    <ClCompile Include="ResultsScene.cpp" />
+    <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="SelectScene.cpp" />
     <ClCompile Include="SpriteRendererComponent.cpp" />
     <ClCompile Include="TextRendererComponent.cpp" />
@@ -369,6 +371,8 @@
     <ClInclude Include="ImGuiFunction.h" />
     <ClInclude Include="LevelEditorCommon.h" />
     <ClInclude Include="LevelObjectFactory.h" />
+    <ClInclude Include="ResultsScene.h" />
+    <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="SelectScene.h" />
     <ClInclude Include="SpriteRendererComponent.h" />
     <ClInclude Include="TextRendererComponent.h" />

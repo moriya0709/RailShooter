@@ -3,6 +3,7 @@
 #include <memory>
 #include <list>
 #include <Windows.h>
+#include <cfloat>
 
 #include "Calc.h"
 #include "Sprite.h"
@@ -70,9 +71,9 @@ private:
 
 
     // --- パラメーター設定 ---
-    float maxRollAngle = 0.3925f; // 最大ロール角 (約 30度 in radian)
-    float maxPitchAngle = 0.3925f; // 最大ピッチ角 (約 15度 in radian)
-    float maxYawAngle = 0.3925f; // 最大ヨー角 (約 15度 in radian)
+    float maxRollAngle = 0.5f; // 最大ロール角
+    float maxPitchAngle = 0.5f; // 最大ピッチ角
+    float maxYawAngle = 0.5f; // 最大ヨー角
 
     // カメラの傾き反映比率 (コクピットの傾きの何%をカメラに伝えるか)
     float cameraTiltRatio = 0.35f;
@@ -102,14 +103,16 @@ private:
 	Vector3 launchVelocity_ = { 0.0f, 0.0f, 0.0f };
     float moveSpeed = 15.0f;                             // 最大速度
     float inertiaSpeed = 10.0f;                           // 慣性の強さ（値が小さいほど氷の上のように滑る）
-    float moveLimitX = 5.0f;                            // 左右の移動限界
-    float moveLimitY = 5.0f;                            // 上下の移動限界
+    float moveLimitX = 0.0f;                            // 左右の移動限界
+    float moveLimitY = 0.0f;                            // 上下の移動限界
     float cameraFollowRatio = 0.3f;                      // カメラが機体の移動にどれだけ追従するか (0.0=追従なし, 1.0=完全追従)
 
     // 弾
 	std::list<std::unique_ptr<GameObject>> bulletObjects_;
 	std::list<PlayerBullet*> bullets_;
-	float bulletCoolTime = 0.1f; // 弾の発射間隔
+    const float kBulletCoolTime = 0.1f; // 弾の発射間隔
+	float bulletCoolTime = kBulletCoolTime;
+    bool isNextNormalRight = true; // 通常弾の左右切り替えフラグ
 
     // レティクル
     std::unique_ptr <Sprite> reticle[3]{};
@@ -118,13 +121,18 @@ private:
 	float reticleRotation[3] = { 0.0f, 0.0f, 0.0f };
 	float reticleRotationMultiplier[3] = { 5.0f, 1.0f, 3.0f }; // レティクルの回転角度に対する倍率
 
+    // 矢印
+    Enemy* indicatorTarget = nullptr;
+	std::unique_ptr <Sprite> arrow;
+	bool isArrowActive = true;
+
     // 当たったか
     bool isHit = false;
     float hitTimer_ = 0.0f;
 
     // ロックオン
     Enemy* lockedTarget = nullptr;
-	float lockOnRange = 100.0f; // ロックオン可能距離
+	float lockOnRange = 300.0f; // ロックオン可能距離
 	// ロックオン可能範囲の定義（画面中央からのピクセル距離）
     float lockOnAreaX = 300.0f;
     float lockOnAreaY = 300.0f;
@@ -132,7 +140,7 @@ private:
     // 6連射ミサイル制御用パラメータ
     Enemy* previousLockedTarget = nullptr; // 前フレームのターゲット保持用
     float lockOnTimer = 0.0f;              // ロックオン継続時間
-    float requiredLockOnTime = 2.0f;       // ミサイル発射に必要なロックオン時間（秒）
+    float requiredLockOnTime = 1.0f;       // ミサイル発射に必要なロックオン時間（秒）
     int remainingMissiles = 0;       // 残りの発射可能数
     float missileBurstTimer = 0.0f;  // 次のミサイル発射までのタイマー
     float missileInterval = 0.3f;   // ミサイル同士の発射間隔（秒）

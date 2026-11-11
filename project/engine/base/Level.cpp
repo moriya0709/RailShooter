@@ -109,6 +109,7 @@ void Level::LoadJson(const std::string fileName) {
 				newData.modelColorOverrideEnabled = object["model_renderer"].value("color_override_enabled", newData.modelColorOverrideEnabled);
 				newData.modelColorOverrideUnlit = object["model_renderer"].value("color_override_unlit", newData.modelColorOverrideUnlit);
 				newData.modelToonShading = object["model_renderer"].value("toon_shading", newData.modelToonShading);
+				newData.modelMotionBlurEnabled = object["model_renderer"].value("motion_blur_enabled", newData.modelMotionBlurEnabled);
 				newData.modelTextureOverride = object["model_renderer"].value("texture_override", newData.modelTextureOverride);
 				const auto& modelRenderer = object["model_renderer"];
 				if (modelRenderer.contains("outline_color") && modelRenderer["outline_color"].is_array() && modelRenderer["outline_color"].size() == 4) {
@@ -240,16 +241,16 @@ void Level::LoadJson(const std::string fileName) {
 					}
 				}
 			}
-			if (object.contains("easing") && object["easing"].is_object()) {
-				const auto& easing = object["easing"];
-				newData.easing.animatePosition = easing.value("position", newData.easing.animatePosition);
-				newData.easing.animateRotation = easing.value("rotation", newData.easing.animateRotation);
-				newData.easing.animateScale = easing.value("scale", newData.easing.animateScale);
-				newData.easing.animateColor = easing.value("color", newData.easing.animateColor);
-				newData.easing.duration = easing.value("duration", newData.easing.duration);
-				newData.easing.useGameTime = easing.value("use_game_time", newData.easing.useGameTime);
-				newData.easing.loop = easing.value("loop", newData.easing.loop);
-				newData.easing.playOnStart = easing.value("play_on_start", newData.easing.playOnStart);
+			auto readEasing = [](const nlohmann::json& easing) {
+				EasingData data{};
+				data.animatePosition = easing.value("position", data.animatePosition);
+				data.animateRotation = easing.value("rotation", data.animateRotation);
+				data.animateScale = easing.value("scale", data.animateScale);
+				data.animateColor = easing.value("color", data.animateColor);
+				data.duration = easing.value("duration", data.duration);
+				data.useGameTime = easing.value("use_game_time", data.useGameTime);
+				data.loop = easing.value("loop", data.loop);
+				data.playOnStart = easing.value("play_on_start", data.playOnStart);
 				auto readVector3 = [&easing](const char* key, Vector3& value) {
 					if (easing.contains(key) && easing[key].is_array() && easing[key].size() == 3) {
 						value = { easing[key][0].get<float>(), easing[key][1].get<float>(), easing[key][2].get<float>() };
@@ -265,16 +266,25 @@ void Level::LoadJson(const std::string fileName) {
 						value = { easing[key][0].get<float>(), easing[key][1].get<float>() };
 					}
 				};
-				readVector3("start_position", newData.easing.startPosition);
-				readVector3("goal_position", newData.easing.goalPosition);
-				readVector3("start_rotation", newData.easing.startRotation);
-				readVector3("goal_rotation", newData.easing.goalRotation);
-				readVector3("start_scale", newData.easing.startScale);
-				readVector3("goal_scale", newData.easing.goalScale);
-				readVector4("start_color", newData.easing.startColor);
-				readVector4("goal_color", newData.easing.goalColor);
-				readVector2("control_point_1", newData.easing.controlPoint1);
-				readVector2("control_point_2", newData.easing.controlPoint2);
+				readVector3("start_position", data.startPosition);
+				readVector3("goal_position", data.goalPosition);
+				readVector3("start_rotation", data.startRotation);
+				readVector3("goal_rotation", data.goalRotation);
+				readVector3("start_scale", data.startScale);
+				readVector3("goal_scale", data.goalScale);
+				readVector4("start_color", data.startColor);
+				readVector4("goal_color", data.goalColor);
+				readVector2("control_point_1", data.controlPoint1);
+				readVector2("control_point_2", data.controlPoint2);
+				return data;
+			};
+			if (object.contains("easings") && object["easings"].is_array()) {
+				for (const auto& easing : object["easings"]) {
+					if (easing.is_object()) newData.easings.push_back(readEasing(easing));
+				}
+			} else if (object.contains("easing") && object["easing"].is_object()) {
+				// 旧レベルの単一設定を、新形式の先頭設定として移行する。
+				newData.easings.push_back(readEasing(object["easing"]));
 			}
 			if (object.contains("particle") && object["particle"].is_object()) {
 				const auto& particle = object["particle"];
@@ -330,7 +340,7 @@ void Level::LoadJson(const std::string fileName) {
 						data.movePattern = "STRAIGHT";
 					}
 
-					data.pathSpeed = (std::max)(0.0f, spawnItem.value("pathSpeed", 1.0f));
+					data.pathSpeed = (std::max)(0.0f, spawnItem.value("pathSpeed", 0.125f));
 					// controlPoints があれば配列として読み込む
 					if (spawnItem.contains("controlPoints")) {
 						for (const auto& cp : spawnItem["controlPoints"]) {
@@ -423,6 +433,7 @@ void Level::SaveJson(const std::string fileName) {
 			newObjJson["model_renderer"]["color_override"] = { obj.modelColorOverride.x, obj.modelColorOverride.y, obj.modelColorOverride.z, obj.modelColorOverride.w };
 			newObjJson["model_renderer"]["color_override_unlit"] = obj.modelColorOverrideUnlit;
 			newObjJson["model_renderer"]["toon_shading"] = obj.modelToonShading;
+			newObjJson["model_renderer"]["motion_blur_enabled"] = obj.modelMotionBlurEnabled;
 			if (!obj.modelTextureOverride.empty()) {
 				newObjJson["model_renderer"]["texture_override"] = obj.modelTextureOverride;
 			}
@@ -488,25 +499,30 @@ void Level::SaveJson(const std::string fileName) {
 			}
 		}
 		if (std::find(obj.components.begin(), obj.components.end(), "Easing") != obj.components.end()) {
-			auto& easing = newObjJson["easing"];
-			easing["position"] = obj.easing.animatePosition;
-			easing["rotation"] = obj.easing.animateRotation;
-			easing["scale"] = obj.easing.animateScale;
-			easing["color"] = obj.easing.animateColor;
-			easing["duration"] = obj.easing.duration;
-			easing["use_game_time"] = obj.easing.useGameTime;
-			easing["loop"] = obj.easing.loop;
-			easing["play_on_start"] = obj.easing.playOnStart;
-			easing["start_position"] = { obj.easing.startPosition.x, obj.easing.startPosition.y, obj.easing.startPosition.z };
-			easing["goal_position"] = { obj.easing.goalPosition.x, obj.easing.goalPosition.y, obj.easing.goalPosition.z };
-			easing["start_rotation"] = { obj.easing.startRotation.x, obj.easing.startRotation.y, obj.easing.startRotation.z };
-			easing["goal_rotation"] = { obj.easing.goalRotation.x, obj.easing.goalRotation.y, obj.easing.goalRotation.z };
-			easing["start_scale"] = { obj.easing.startScale.x, obj.easing.startScale.y, obj.easing.startScale.z };
-			easing["goal_scale"] = { obj.easing.goalScale.x, obj.easing.goalScale.y, obj.easing.goalScale.z };
-			easing["start_color"] = { obj.easing.startColor.x, obj.easing.startColor.y, obj.easing.startColor.z, obj.easing.startColor.w };
-			easing["goal_color"] = { obj.easing.goalColor.x, obj.easing.goalColor.y, obj.easing.goalColor.z, obj.easing.goalColor.w };
-			easing["control_point_1"] = { obj.easing.controlPoint1.x, obj.easing.controlPoint1.y };
-			easing["control_point_2"] = { obj.easing.controlPoint2.x, obj.easing.controlPoint2.y };
+			auto& easings = newObjJson["easings"];
+			easings = nlohmann::json::array();
+			for (const EasingData& easing : obj.easings) {
+				easings.push_back({
+					{ "position", easing.animatePosition },
+					{ "rotation", easing.animateRotation },
+					{ "scale", easing.animateScale },
+					{ "color", easing.animateColor },
+					{ "duration", easing.duration },
+					{ "use_game_time", easing.useGameTime },
+					{ "loop", easing.loop },
+					{ "play_on_start", easing.playOnStart },
+					{ "start_position", { easing.startPosition.x, easing.startPosition.y, easing.startPosition.z } },
+					{ "goal_position", { easing.goalPosition.x, easing.goalPosition.y, easing.goalPosition.z } },
+					{ "start_rotation", { easing.startRotation.x, easing.startRotation.y, easing.startRotation.z } },
+					{ "goal_rotation", { easing.goalRotation.x, easing.goalRotation.y, easing.goalRotation.z } },
+					{ "start_scale", { easing.startScale.x, easing.startScale.y, easing.startScale.z } },
+					{ "goal_scale", { easing.goalScale.x, easing.goalScale.y, easing.goalScale.z } },
+					{ "start_color", { easing.startColor.x, easing.startColor.y, easing.startColor.z, easing.startColor.w } },
+					{ "goal_color", { easing.goalColor.x, easing.goalColor.y, easing.goalColor.z, easing.goalColor.w } },
+					{ "control_point_1", { easing.controlPoint1.x, easing.controlPoint1.y } },
+					{ "control_point_2", { easing.controlPoint2.x, easing.controlPoint2.y } }
+				});
+			}
 		}
 		if (std::find(obj.components.begin(), obj.components.end(), "Particle") != obj.components.end()) {
 			auto& particle = newObjJson["particle"];

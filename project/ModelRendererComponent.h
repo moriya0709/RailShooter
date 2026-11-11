@@ -50,6 +50,14 @@ public:
 	bool IsColorOverrideUnlit() const { return colorOverrideUnlit_; }
 	void SetToonShadingEnabled(bool enabled) { toonShadingEnabled_ = enabled; }
 	bool IsToonShadingEnabled() const { return toonShadingEnabled_; }
+	// 有効時のみ、このモデルの画面空間速度をモーションブラー用バッファへ出力する。
+	void SetMotionBlurEnabled(bool enabled) {
+		motionBlurEnabled_ = enabled;
+		if (motionBlurData) {
+			motionBlurData->isMotionBlur = enabled ? 1 : 0;
+		}
+	}
+	bool IsMotionBlurEnabled() const { return motionBlurEnabled_; }
 
 private:
 	// バッファリソース
@@ -100,6 +108,7 @@ private:
 	bool colorOverrideUnlit_ = false;
 	// true はセル調、false は通常の NdotL ライティング。
 	bool toonShadingEnabled_ = true;
+	bool motionBlurEnabled_ = false;
 	bool IsCulledByDistance() const;
 	void UpdateColorOverrideData();
 };

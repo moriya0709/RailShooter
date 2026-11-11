@@ -381,9 +381,17 @@ void RayMarching::CreateGraphicsPipeline() {
 	graphicsPipelineStateDesc.BlendState.IndependentBlendEnable = TRUE;
 	// [0] メインカラー用のブレンド設定
 	graphicsPipelineStateDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-	// [1] Velocityバッファ用の書き込みを許可する
-	graphicsPipelineStateDesc.BlendState.RenderTarget[1].BlendEnable = FALSE; // Velocityはブレンド(半透明合成)せず上書き
-	graphicsPipelineStateDesc.BlendState.RenderTarget[1].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	// [1] 速度は雲の不透明度で合成する。透明な箇所で、先に描いたオブジェクトの
+	// モーションベクトルを 0 で上書きしない。
+	auto& velocityBlend = graphicsPipelineStateDesc.BlendState.RenderTarget[1];
+	velocityBlend.BlendEnable = TRUE;
+	velocityBlend.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	velocityBlend.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	velocityBlend.BlendOp = D3D12_BLEND_OP_ADD;
+	velocityBlend.SrcBlendAlpha = D3D12_BLEND_ONE;
+	velocityBlend.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+	velocityBlend.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	velocityBlend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 
 	// DepthStencilの設定

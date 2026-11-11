@@ -8,13 +8,15 @@ namespace {
 
 // レベル上の EnemyNormal 付き EMPTY を、実行時に使う敵のテンプレートとして複製する。
 // テンプレート自体は active=false にしておけばゲーム画面には現れない。
-std::unique_ptr<GameObject> CreateEnemyFromTemplate(const SpawnData& data, Transform spawnTransform) {
+std::unique_ptr<GameObject> CreateEnemyFromTemplate(const SpawnData& data, Transform& spawnTransform) {
 	GameObject* const templateObject = GameObject::FindByName(data.enemyTemplate);
 	if (!templateObject || !templateObject->GetComponent<EnemyNormal>()) {
 		return nullptr;
 	}
 
 	const Transform& templateTransform = templateObject->GetTransform()->transform;
+	// この Transform は後段の Enemy::SetTransform にも使われるため、
+	// テンプレートのサイズをここで反映して最後まで保持する。
 	spawnTransform.scale = templateTransform.scale;
 	spawnTransform.rotate.x += templateTransform.rotate.x;
 	spawnTransform.rotate.y += templateTransform.rotate.y;
@@ -41,6 +43,7 @@ std::unique_ptr<GameObject> CreateEnemyFromTemplate(const SpawnData& data, Trans
 		renderer->SetColorOverride(sourceRenderer->GetColorOverride());
 		renderer->SetColorOverrideUnlit(sourceRenderer->IsColorOverrideUnlit());
 		renderer->SetToonShadingEnabled(sourceRenderer->IsToonShadingEnabled());
+		renderer->SetMotionBlurEnabled(sourceRenderer->IsMotionBlurEnabled());
 	}
 
 	if (const auto* sourceParticle = templateObject->GetComponent<ParticleComponent>()) {
@@ -75,8 +78,16 @@ std::vector<std::unique_ptr<GameObject>> EnemySpawner::Update(float deltaTime, c
 
 	// 1. 起動判定
 	if (!isTriggered_) {
-		float distanceZ = transform_.translate.z - cameraPos.z;
-		if (distanceZ <= spawnDistance_ && distanceZ > -5.0f) {
+		// ワールド Z の差だけで判定すると、レールが曲がる／上下する区間では
+		// 見た目ではまだスポナーの手前でも起動してしまう。現在のレール進行方向へ
+		// 投影した前方距離を使い、設定値 0 ならスポナーの位置を通過した時に起動する。
+		Vector3 forward = { 0.0f, 0.0f, 1.0f };
+		if (railCamera_ && railCamera_->IsRailActive()) {
+			forward = railCamera_->GetForward(railCamera_->GetRailT());
+		}
+
+		const float forwardDistance = Dot(transform_.translate - cameraPos, forward);
+		if (forwardDistance <= spawnDistance_ && forwardDistance > -5.0f) {
 			isTriggered_ = true;
 		}
 	}

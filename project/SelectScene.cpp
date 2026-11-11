@@ -672,7 +672,7 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 		if (ImGui::TreeNode("MotionBlur")) {
 			ImGui::Checkbox("OnOff", &isMotionBlur);
 
-			if (isLensFlare) {
+			if (isMotionBlur) {
 				ImGui::DragInt("motionBlurSamples", &motionBlurSamples, 1, 0, 20);
 				ImGui::DragFloat("motionBlurScale", &motionBlurScale, 0.01f, 0.0f, 10.0f);
 			}
@@ -899,6 +899,7 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 				renderer->SetColorOverride(copyData.modelColorOverride);
 				renderer->SetColorOverrideUnlit(copyData.modelColorOverrideUnlit);
 				renderer->SetToonShadingEnabled(copyData.modelToonShading);
+				renderer->SetMotionBlurEnabled(copyData.modelMotionBlurEnabled);
 				renderer->SetTextureOverride(copyData.modelTextureOverride);
 			}
 			if (sourceObject->GetComponent<RectTransformComponent>()) {
@@ -1319,6 +1320,13 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 						renderer->SetToonShadingEnabled(lightingStyle == 0);
 						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
 							level->GetLevelData()->objects[selectedIndex].modelToonShading = renderer->IsToonShadingEnabled();
+						}
+					}
+					bool motionBlurEnabled = renderer->IsMotionBlurEnabled();
+					if (ImGui::Checkbox("Motion Blur##ModelRenderer", &motionBlurEnabled)) {
+						renderer->SetMotionBlurEnabled(motionBlurEnabled);
+						if (selectedIndex != -1 && selectedIndex < level->GetLevelData()->objects.size()) {
+							level->GetLevelData()->objects[selectedIndex].modelMotionBlurEnabled = motionBlurEnabled;
 						}
 					}
 

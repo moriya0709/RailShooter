@@ -281,6 +281,8 @@
     <ClCompile Include="LevelObjectFactory.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="SelectScene.cpp" />
+    <ClCompile Include="ScoreManager.cpp" />
+    <ClCompile Include="ResultsScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -484,6 +486,8 @@
     <ClInclude Include="LevelObjectFactory.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="SelectScene.h" />
+    <ClInclude Include="ScoreManager.h" />
+    <ClInclude Include="ResultsScene.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

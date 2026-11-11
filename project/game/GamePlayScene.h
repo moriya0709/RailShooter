@@ -122,12 +122,12 @@ private:
 	float bokehRadius = 5.0f;
 
 	// ブルーム
-	float bloomThreshold = 6.0f;
+	float bloomThreshold = 1.0f;
 	float bloomIntensity = 2.0f;
 	float bloomBlurRadius = 1.0f;
 
 	// レンズフレア
-	bool isLensFlare = true;           // レンズフレアのON/OFF
+	bool isLensFlare = false;           // レンズフレアのON/OFF
 	int lensFlareGhostCount = 6;   // ゴーストの数（例: 4～8）
 	float lensFlareHaloWidth = 0.57f;      // ヘイロー（輪っか）の大きさ
 	bool isACES = true;                 // ACESトーンマッピングをONにする
@@ -213,6 +213,7 @@ private:
 	float rayMarchingCloudTop = 4000.0f;
 	bool rayMarchingIsRialLight = false;
 	bool rayMarchingIsAnimeLight = true;
+	// レイマーチング用コンピュートシェーダーの速度バッファを既定で生成する。
 	bool  rayMarchingIsMotionBlur = false;
 	float  rayMarchingCloudOpacity = 0.002f;
 	bool isStorm = false;
@@ -292,6 +293,7 @@ private:
 
 	// スタート演出
 	bool isStartAction = true;
+	bool isSkipStartAction = true;
 	// 開始レールの再生が実際に開始された後だけ、終了判定を有効にする。
 	bool StartRailFirst_ = false;
 	bool isFadeIn = false;
@@ -305,6 +307,11 @@ private:
 	float alpha = 0.0f;
 	float textAlphaTime = 0.8f;
 	float effectTime = 0.0f;
+
+	// スコア演出
+	bool isScoreAction = false;
+	bool isScoreEasing_ = false;
+	float scoreActiveTime_ = 5.0f;
 
 
 	// レベルデータからオブジェクト生成、配置

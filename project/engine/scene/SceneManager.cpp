@@ -68,6 +68,11 @@ void SceneManager::ChangeScene(const std::string& sceneName) {
 
 }
 
+const std::vector<std::string>& SceneManager::GetSceneNames() const {
+	static const std::vector<std::string> kEmptySceneNames;
+	return sceneFactory_ ? sceneFactory_->GetSceneNames() : kEmptySceneNames;
+}
+
 SceneManager::~SceneManager() {
 	// 最後のシーンの終了と解放
 	if (scene_) {

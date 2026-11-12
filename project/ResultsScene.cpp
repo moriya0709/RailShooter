@@ -114,6 +114,14 @@ void ResultsScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaT
 		if (auto* rankText = rankObject->GetComponent<TextRendererComponent>()) {
 			rankText->SetText(ScoreManager::GetInstance()->GetRank());
 		}
+		// イージング終了後に影を有効
+		if(auto * rankEasing = rankObject->GetComponent<EasingComponent>()) {
+			if (rankEasing->IsFinished()) {
+				rankShadowObject->SetActive(true);
+			}
+		}
+
+		// 影の更新
 		if (rankShadowObject) {
 			if (auto* rankShadowText = rankShadowObject->GetComponent<TextRendererComponent>()) {
 				rankShadowText->SetText(ScoreManager::GetInstance()->GetRank());

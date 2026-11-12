@@ -24,9 +24,9 @@
             "name": "MainCamera",
             "transform": {
                 "rotation": [
-                    0.10301247239112854,
-                    0.0340622179210186,
-                    -0.0340622179210186
+                    -0.03615572303533554,
+                    -0.06713226437568665,
+                    0.30793410539627075
                 ],
                 "scaling": [
                     1.0,
@@ -34,9 +34,9 @@
                     1.0
                 ],
                 "translation": [
-                    5.605193857299268e-45,
-                    -252.88162231445313,
-                    167.4550018310547
+                    342.5422058105469,
+                    210.11752319335938,
+                    143.79991149902344
                 ]
             },
             "type": "EMPTY"
@@ -755,9 +755,9 @@
             "name": "cockpit",
             "transform": {
                 "rotation": [
-                    0.17467756569385529,
-                    -0.006924001034349203,
-                    0.006924001034349203
+                    -0.03615572303533554,
+                    -0.06713226437568665,
+                    0.30793410539627075
                 ],
                 "scaling": [
                     1.0,
@@ -765,9 +765,9 @@
                     1.0
                 ],
                 "translation": [
-                    -3.4332066353336334e-31,
-                    -252.88162231445313,
-                    167.4550018310547
+                    342.5422058105469,
+                    210.11752319335938,
+                    143.79991149902344
                 ]
             },
             "type": "EMPTY"
@@ -3859,9 +3859,9 @@
                 "bold": true,
                 "character_spacing": 0.0,
                 "color": [
-                    0.0,
                     1.0,
-                    0.0,
+                    1.0,
+                    1.0,
                     0.7843191623687744
                 ],
                 "emissive_color": [
@@ -6096,6 +6096,518 @@
                     1920.0,
                     1080.0
                 ]
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.2999999523162842
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.7843191623687744
+                    ],
+                    "goal_position": [
+                        473.1378479003906,
+                        283.9108581542969,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.000006914138794,
+                        1.000006914138794,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": false,
+                    "position": false,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        473.1378479003906,
+                        283.9108581542969,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "use_game_time": true
+                },
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        -0.30000001192092896
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        0.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "goal_position": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "loop": false,
+                    "play_on_start": false,
+                    "position": false,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.7843137383460999
+                    ],
+                    "start_position": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Score",
+            "name": "Rating",
+            "rect_transform": {
+                "position": [
+                    473.1378479003906,
+                    283.9108581542969
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    2.288818359375e-05,
+                    2.288818359375e-05
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 0.0,
+                "color": [
+                    0.0,
+                    1.0,
+                    0.0,
+                    0.7843191623687744
+                ],
+                "emissive_color": [
+                    1.0,
+                    0.0,
+                    0.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": false,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 100,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.7575916051864624,
+                    0.8108108043670654,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "Good"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    4.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "Easing",
+                "TextRenderer"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.2999999523162842
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.7843137383460999
+                    ],
+                    "goal_position": [
+                        473.13800048828125,
+                        364.86700439453125,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.000006914138794,
+                        1.000006914138794,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": false,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        473.13800048828125,
+                        364.86700439453125,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "use_game_time": true
+                },
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        0.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        0.0
+                    ],
+                    "duration": 0.5,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "goal_position": [
+                        426.8340148925781,
+                        151.38999938964844,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        0.5,
+                        0.5,
+                        0.5
+                    ],
+                    "loop": false,
+                    "play_on_start": false,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.7843137383460999
+                    ],
+                    "start_position": [
+                        473.13800048828125,
+                        364.86700439453125,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Score",
+            "name": "RatingScore",
+            "rect_transform": {
+                "position": [
+                    426.8350830078125,
+                    151.39488220214844
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    0.5000114440917969,
+                    0.5000114440917969
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 0.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": false,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 60,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "0000"
             },
             "transform": {
                 "rotation": [

@@ -1481,21 +1481,84 @@
             "type": "EMPTY"
         },
         {
-            "active": true,
+            "active": false,
             "components": [
                 "RectTransform",
-                "TextRenderer"
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": false,
+                    "control_point_1": [
+                        0.28960394859313965,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.7475247383117676,
+                        1.2999999523162842
+                    ],
+                    "duration": 0.699999988079071,
+                    "goal_color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "goal_position": [
+                        1521.8438720703125,
+                        196.0168914794922,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        -0.30000001192092896
+                    ],
+                    "goal_scale": [
+                        1.5,
+                        1.0,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": false,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        1513.375,
+                        181.5070037841797,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        -0.30000001192092896
+                    ],
+                    "start_scale": [
+                        10.0,
+                        10.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
             ],
             "name": "RankShadow",
             "rect_transform": {
                 "position": [
                     1521.8438720703125,
-                    196.0168914794922
+                    196.01699829101563
                 ],
                 "rotation": -0.30000001192092896,
                 "scale": [
-                    1.5,
-                    1.0
+                    1.5001945495605469,
+                    1.0002059936523438
                 ]
             },
             "text_renderer": {
@@ -1616,7 +1679,70 @@
             "active": true,
             "components": [
                 "RectTransform",
-                "TextRenderer"
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        0.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        0.0
+                    ],
+                    "duration": 1.0,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "goal_position": [
+                        1513.3751220703125,
+                        181.5067138671875,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        -0.30000001192092896
+                    ],
+                    "goal_scale": [
+                        1.5,
+                        1.0,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": false,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        1513.3751220703125,
+                        181.5067138671875,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        5.239999771118164
+                    ],
+                    "start_scale": [
+                        15.0,
+                        10.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
             ],
             "name": "Rank",
             "rect_transform": {
@@ -1624,10 +1750,10 @@
                     1513.3751220703125,
                     181.5067138671875
                 ],
-                "rotation": -0.30000001192092896,
+                "rotation": -0.29987335205078125,
                 "scale": [
-                    1.5,
-                    1.0
+                    1.5003089904785156,
+                    1.0002059936523438
                 ]
             },
             "text_renderer": {

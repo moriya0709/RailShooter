@@ -14,6 +14,17 @@ void ScoreManager::Initialize() {
 void ScoreManager::Update() {
 	scoreMultiplier = 1.0f + (combo / 10.0f); // コンボ数に応じてスコア倍率を計算
 
+	// スピードキル評価に応じたスコア加算値を設定
+	if (rating == "Normal") {
+		ratingScore = kRatingScores[0];
+	} else if (rating == "Good") {
+		ratingScore = kRatingScores[1];
+	} else if (rating == "Great") {
+		ratingScore = kRatingScores[2];
+	} else if (rating == "Perfect") {
+		ratingScore = kRatingScores[3];
+	}
+
 	// ランクはコンボ倍率ではなく、プレイで獲得した総スコアから決める。
 	if (score >= rankThresholds[4]) {
 		rank = "SS";

@@ -95,6 +95,9 @@ public:
 	float deltaTime_ = 1.0f / 60.0f;
 	Vector3 hitRadius = { 0.5f, 0.5f, 0.5f }; // 当たり判定の半径
 
+	// キル速度の評価変化時間
+	std::vector<float> kRatingChangeTime = { 5.0f, 10.0f, 15.0f };
+
 	// HP
 	int hp = 10;
 

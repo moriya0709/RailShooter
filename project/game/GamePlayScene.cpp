@@ -521,7 +521,19 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	}
 
 #endif
+  
+	auto* scoreObject = GameObject::FindByName("ScoreValueText");
+	auto* comboObject = GameObject::FindByName("ComboText");
+	auto* comboValueObject = GameObject::FindByName("ComboValueText");
+	auto* killScoreObject = GameObject::FindByName("KillScore");
+	auto* ratingObject = GameObject::FindByName("Rating");
+	auto* ratingScoreObject = GameObject::FindByName("RatingScore");
 
+	if (comboObject && killScoreObject && comboObject->IsActive() && killScoreObject->IsActive() && !isScoreAction) {
+		isScoreAction = true;
+		isScoreEasing_ = false;
+		scoreActiveTime_ = 1.0f; // スコア演出の表示時間をリセット
+	}
 
 	// スコア
 	if (activeRailGroupName_ != "Clear") {
@@ -580,6 +592,48 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					comboValueObject->SetActive(false);
 					killScoreObject->SetActive(false);
 				}
+        
+		// キルスコアの更新
+		if (auto* killScoreText = killScoreObject->GetComponent<TextRendererComponent>()) {
+			killScoreText->SetText(std::to_string(ScoreManager::GetInstance()->GetKillScore()));
+		}
+		
+		// キル速度評価の更新
+		if (auto* ratingText = ratingObject->GetComponent<TextRendererComponent>()) {
+			ratingText->SetText(ScoreManager::GetInstance()->GetRating());
+		}
+		// キル速度評価スコアの更新
+		if (auto* ratingScoreText = ratingScoreObject->GetComponent<TextRendererComponent>()) {
+			ratingScoreText->SetText(std::to_string(ScoreManager::GetInstance()->GetRatingScore()));
+		}
+
+		// スコア演出の終了演出
+		if (scoreActiveTime_ <= 0.0f) {
+			auto* comboEasing = comboObject->GetComponent<EasingComponent>();
+			auto* comboValueEasing = comboValueObject->GetComponent<EasingComponent>();
+			auto* killScoreEasing = killScoreObject->GetComponent<EasingComponent>();
+			auto* ratingEasing = ratingObject->GetComponent<EasingComponent>();
+			auto* ratingScoreEasing = ratingScoreObject->GetComponent<EasingComponent>();
+
+			// IsPlaying() は状態確認だけなので、終了用（2番目）の設定を一度だけ明示的に再生する。
+			if (!isScoreEasing_ && comboEasing && comboValueEasing && killScoreEasing && ratingEasing && ratingScoreEasing) {
+				comboEasing->Play(1);
+				comboValueEasing->Play(1);
+				killScoreEasing->Play(1);
+				ratingEasing->Play(1);
+				ratingScoreEasing->Play(1);
+				isScoreEasing_ = true;
+			}
+
+			if (!comboEasing || !comboValueEasing || !killScoreEasing ||
+				(isScoreEasing_ && comboEasing->IsFinished() && comboValueEasing->IsFinished() && killScoreEasing->IsFinished()) && ratingEasing->IsFinished() && ratingScoreEasing->IsFinished()) {
+				isScoreAction = false;
+				isScoreEasing_ = false;
+				comboObject->SetActive(false);
+				comboValueObject->SetActive(false);
+				killScoreObject->SetActive(false);
+				ratingObject->SetActive(false);
+				ratingScoreObject->SetActive(false);
 			}
 		}
 	}

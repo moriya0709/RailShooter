@@ -123,7 +123,7 @@ private:
 
 	// ブルーム
 	float bloomThreshold = 1.0f;
-	float bloomIntensity = 2.0f;
+	float bloomIntensity = 1.0f;
 	float bloomBlurRadius = 1.0f;
 
 	// レンズフレア
@@ -311,7 +311,7 @@ private:
 	// スコア演出
 	bool isScoreAction = false;
 	bool isScoreEasing_ = false;
-	float scoreActiveTime_ = 5.0f;
+	float scoreActiveTime_ = 1.0f;
 
 	// クリア演出
 	bool isClearAction = false;

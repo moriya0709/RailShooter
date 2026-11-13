@@ -24,11 +24,12 @@ public:
 		// 敵を倒した時のみキルスコア保存
 		if (iskill == 1) {
 			killScore = int(scoreValue * scoreMultiplier);
-			score += killScore;
+			score += killScore + ratingScore;
 		} else {
 			score += int(scoreValue * scoreMultiplier);
 		}
 	}
+
 	// コンボの追加
 	void AddCombo() { combo++; }
 	// コンボのリセット
@@ -46,12 +47,18 @@ public:
 	}
 	// ランキングに登録されている件数を取得する。
 	size_t GetHighScoreCount() const { return highScores.size(); }
-
 	// ランク取得
 	const std::string& GetRank() const { return rank; }
+	// キル速度評価の取得
+	const std::string& GetRating() const { return rating; }
+	// キル速度評価スコアの取得
+	int GetRatingScore() const { return ratingScore; }
 
 	// シングルトンインスタンスの取得
 	static ScoreManager* GetInstance();
+
+	// スピードキル評価の設定
+	void SetRating(const std::string& newRating) { rating = newRating; }
 
 private:
 	int score = 0;
@@ -60,6 +67,11 @@ private:
 	std::vector<int> highScores = {}; // スコアランキングのスコア値
 	int combo = 0; // コンボ数
 	float scoreMultiplier = 1.0f; // スコア倍率
+
+	// キルの速度に応じてスコアを加算(4段階)
+	std::vector<int> kRatingScores = { 0,1000,3000,5000 };
+	int ratingScore = 0; // キルの速度に応じたスコア加算値
+	std::string rating = "Normal"; // キルの速度に応じた評価(Normal, Good, Great, Perfect)
 
 	// ランク
 	std::string rank = "C";

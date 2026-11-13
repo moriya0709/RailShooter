@@ -262,6 +262,9 @@
       <Filter>ソース ファイル\engine\3d</Filter>
     </ClCompile>
     <ClCompile Include="GameTimer.cpp" />
+	<ClCompile Include="engine\base\HitStopManager.cpp">
+	  <Filter>ソース ファイル\engine\base</Filter>
+	</ClCompile>
     <ClCompile Include="Player.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -283,6 +286,7 @@
     <ClCompile Include="SelectScene.cpp" />
     <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="ResultsScene.cpp" />
+    <ClCompile Include="EnemyBoss.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -462,6 +466,9 @@
     <ClInclude Include="engine\3d\Object.h" />
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="GameTimer.h" />
+	<ClInclude Include="engine\base\HitStopManager.h">
+	  <Filter>ヘッダー ファイル\engine\base</Filter>
+	</ClInclude>
     <ClInclude Include="Player.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -488,6 +495,7 @@
     <ClInclude Include="SelectScene.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="ResultsScene.h" />
+    <ClInclude Include="EnemyBoss.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

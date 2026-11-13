@@ -11,6 +11,8 @@
 #include "CollisionManager.h"
 #include "Component.h"
 #include "GameObject.h"
+#include "RectTransformComponent.h"
+#include "SpriteRendererComponent.h"
 
 // プレイヤーの操作入力値 (-1.0 ～ 1.0)
 struct PlayerInput {
@@ -115,10 +117,13 @@ private:
     bool isNextNormalRight = true; // 通常弾の左右切り替えフラグ
 
     // レティクル
-    std::unique_ptr <Sprite> reticle[3]{};
-	Vector2 reticlePosition[3] = { {960.0f, 440.0f}, {960.0f, 440.0f}, {960.0f, 440.0f} };
-    Vector2 reticleSize[3] = { {800.0f, 800.0f}, {800.0f, 800.0f}, {700.0f, 700.0f} };
-	float reticleRotation[3] = { 0.0f, 0.0f, 0.0f };
+    GameObject* reticleObject[3]{};
+    SpriteRendererComponent* reticleSprite[3]{};
+	// UIスプライトはワールドTransformではなくRectTransformを参照する。
+    RectTransformComponent* reticleTransform[3]{};
+	Vector3 reticlePosition[3] = { {960.0f, 440.0f}, {960.0f, 440.0f}, {960.0f, 440.0f} };
+    Vector3 reticleSize[3] = { {800.0f, 800.0f}, {800.0f, 800.0f}, {700.0f, 700.0f} };
+    Vector3 reticleRotation[3] = { { 0.0f },{ 0.0f }, {0.0f} };
 	float reticleRotationMultiplier[3] = { 5.0f, 1.0f, 3.0f }; // レティクルの回転角度に対する倍率
 
     // 矢印

@@ -1,16 +1,17 @@
-#include "EnemySpawner.h"
+﻿#include "EnemySpawner.h"
 #include "EnemyNormal.h"
+#include "EnemyBoss.h"
 #include "ModelRendererComponent.h"
 #include "ParticleComponent.h"
 #include "RailCamera.h"
 
 namespace {
 
-// レベル上の EnemyNormal 付き EMPTY を、実行時に使う敵のテンプレートとして複製する。
-// テンプレート自体は active=false にしておけばゲーム画面には現れない。
-std::unique_ptr<GameObject> CreateEnemyFromTemplate(const SpawnData& data, Transform& spawnTransform) {
+// The template provides the spawned object's visual components only.  The
+// SpawnData type determines which Enemy behavior component is attached later.
+std::unique_ptr<GameObject> CreateEnemyObjectFromTemplate(const SpawnData& data, Transform& spawnTransform) {
 	GameObject* const templateObject = GameObject::FindByName(data.enemyTemplate);
-	if (!templateObject || !templateObject->GetComponent<EnemyNormal>()) {
+	if (!templateObject) {
 		return nullptr;
 	}
 
@@ -50,11 +51,29 @@ std::unique_ptr<GameObject> CreateEnemyFromTemplate(const SpawnData& data, Trans
 		enemyObject->AddComponent<ParticleComponent>()->Configure(sourceParticle->GetSettings());
 	}
 
-	auto* enemy = enemyObject->AddComponent<EnemyNormal>();
-	enemy->SetTransform(spawnTransform);
-	enemyObject->SetActive(true);
-	enemyObject->Initialize();
 	return enemyObject;
+}
+
+std::unique_ptr<GameObject> CreateEnemyObject(const SpawnData& data, Transform& spawnTransform) {
+	if (!data.enemyTemplate.empty()) {
+		return CreateEnemyObjectFromTemplate(data, spawnTransform);
+	}
+
+	return std::make_unique<GameObject>("Enemy" + (data.type.empty() ? std::string("Normal") : data.type));
+}
+
+Enemy* AddEnemyComponent(GameObject& enemyObject, const std::string& type) {
+	if (type == "BOSS") {
+		return enemyObject.AddComponent<EnemyBoss>();
+	}
+
+	// FAST does not have a dedicated behavior component yet.  Keep the
+	// existing selectable type spawnable by using the normal behavior.
+	if (type == "NORMAL" || type.empty()) {
+		return enemyObject.AddComponent<EnemyNormal>();
+	}
+
+	return nullptr;
 }
 
 } // namespace
@@ -110,21 +129,16 @@ std::vector<std::unique_ptr<GameObject>> EnemySpawner::Update(float deltaTime, c
 			spawnTrans.translate.y += data.offset.y;
 			spawnTrans.translate.z += data.offset.z;
 
-			// EMPTY テンプレート指定を優先する。未指定の既存データだけは従来の type を使う。
-			if (!data.enemyTemplate.empty()) {
-				enemyObject = CreateEnemyFromTemplate(data, spawnTrans);
-				if (enemyObject) {
-					enemy = enemyObject->GetComponent<Enemy>();
-				}
-			} else if (data.type == "NORMAL") {
-				enemyObject = std::make_unique<GameObject>("EnemyNormal");
-				enemy = enemyObject->AddComponent<EnemyNormal>();
-			} else if (data.type == "FAST") {
-				// enemy = std::make_unique<EnemyFast>();
+			// The optional template copies visual settings; type always controls the
+			// enemy behavior so a shared template can be used by every enemy type.
+			enemyObject = CreateEnemyObject(data, spawnTrans);
+			if (enemyObject) {
+				enemy = AddEnemyComponent(*enemyObject, data.type);
 			}
 
 			// 生成に成功した場合の初期化処理
 			if (enemy) {
+				enemyObject->SetActive(true);
 				// 座標をセット
 				enemy->SetTransform(spawnTrans);
 				// 移動パターンをセット

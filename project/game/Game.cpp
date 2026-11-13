@@ -107,7 +107,13 @@ void Game::Update() {
 	M_Framework::Update();
 	// 時間の計測はゲーム全体で一度だけ行う。シーンはこの値を再計測しない。
 	unscaledDeltaTime_ = gameTimer_->Tick();
-	deltaTime_ = unscaledDeltaTime_ * SceneManager::GetInstance()->GetTimeScale();
+	// Do not carry a hit stop into the next scene.
+	if (SceneManager::GetInstance()->IsSceneChangePending()) {
+		HitStopManager::GetInstance()->Reset();
+	}
+	deltaTime_ = unscaledDeltaTime_ * SceneManager::GetInstance()->GetTimeScale()
+		* HitStopManager::GetInstance()->GetTimeScale();
+	HitStopManager::GetInstance()->Update();
 	ParticleManager::GetInstance()->SetDeltaTime(deltaTime_);
 
 	// シーンマネージャー更新

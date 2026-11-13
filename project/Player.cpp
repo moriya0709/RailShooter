@@ -8,18 +8,18 @@
 #include "CameraManager.h"
 
 void Player::Initialize() {
-	// レティクルの初期化
-	for (int i = 0; i < 3; ++i) {
-		reticle[i] = std::make_unique<Sprite>();
-	}
-	reticle[0]->Initialize("Resource/reticle/reticle.png");
-	reticle[1]->Initialize("Resource/reticle/reticle2.png");
-	reticle[2]->Initialize("Resource/reticle/reticle3.png");
+	// レティクル
+	reticleObject[0] = GameObject::FindByName("reticle_1");
+	reticleObject[1] = GameObject::FindByName("reticle_2");
+	reticleObject[2] = GameObject::FindByName("reticle_3");
 
-	for (int i = 0; i < 3; ++i) {
-		reticle[i]->SetPosition(reticlePosition[i]);
-		reticle[i]->SetRotation(reticleRotation[i]);
-		reticle[i]->SetSize(reticleSize[i]);
+	for (int index = 0; index < 3; ++index) {
+		if (!reticleObject[index]) {
+			OutputDebugStringA("Player: reticle object is missing from the level.\n");
+			continue;
+		}
+		reticleSprite[index] = reticleObject[index]->GetComponent<SpriteRendererComponent>();
+		reticleTransform[index] = reticleObject[index]->GetComponent<RectTransformComponent>();
 	}
 
 	// 矢印の初期化
@@ -55,11 +55,7 @@ void Player::Update(float deltaTime) {
 }
 
 void Player::Draw() {
-	// レティクルの描画
-	for (int i = 0; i < 3; ++i) {
-		reticle[i]->Draw();
-	}	
-
+	
 	// 矢印の描画
 	if (isArrowActive) {
 		arrow->Draw();
@@ -74,12 +70,12 @@ void Player::UpdateReticle() {
 	);
 
 	// レティクルの回転をプレイヤーの回転に応じて変化させる
-	reticleRotation[0] = rotate_.z * reticleRotationMultiplier[0];
-	reticleRotation[1] = rotate_.z * reticleRotationMultiplier[1];
-	reticleRotation[2] = rotate_.z * reticleRotationMultiplier[2];
+	reticleRotation[0].z = rotate_.z * reticleRotationMultiplier[0];
+	reticleRotation[1].z = rotate_.z * reticleRotationMultiplier[1];
+	reticleRotation[2].z = rotate_.z * reticleRotationMultiplier[2];
 
-	Vector2 targetReticlePos = { 960.0f, 440.0f };
-	Vector2 targetReticleSize = { 700.0f, 700.0f };
+	Vector3 targetReticlePos = { 960.0f, 440.0f, 0.0f };
+	Vector3 targetReticleSize = { 700.0f, 700.0f, 0.0f };
 
 	if (lockedTarget && !lockedTarget->IsDead()) {
 		const Vector3 targetPos = lockedTarget->GetTranslate();
@@ -107,14 +103,21 @@ void Player::UpdateReticle() {
 	reticleSize[2].x = Lerp(reticleSize[2].x, targetReticleSize.x, reticleT);
 	reticleSize[2].y = Lerp(reticleSize[2].y, targetReticleSize.y, reticleT);
 
+	constexpr Vector2 kReticleBaseSize[] = { {800.0f, 800.0f}, {800.0f, 800.0f}, {700.0f, 700.0f} };
 	for (int i = 0; i < 3; ++i) {
-		reticle[i]->SetColor(lockOnTimer >= requiredLockOnTime && lockedTarget != nullptr
+		if (!reticleSprite[i] || !reticleTransform[i]) {
+			continue;
+		}
+		reticleSprite[i]->SetColor(lockOnTimer >= requiredLockOnTime && lockedTarget != nullptr
 			? Vector4{ 1.0f, 0.0f, 0.0f, 1.0f }
 			: Vector4{ 0.0f, 1.0f, 0.0f, 1.0f });
-		reticle[i]->SetPosition(reticlePosition[i]);
-		reticle[i]->SetRotation(reticleRotation[i]);
-		reticle[i]->SetSize(reticleSize[i]);
-		reticle[i]->Update();
+		reticleTransform[i]->position = { reticlePosition[i].x, reticlePosition[i].y };
+		reticleTransform[i]->rotation = reticleRotation[i].z;
+		reticleTransform[i]->scale = {
+			reticleSize[i].x / kReticleBaseSize[i].x,
+			reticleSize[i].y / kReticleBaseSize[i].y,
+		};
+		reticleSprite[i]->Update();
 	}
 
 	// 矢印はロックオン完了前だけ、レティクル範囲外の最寄りの敵を指す。

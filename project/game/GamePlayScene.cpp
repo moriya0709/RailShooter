@@ -22,6 +22,7 @@
 #include "LineCommon.h"
 #include "ModelManager.h"
 #include "ScoreManager.h"
+#include "EnemyBoss.h"
 #include <algorithm>
 #include <cstring>
 #include <cctype>
@@ -207,6 +208,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 		railCamera->SetRailSpeed(railSettings.railSpeed);
 		railCamera->SetDirectionMode(railSettings.directionMode);
 		railCamera->SetTargetPosition(railSettings.targetPosition);
+		railCamera->SetTargetObjectName(railSettings.targetObjectName);
 		railCamera->points.clear(); // 一旦リセット
 
 		for (size_t index = 0; index < levelObjects.size(); ++index) {
@@ -469,25 +471,6 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 		object->Update();
 	}
 
-	// --- 撃破された敵の削除 ---
-	for (auto it = enemies.begin(); it != enemies.end();) {
-		auto* enemy = (*it)->GetComponent<Enemy>();
-		if (enemy && enemy->IsDead()) {
-			// 削除(erase)する直前に、プレイヤーと弾へ通知してポインタを外させる
-			player->RemoveBulletTarget(enemy);
-
-			it = enemies.erase(it); // 実際の削除処理
-		} else {
-			++it;
-		}
-	}
-	for (auto& levelObject : levelObjects) {
-		if (auto* enemy = levelObject->GetComponent<Enemy>(); enemy && enemy->IsDead()) {
-			player->RemoveBulletTarget(enemy);
-			levelObject->SetActive(false);
-		}
-	}
-
 	// *当たり判定の線* //
 	// 毎フレーム描画前に前フレームの線データをクリア
 	debugLineNormal->Clear();
@@ -538,6 +521,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	}
 
 #endif
+  
 	auto* scoreObject = GameObject::FindByName("ScoreValueText");
 	auto* comboObject = GameObject::FindByName("ComboText");
 	auto* comboValueObject = GameObject::FindByName("ComboValueText");
@@ -551,23 +535,64 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 		scoreActiveTime_ = 1.0f; // スコア演出の表示時間をリセット
 	}
 
-	// スコアの更新
-	if (scoreObject) {
-		if (auto* scoreText = scoreObject->GetComponent<TextRendererComponent>()) {
-			scoreText->SetText(std::to_string(ScoreManager::GetInstance()->GetScore()));
-		}
-	}
+	// スコア
+	if (activeRailGroupName_ != "Clear") {
+		auto* scoreObject = GameObject::FindByName("ScoreValueText");
+		auto* comboObject = GameObject::FindByName("ComboText");
+		auto* comboValueObject = GameObject::FindByName("ComboValueText");
+		auto* killScoreObject = GameObject::FindByName("KillScore");
 
-	if (isScoreAction && comboObject && comboValueObject && killScoreObject) {
-		if (scoreActiveTime_ > 0.0f) {
-			scoreActiveTime_ -= deltaTime;
-		}
-
-		// コンボの更新
-		if (auto* comboValueText = comboValueObject->GetComponent<TextRendererComponent>()) {
-			comboValueText->SetText(std::to_string(ScoreManager::GetInstance()->GetCombo()));
+		if (comboObject && killScoreObject && comboObject->IsActive() && killScoreObject->IsActive() && !isScoreAction) {
+			isScoreAction = true;
+			isScoreEasing_ = false;
+			scoreActiveTime_ = 5.0f; // スコア演出の表示時間をリセット
 		}
 
+		// スコアの更新
+		if (scoreObject) {
+			if (auto* scoreText = scoreObject->GetComponent<TextRendererComponent>()) {
+				scoreText->SetText(std::to_string(ScoreManager::GetInstance()->GetScore()));
+			}
+		}
+
+		if (isScoreAction && comboObject && comboValueObject && killScoreObject) {
+			if (scoreActiveTime_ > 0.0f) {
+				scoreActiveTime_ -= deltaTime;
+			}
+
+			// コンボの更新
+			if (auto* comboValueText = comboValueObject->GetComponent<TextRendererComponent>()) {
+				comboValueText->SetText(std::to_string(ScoreManager::GetInstance()->GetCombo()));
+			}
+
+			// キルスコアの更新
+			if (auto* killScoreText = killScoreObject->GetComponent<TextRendererComponent>()) {
+				killScoreText->SetText(std::to_string(ScoreManager::GetInstance()->GetKillScore()));
+			}
+
+			// スコア演出の終了演出
+			if (scoreActiveTime_ <= 0.0f) {
+				auto* comboEasing = comboObject->GetComponent<EasingComponent>();
+				auto* comboValueEasing = comboValueObject->GetComponent<EasingComponent>();
+				auto* killScoreEasing = killScoreObject->GetComponent<EasingComponent>();
+
+				// IsPlaying() は状態確認だけなので、終了用（2番目）の設定を一度だけ明示的に再生する。
+				if (!isScoreEasing_ && comboEasing && comboValueEasing && killScoreEasing) {
+					comboEasing->Play(1);
+					comboValueEasing->Play(1);
+					killScoreEasing->Play(1);
+					isScoreEasing_ = true;
+				}
+
+				if (!comboEasing || !comboValueEasing || !killScoreEasing ||
+					(isScoreEasing_ && comboEasing->IsFinished() && comboValueEasing->IsFinished() && killScoreEasing->IsFinished())) {
+					isScoreAction = false;
+					isScoreEasing_ = false;
+					comboObject->SetActive(false);
+					comboValueObject->SetActive(false);
+					killScoreObject->SetActive(false);
+				}
+        
 		// キルスコアの更新
 		if (auto* killScoreText = killScoreObject->GetComponent<TextRendererComponent>()) {
 			killScoreText->SetText(std::to_string(ScoreManager::GetInstance()->GetKillScore()));
@@ -712,22 +737,98 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			cockpit->SetEnablePostEffect(true);
 
 
-			// HUDの演出を非表示にする
-			reticle_1->SetActive(false);
-			reticle_2->SetActive(false);
-			reticle_3->SetActive(false);
+			// HUDを表示
+			reticle_1->SetActive(true);
+			reticle_2->SetActive(true);
+			reticle_3->SetActive(true);
 
 			StartFadeIn(isFadeIn, isFadeOut);
 		}
 	}
 
 	// クリア演出
-	if (activeRailGroupName_ == "StageRailCamera") {
-		if (railCamera->IsRailActive() && railCamera->IsRailFinished()) {
-			auto* scoreManager = ScoreManager::GetInstance();
-			scoreManager->AddHighScore("PLAYER", scoreManager->GetScore());
-			scoreManager->SaveJSON("score");
-			SceneManager::GetInstance()->ChangeScene("RESULTS");
+	for (const auto& enemyObject : enemies) {
+		auto* boss = enemyObject->GetComponent<EnemyBoss>();
+		if (boss && boss->IsDefeated()) {
+			isClearAction = true;
+			break;
+		}
+	}
+
+	if (isClearAction) {
+		if (activeRailGroupName_ == "StageRailCamera") {
+			if (clearActiveTime_ > 0.0f) {
+				clearActiveTime_ -= 1.0f / 60.0f;
+
+				if (clearActiveTime_ <= 1.0f) {
+					// フェードアウト
+					StartFadeOut(isFadeIn, isFadeOut);
+				}
+			} else {
+				// クリア演出の開始
+				activeRailGroupName_ = "Clear";
+				level->GetLevelData()->activeRailCameraGroup = activeRailGroupName_;
+				railCamera->StartRail();
+
+				// プレイヤーの移動を無効化
+				player->SetMoveEnabled(false);
+
+				// 非表示にする
+				auto* cockpit = GameObject::FindByName("cockpit");
+				auto* reticle_1 = GameObject::FindByName("reticle_1");
+				auto* reticle_2 = GameObject::FindByName("reticle_2");
+				auto* reticle_3 = GameObject::FindByName("reticle_3");
+				auto* scoreText = GameObject::FindByName("ScoreText");
+				auto* scoreValue = GameObject::FindByName("ScoreValue");
+				auto* comboText = GameObject::FindByName("ComboText");
+				auto* comboValue = GameObject::FindByName("ComboValue");
+				auto* killScoreText = GameObject::FindByName("killScoreText");
+
+				cockpit->SetActive(false);
+				reticle_1->SetActive(false);
+				reticle_2->SetActive(false);
+				reticle_3->SetActive(false);
+
+
+			}
+		} else if (activeRailGroupName_ == "Clear") {
+			auto* clearPlayerObject = GameObject::FindByName("ClearPlayer");
+			if (clearPlayerObject) {
+				clearPlayerObject->SetActive(true);
+
+				auto* clearPlayerAnimation = clearPlayerObject->GetComponent<ObjectRailMovementComponent>();
+				if (clearPlayerAnimation && !clearPlayerAnimation->IsPlaying()) {
+					// スコアを保存
+					ScoreManager::GetInstance()->AddHighScore("PLAYER", ScoreManager::GetInstance()->GetScore());
+					ScoreManager::GetInstance()->SaveJSON("score");
+
+					// セレクト画面へ遷移
+					SceneManager::GetInstance()->ChangeScene("RESULTS");
+				}
+			}
+
+			// フェードイン
+			StartFadeIn(isFadeIn, isFadeOut);
+		}
+	}
+
+
+	// --- 撃破された敵の削除 ---
+	for (auto it = enemies.begin(); it != enemies.end();) {
+		auto* enemy = (*it)->GetComponent<Enemy>();
+		if (enemy && enemy->IsDead()) {
+			// 削除(erase)する直前に、プレイヤーと弾へ通知してポインタを外させる
+			player->RemoveBulletTarget(enemy);
+
+			it = enemies.erase(it); // 実際の削除処理
+		} else {
+			++it;
+		}
+	}
+	for (auto& levelObject : levelObjects) {
+		if (auto* enemy = levelObject->GetComponent<Enemy>(); enemy && enemy->IsDead()) {
+			player->RemoveBulletTarget(enemy);
+			levelObject->SetActive(false);
 		}
 	}
 
@@ -1504,6 +1605,23 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				}
 				if (railSettings.directionMode == RailCameraDirectionMode::LookAtTarget) {
 					ImGui::DragFloat3("Look At Target", &railSettings.targetPosition.x, 0.1f);
+					const char* targetPreview = railSettings.targetObjectName.empty()
+						? "<Fixed Position>" : railSettings.targetObjectName.c_str();
+					if (ImGui::BeginCombo("Look At Object", targetPreview)) {
+						if (ImGui::Selectable("<Fixed Position>", railSettings.targetObjectName.empty())) {
+							railSettings.targetObjectName.clear();
+						}
+						for (size_t targetIndex = 0; targetIndex < level->GetLevelData()->objects.size(); ++targetIndex) {
+							const std::string& targetName = level->GetLevelData()->objects[targetIndex].name;
+							const bool selected = railSettings.targetObjectName == targetName;
+							const std::string label = targetName + "##LookAtTargetObject" + std::to_string(targetIndex);
+							if (ImGui::Selectable(label.c_str(), selected)) {
+								railSettings.targetObjectName = targetName;
+							}
+							if (selected) ImGui::SetItemDefaultFocus();
+						}
+						ImGui::EndCombo();
+					}
 				}
 				ImGui::TextDisabled("Only Rail Camera Point objects in this group are used.");
 			}
@@ -1533,6 +1651,23 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			}
 			if (railSettings.directionMode == RailCameraDirectionMode::LookAtTarget) {
 				ImGui::DragFloat3("Look At Target", &railSettings.targetPosition.x, 0.1f);
+					const char* targetPreview = railSettings.targetObjectName.empty()
+						? "<Fixed Position>" : railSettings.targetObjectName.c_str();
+					if (ImGui::BeginCombo("Look At Object", targetPreview)) {
+						if (ImGui::Selectable("<Fixed Position>", railSettings.targetObjectName.empty())) {
+							railSettings.targetObjectName.clear();
+						}
+						for (size_t targetIndex = 0; targetIndex < level->GetLevelData()->objects.size(); ++targetIndex) {
+							const std::string& targetName = level->GetLevelData()->objects[targetIndex].name;
+							const bool selected = railSettings.targetObjectName == targetName;
+							const std::string label = targetName + "##LookAtTargetObject" + std::to_string(targetIndex);
+							if (ImGui::Selectable(label.c_str(), selected)) {
+								railSettings.targetObjectName = targetName;
+							}
+							if (selected) ImGui::SetItemDefaultFocus();
+						}
+						ImGui::EndCombo();
+					}
 			}
 		}
 		ImGui::PopID();
@@ -2410,7 +2545,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				ImGui::Spacing();
 
 				// プルダウン（Combo）に表示する敵の種類のリスト
-				const char* enemyTypes[] = { "NORMAL", "FAST", "BOSS" };
+				const char* enemyTypes[] = { "NORMAL", "BOSS" };
 				// プルダウン（Combo）に表示する移動パターンのリスト
 				const char* movePatterns[] = { "IDRE", "STRAIGHT", "WAVE", "HOMING", "PATH", "RAIL_FORWARD" };
 

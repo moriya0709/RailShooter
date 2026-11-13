@@ -253,6 +253,8 @@ struct RailCameraGroupData {
 	std::string groupName;
 	RailCameraDirectionMode directionMode = RailCameraDirectionMode::FollowPath;
 	Vector3 targetPosition = { 0.0f, 0.0f, 0.0f };
+	// 空文字列なら targetPosition を使用し、指定時は同名の GameObject を動的に追従する。
+	std::string targetObjectName;
     std::vector<TrackSequenceItem> presetSequence;
     float railSpeed = 1.0f;
 };

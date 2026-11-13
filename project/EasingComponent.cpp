@@ -136,6 +136,7 @@ void EasingComponent::Update() {
 	for (size_t index = 0; index < settings_.size(); ++index) {
 		const EasingData& settings = settings_[index];
 		if (!activeSettings_[index] || !HasAnimatedProperty(settings)) continue;
+		bool finishedThisFrame = false;
 		const float duration = (std::max)(settings.duration, 0.0001f);
 		if (playing_[index]) {
 			const float deltaTime = settings.useGameTime ? gameDeltaTime_ : unscaledDeltaTime_;
@@ -146,12 +147,18 @@ void EasingComponent::Update() {
 				} else {
 					progress_[index] = 1.0f;
 					playing_[index] = false;
+					finishedThisFrame = true;
 				}
 			}
 		}
 
 		// 同じプロパティを複数設定した場合は、リストの後ろの設定が優先される。
 		Apply(settings, EvaluateBezier(progress_[index], settings.controlPoint1, settings.controlPoint2));
+		// 完了フレームでは終端値を一度だけ反映し、以降は他のシステムが
+		// Transform / Color を自由に更新できるようにする。
+		if (finishedThisFrame) {
+			activeSettings_[index] = false;
+		}
 	}
 }
 

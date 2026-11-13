@@ -49,6 +49,7 @@ void Level::LoadJson(const std::string fileName) {
 			if (group.contains("target_position") && group["target_position"].is_array() && group["target_position"].size() == 3) {
 				settings.targetPosition = { group["target_position"][0].get<float>(), group["target_position"][1].get<float>(), group["target_position"][2].get<float>() };
 			}
+			settings.targetObjectName = group.value("target_object_name", std::string{});
 			// プリセットシーケンスの読み込み
 			if (group.contains("preset_sequence") && group["preset_sequence"].is_array()) {
 				for (const auto& p : group["preset_sequence"]) {
@@ -403,6 +404,7 @@ void Level::SaveJson(const std::string fileName) {
 			{ "rail_speed", group.railSpeed },
 			{ "direction_mode", static_cast<int>(group.directionMode) },
 			{ "target_position", { group.targetPosition.x, group.targetPosition.y, group.targetPosition.z }},
+			{ "target_object_name", group.targetObjectName },
 			{ "preset_sequence", seqArray } // ← ここを変更
 		});
 	}

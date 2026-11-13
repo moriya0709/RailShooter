@@ -12,14 +12,16 @@ class SceneManager {
 public:
 	// 更新
 	void Update(float deltaTime, float unscaledDeltaTime);
-	void SetTimeScale(float timeScale);
-	float GetTimeScale() const { return timeScale_; }
 	// 描画
 	void Draw2D();
 	void DrawPostEffectExcluded2D();
 	void Draw3D();
 	void DrawPostEffectMask();
 
+	// 時間スケールの設定（0.0f～1.0f）
+	void SetTimeScale(float timeScale);
+	float GetTimeScale() const { return timeScale_; }
+	
 	// フレーム途中で破棄しないよう、切り替え要求は次回 Update 冒頭まで保留する。
 	void SetNextScene(std::unique_ptr <BaseScene> nextScene) { nextScene_ = move(nextScene); }
 	// シングルトンインスタンスの取得

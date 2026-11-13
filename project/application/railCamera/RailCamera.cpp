@@ -1,6 +1,7 @@
 ﻿#include "RailCamera.h"
 #include "Camera.h"
 #include "DirectXCommon.h"
+#include "GameObject.h"
 #include "LineCommon.h"
 
 void RailCamera::Initialize() {
@@ -388,8 +389,15 @@ void RailCamera::UpdateCameraDirection() {
 }
 
 void RailCamera::UpdateCameraTarget() {
-	// --- 変更箇所：指定した注視点に向かうベクトルを計算 ---
-	Vector3 forward = Normalize(targetPosition - cameraTransform.translate);
+	Vector3 target = targetPosition;
+	if (!targetObjectName_.empty()) {
+		if (const GameObject* targetObject = GameObject::FindByName(targetObjectName_)) {
+			target = targetObject->GetTransform()->GetTranslate();
+		}
+	}
+
+	// 指定した注視点に向かうベクトルを計算。
+	Vector3 forward = Normalize(target - cameraTransform.translate);
 
 	// forwardからオイラー角を計算
 	float yaw = atan2f(forward.x, forward.z);

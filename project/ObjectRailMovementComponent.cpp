@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 void ObjectRailMovementComponent::Configure(const std::vector<Vector3>& points, float speed,
 	bool loop, bool orientToPath, bool playOnStart, const std::vector<Vector3>& pointRotations,
@@ -18,6 +19,7 @@ void ObjectRailMovementComponent::Configure(const std::vector<Vector3>& points, 
 	usePointRotations_ = usePointRotations;
 	playing_ = playOnStart;
 	progress_ = 0.0f;
+	ResetBank();
 }
 
 void ObjectRailMovementComponent::SetSpeed(float speed) {
@@ -27,6 +29,7 @@ void ObjectRailMovementComponent::SetSpeed(float speed) {
 void ObjectRailMovementComponent::Restart() {
 	progress_ = 0.0f;
 	playing_ = points_.size() >= 2;
+	ResetBank();
 }
 
 void ObjectRailMovementComponent::Update() {
@@ -55,13 +58,38 @@ void ObjectRailMovementComponent::Update() {
 		const Vector3 forward = GetForward(progress_);
 		const float horizontalLength = std::sqrt(forward.x * forward.x + forward.z * forward.z);
 		if (horizontalLength > 0.0001f || std::abs(forward.y) > 0.0001f) {
+			const float yaw = std::atan2(forward.x, forward.z);
+			if (!hasPreviousYaw_) {
+				previousYaw_ = yaw;
+				hasPreviousYaw_ = true;
+			}
+
+			float deltaYaw = yaw - previousYaw_;
+			if (deltaYaw > std::numbers::pi_v<float>) {
+				deltaYaw -= 2.0f * std::numbers::pi_v<float>;
+			} else if (deltaYaw < -std::numbers::pi_v<float>) {
+				deltaYaw += 2.0f * std::numbers::pi_v<float>;
+			}
+
+			// Positive yaw is a right turn; roll negatively to bank into it.
+			const float targetRoll = std::clamp(-deltaYaw * kRollSensitivity,
+				-kMaxRollAngle, kMaxRollAngle);
+			currentRoll_ = std::lerp(currentRoll_, targetRoll, kRollSmoothing);
+			previousYaw_ = yaw;
+
 			transform->SetRotate({
 				std::atan2(-forward.y, horizontalLength),
-				std::atan2(forward.x, forward.z),
-				0.0f
+				yaw,
+				currentRoll_
 			});
 		}
 	}
+}
+
+void ObjectRailMovementComponent::ResetBank() {
+	currentRoll_ = 0.0f;
+	previousYaw_ = 0.0f;
+	hasPreviousYaw_ = false;
 }
 
 Vector3 ObjectRailMovementComponent::EvaluateRotation(float progress) const {

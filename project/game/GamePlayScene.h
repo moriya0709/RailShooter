@@ -313,6 +313,10 @@ private:
 	bool isScoreEasing_ = false;
 	float scoreActiveTime_ = 5.0f;
 
+	// クリア演出
+	bool isClearAction = false;
+	float clearActiveTime_ = 2.0f;
+
 
 	// レベルデータからオブジェクト生成、配置
 	void CreateLevel();

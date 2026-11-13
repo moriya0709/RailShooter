@@ -26,9 +26,9 @@ public:
 	bool IsLooping() const { return loop_; }
 	void SetLooping(bool loop) { loop_ = loop; }
 	bool IsOrientToPath() const { return orientToPath_; }
-	void SetOrientToPath(bool orient) { orientToPath_ = orient; }
+	void SetOrientToPath(bool orient) { orientToPath_ = orient; ResetBank(); }
 	bool UsesPointRotations() const { return usePointRotations_; }
-	void SetUsePointRotations(bool use) { usePointRotations_ = use; }
+	void SetUsePointRotations(bool use) { usePointRotations_ = use; ResetBank(); }
 	bool IsPlaying() const { return playing_; }
 	void SetPlaying(bool playing) { playing_ = playing; }
 	float GetProgress() const { return progress_; }
@@ -37,6 +37,7 @@ private:
 	Vector3 Evaluate(float progress) const;
 	Vector3 EvaluateRotation(float progress) const;
 	Vector3 GetForward(float progress) const;
+	void ResetBank();
 	static Vector3 CatmullRom(const Vector3& p0, const Vector3& p1,
 		const Vector3& p2, const Vector3& p3, float t);
 
@@ -49,4 +50,12 @@ private:
 	bool orientToPath_ = true;
 	bool usePointRotations_ = false;
 	bool playing_ = true;
+
+	// Path-following objects bank into a turn in the same direction as the rail camera.
+	float currentRoll_ = 0.0f;
+	float previousYaw_ = 0.0f;
+	bool hasPreviousYaw_ = false;
+	static constexpr float kRollSensitivity = 15.0f;
+	static constexpr float kMaxRollAngle = 0.5f;
+	static constexpr float kRollSmoothing = 0.1f;
 };

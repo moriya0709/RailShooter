@@ -5,6 +5,8 @@
 #include "ModelRendererComponent.h"
 #include "ScoreManager.h"
 #include "EasingComponent.h"
+#include "SceneManager.h"
+#include "HitStopManager.h"
 
 namespace {
 
@@ -293,7 +295,9 @@ void EnemyNormal::OnCollisionBullet(int damage) {
 		ScoreManager::GetInstance()->AddScore(scoreValueDeath,1);
 		// コンボ加算
 		ScoreManager::GetInstance()->AddCombo();
-
+		// ヒットストップ
+		HitStopManager::GetInstance()->Request(20, 0.25f);
+		
 		// スコア演出用のUIを表示
 		if (auto* comboObject = GameObject::FindByName("ComboText")) {
 			comboObject->SetActive(true);

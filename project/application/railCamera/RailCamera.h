@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <memory>
 #include <numbers>
+#include <string>
 
 #include "Object.h"
 #include "Calc.h"
@@ -61,6 +62,9 @@ public:
 
 	// 注視点を設定する関数
     void SetTargetPosition(const Vector3& target) { targetPosition = target; }
+	// 名前を指定すると、Look At Target 中はその GameObject の現在位置を注視する。
+	// 見つからない場合は SetTargetPosition で設定した固定座標を使用する。
+	void SetTargetObjectName(const std::string& name) { targetObjectName_ = name; }
 	void SetDirectionMode(RailCameraDirectionMode mode) { cameraMode = static_cast<CameraMode>(mode); }
 	RailCameraDirectionMode GetDirectionMode() const { return static_cast<RailCameraDirectionMode>(cameraMode); }
 
@@ -108,6 +112,7 @@ private:
 
     // 指定したい注視点座標
     Vector3 targetPosition = { 0.0f, 0.0f, 0.0f };
+	std::string targetObjectName_;
 
     // 3Dオブジェクト
     std::vector<std::unique_ptr<Object>> spheres;

@@ -1,3 +1,44 @@
 {
-    "ranking": []
+    "ranking": [
+        {
+            "name": "PLAYER",
+            "score": 22319
+        },
+        {
+            "name": "PLAYER",
+            "score": 22319
+        },
+        {
+            "name": "PLAYER",
+            "score": 21679
+        },
+        {
+            "name": "PLAYER",
+            "score": 21619
+        },
+        {
+            "name": "PLAYER",
+            "score": 21619
+        },
+        {
+            "name": "PLAYER",
+            "score": 17559
+        },
+        {
+            "name": "PLAYER",
+            "score": 16639
+        },
+        {
+            "name": "PLAYER",
+            "score": 15460
+        },
+        {
+            "name": "PLAYER",
+            "score": 12000
+        },
+        {
+            "name": "PLAYER",
+            "score": 11020
+        }
+    ]
 }

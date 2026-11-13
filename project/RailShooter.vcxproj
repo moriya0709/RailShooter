@@ -17,6 +17,7 @@
   <ItemGroup>
     <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
+    <ClCompile Include="EnemyBoss.cpp" />
     <ClCompile Include="ObjectRailMovementComponent.cpp" />
     <ClCompile Include="application\bookUi\Book.cpp" />
     <ClCompile Include="application\bookUi\BookUi.cpp" />
@@ -60,6 +61,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GameTimer.cpp" />
+	<ClCompile Include="engine\base\HitStopManager.cpp" />
     <ClCompile Include="game\GamePlayScene.cpp" />
     <ClCompile Include="engine\base\M_Framework.cpp" />
     <ClCompile Include="game\Game.cpp" />
@@ -323,6 +325,7 @@
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Enemy.h" />
+    <ClInclude Include="EnemyBoss.h" />
     <ClInclude Include="EnemyBullet.h" />
     <ClInclude Include="EnemyNormal.h" />
     <ClInclude Include="EnemyNormalBullet.h" />
@@ -352,6 +355,7 @@
     <ClInclude Include="engine\math\Calc.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameTimer.h" />
+	<ClInclude Include="engine\base\HitStopManager.h" />
     <ClInclude Include="game\GamePlayScene.h" />
     <ClInclude Include="engine\base\M_Framework.h" />
     <ClInclude Include="game\Game.h" />

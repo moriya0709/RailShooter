@@ -24,6 +24,7 @@
 #include "LightManager.h"
 #include "ParticlePreviewEditor.h"
 #include "GameTimer.h"
+#include "HitStopManager.h"
 
 class Game : public M_Framework {
 public:

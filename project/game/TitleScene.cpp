@@ -176,6 +176,7 @@ void TitleScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTim
 		railCamera->SetRailSpeed(railSettings.railSpeed);
 		railCamera->SetDirectionMode(railSettings.directionMode);
 		railCamera->SetTargetPosition(railSettings.targetPosition);
+		railCamera->SetTargetObjectName(railSettings.targetObjectName);
 		railCamera->points.clear(); // 一旦リセット
 
 		for (size_t index = 0; index < levelObjects.size(); ++index) {
@@ -937,6 +938,23 @@ void TitleScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTim
 					}
 					if (railSettings.directionMode == RailCameraDirectionMode::LookAtTarget) {
 						ImGui::DragFloat3("Look At Target", &railSettings.targetPosition.x, 0.1f);
+					const char* targetPreview = railSettings.targetObjectName.empty()
+						? "<Fixed Position>" : railSettings.targetObjectName.c_str();
+					if (ImGui::BeginCombo("Look At Object", targetPreview)) {
+						if (ImGui::Selectable("<Fixed Position>", railSettings.targetObjectName.empty())) {
+							railSettings.targetObjectName.clear();
+						}
+						for (size_t targetIndex = 0; targetIndex < level->GetLevelData()->objects.size(); ++targetIndex) {
+							const std::string& targetName = level->GetLevelData()->objects[targetIndex].name;
+							const bool selected = railSettings.targetObjectName == targetName;
+							const std::string label = targetName + "##LookAtTargetObject" + std::to_string(targetIndex);
+							if (ImGui::Selectable(label.c_str(), selected)) {
+								railSettings.targetObjectName = targetName;
+							}
+							if (selected) ImGui::SetItemDefaultFocus();
+						}
+						ImGui::EndCombo();
+					}
 					}
 					ImGui::TextDisabled("Only Rail Camera Point objects in this group are used.");
 				}
@@ -966,6 +984,23 @@ void TitleScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaTim
 				}
 				if (railSettings.directionMode == RailCameraDirectionMode::LookAtTarget) {
 					ImGui::DragFloat3("Look At Target", &railSettings.targetPosition.x, 0.1f);
+					const char* targetPreview = railSettings.targetObjectName.empty()
+						? "<Fixed Position>" : railSettings.targetObjectName.c_str();
+					if (ImGui::BeginCombo("Look At Object", targetPreview)) {
+						if (ImGui::Selectable("<Fixed Position>", railSettings.targetObjectName.empty())) {
+							railSettings.targetObjectName.clear();
+						}
+						for (size_t targetIndex = 0; targetIndex < level->GetLevelData()->objects.size(); ++targetIndex) {
+							const std::string& targetName = level->GetLevelData()->objects[targetIndex].name;
+							const bool selected = railSettings.targetObjectName == targetName;
+							const std::string label = targetName + "##LookAtTargetObject" + std::to_string(targetIndex);
+							if (ImGui::Selectable(label.c_str(), selected)) {
+								railSettings.targetObjectName = targetName;
+							}
+							if (selected) ImGui::SetItemDefaultFocus();
+						}
+						ImGui::EndCombo();
+					}
 				}
 			}
 			ImGui::PopID();

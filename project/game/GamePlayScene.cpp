@@ -777,6 +777,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					auto* scaleObject1 = GameObject::FindByName("scale_1");
 					auto* scaleObject2 = GameObject::FindByName("scale_2");
 					auto* scaleObject3 = GameObject::FindByName("scale_3");
+					auto* arrowObject = GameObject::FindByName("arrow");
 
 					deactivate(reticle_1);
 					deactivate(reticle_2);
@@ -792,6 +793,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					deactivate(scaleObject1);
 					deactivate(scaleObject2);
 					deactivate(scaleObject3);
+					deactivate(arrowObject);
 				}
 			} else {
 				// クリア演出の開始

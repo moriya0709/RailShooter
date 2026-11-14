@@ -23,7 +23,7 @@
                 "translation": [
                     0.0,
                     -60.0,
-                    1.0
+                    0.0
                 ]
             },
             "type": "EMPTY"
@@ -37,414 +37,18 @@
             "name": "MainScore",
             "rect_transform": {
                 "position": [
-                    960.0,
-                    147.5999755859375
+                    1607.0364990234375,
+                    918.4618530273438
                 ],
-                "rotation": 0.0,
+                "rotation": -0.20000000298023224,
                 "scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "text_renderer": {
-                "bold": true,
-                "character_spacing": 0.0,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_intensity": 0.0,
-                "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
-                "font_size": 151,
-                "max_width": 0.0,
-                "mesh_offsets": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ],
-                "outline_color": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 1.0,
-                "text": "0000000"
-            },
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": "EMPTY"
-        },
-        {
-            "active": true,
-            "components": [
-                "RectTransform",
-                "TextRenderer"
-            ],
-            "name": "Name_1",
-            "rect_transform": {
-                "position": [
-                    672.6409912109375,
-                    350.0
-                ],
-                "rotation": 0.0,
-                "scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "text_renderer": {
-                "bold": true,
-                "character_spacing": 0.0,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_intensity": 0.0,
-                "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
-                "font_size": 120,
-                "max_width": 0.0,
-                "mesh_offsets": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ],
-                "outline_color": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 1.0,
-                "text": "No1:"
-            },
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    1.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": "EMPTY"
-        },
-        {
-            "active": true,
-            "components": [
-                "RectTransform",
-                "TextRenderer"
-            ],
-            "name": "Score_1",
-            "rect_transform": {
-                "position": [
-                    1078.970458984375,
-                    350.0
-                ],
-                "rotation": 0.0,
-                "scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "text_renderer": {
-                "bold": true,
-                "character_spacing": 0.0,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_intensity": 0.0,
-                "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
-                "font_size": 120,
-                "max_width": 0.0,
-                "mesh_offsets": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ],
-                "outline_color": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 1.0,
-                "text": "0000000"
-            },
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
                     2.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": "EMPTY"
-        },
-        {
-            "active": true,
-            "components": [
-                "RectTransform",
-                "TextRenderer"
-            ],
-            "name": "Name_2",
-            "rect_transform": {
-                "position": [
-                    672.6409912109375,
-                    500.0
-                ],
-                "rotation": 0.0,
-                "scale": [
-                    1.0,
-                    1.0
+                    0.6000000238418579
                 ]
             },
             "text_renderer": {
                 "bold": true,
-                "character_spacing": 0.0,
+                "character_spacing": 2.0,
                 "color": [
                     1.0,
                     1.0,
@@ -458,12 +62,40 @@
                 ],
                 "emissive_intensity": 0.0,
                 "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
-                "font_size": 120,
+                "font_family": "Agency FB",
+                "font_size": 100,
                 "max_width": 0.0,
                 "mesh_offsets": [
                     [
-                        0.0,
+                        -50.0,
+                        0.0
+                    ],
+                    [
+                        -50.0,
+                        0.0
+                    ],
+                    [
+                        -50.0,
+                        0.0
+                    ],
+                    [
+                        -50.0,
+                        0.0
+                    ],
+                    [
+                        -25.0,
+                        0.0
+                    ],
+                    [
+                        -25.0,
+                        0.0
+                    ],
+                    [
+                        -25.0,
+                        0.0
+                    ],
+                    [
+                        -25.0,
                         0.0
                     ],
                     [
@@ -483,47 +115,19 @@
                         0.0
                     ],
                     [
-                        0.0,
+                        25.0,
                         0.0
                     ],
                     [
-                        0.0,
+                        25.0,
                         0.0
                     ],
                     [
-                        0.0,
+                        25.0,
                         0.0
                     ],
                     [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
+                        25.0,
                         0.0
                     ]
                 ],
@@ -535,7 +139,7 @@
                 ],
                 "outline_enabled": false,
                 "outline_thickness": 1.0,
-                "text": "No2:"
+                "text": "0000000"
             },
             "transform": {
                 "rotation": [
@@ -544,936 +148,12 @@
                     0.0
                 ],
                 "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
                     2.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": "EMPTY"
-        },
-        {
-            "active": true,
-            "components": [
-                "RectTransform",
-                "TextRenderer"
-            ],
-            "name": "Name_3",
-            "rect_transform": {
-                "position": [
-                    672.6409912109375,
-                    650.0
-                ],
-                "rotation": 0.0,
-                "scale": [
                     1.0,
-                    1.0
-                ]
-            },
-            "text_renderer": {
-                "bold": true,
-                "character_spacing": 0.0,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_intensity": 0.0,
-                "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
-                "font_size": 120,
-                "max_width": 0.0,
-                "mesh_offsets": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ],
-                "outline_color": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 1.0,
-                "text": "No3:"
-            },
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
+                    0.6000000238418579
                 ],
                 "translation": [
-                    3.0,
                     0.0,
-                    0.0
-                ]
-            },
-            "type": "EMPTY"
-        },
-        {
-            "active": true,
-            "components": [
-                "RectTransform",
-                "TextRenderer"
-            ],
-            "name": "Name_4",
-            "rect_transform": {
-                "position": [
-                    672.6409912109375,
-                    800.0
-                ],
-                "rotation": 0.0,
-                "scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "text_renderer": {
-                "bold": true,
-                "character_spacing": 0.0,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_intensity": 0.0,
-                "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
-                "font_size": 120,
-                "max_width": 0.0,
-                "mesh_offsets": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ],
-                "outline_color": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 1.0,
-                "text": "No4:"
-            },
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    4.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": "EMPTY"
-        },
-        {
-            "active": true,
-            "components": [
-                "RectTransform",
-                "TextRenderer"
-            ],
-            "name": "Name_5",
-            "rect_transform": {
-                "position": [
-                    672.6409912109375,
-                    950.0
-                ],
-                "rotation": 0.0,
-                "scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "text_renderer": {
-                "bold": true,
-                "character_spacing": 0.0,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_intensity": 0.0,
-                "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
-                "font_size": 120,
-                "max_width": 0.0,
-                "mesh_offsets": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ],
-                "outline_color": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 1.0,
-                "text": "No5:"
-            },
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    5.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": "EMPTY"
-        },
-        {
-            "active": true,
-            "components": [
-                "RectTransform",
-                "TextRenderer"
-            ],
-            "name": "Score_2",
-            "rect_transform": {
-                "position": [
-                    1078.970458984375,
-                    500.0
-                ],
-                "rotation": 0.0,
-                "scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "text_renderer": {
-                "bold": true,
-                "character_spacing": 0.0,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_intensity": 0.0,
-                "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
-                "font_size": 120,
-                "max_width": 0.0,
-                "mesh_offsets": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ],
-                "outline_color": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 1.0,
-                "text": "0000000"
-            },
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    3.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": "EMPTY"
-        },
-        {
-            "active": true,
-            "components": [
-                "RectTransform",
-                "TextRenderer"
-            ],
-            "name": "Score_3",
-            "rect_transform": {
-                "position": [
-                    1078.970458984375,
-                    650.0
-                ],
-                "rotation": 0.0,
-                "scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "text_renderer": {
-                "bold": true,
-                "character_spacing": 0.0,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_intensity": 0.0,
-                "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
-                "font_size": 120,
-                "max_width": 0.0,
-                "mesh_offsets": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ],
-                "outline_color": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 1.0,
-                "text": "0000000"
-            },
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    4.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": "EMPTY"
-        },
-        {
-            "active": true,
-            "components": [
-                "RectTransform",
-                "TextRenderer"
-            ],
-            "name": "Score_4",
-            "rect_transform": {
-                "position": [
-                    1078.970458984375,
-                    800.0
-                ],
-                "rotation": 0.0,
-                "scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "text_renderer": {
-                "bold": true,
-                "character_spacing": 0.0,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_intensity": 0.0,
-                "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
-                "font_size": 120,
-                "max_width": 0.0,
-                "mesh_offsets": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ],
-                "outline_color": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 1.0,
-                "text": "0000000"
-            },
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    5.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": "EMPTY"
-        },
-        {
-            "active": true,
-            "components": [
-                "RectTransform",
-                "TextRenderer"
-            ],
-            "name": "Score_5",
-            "rect_transform": {
-                "position": [
-                    1078.970458984375,
-                    950.0
-                ],
-                "rotation": 0.0,
-                "scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "text_renderer": {
-                "bold": true,
-                "character_spacing": 0.0,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "emissive_intensity": 0.0,
-                "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
-                "font_size": 120,
-                "max_width": 0.0,
-                "mesh_offsets": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ],
-                "outline_color": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 1.0,
-                "text": "0000000"
-            },
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    6.0,
                     0.0,
                     0.0
                 ]
@@ -1496,7 +176,7 @@
                     ],
                     "control_point_2": [
                         0.7475247383117676,
-                        1.2999999523162842
+                        1.0
                     ],
                     "duration": 0.699999988079071,
                     "goal_color": [
@@ -1506,8 +186,8 @@
                         1.0
                     ],
                     "goal_position": [
-                        1521.8438720703125,
-                        196.0168914794922,
+                        1608.907958984375,
+                        197.28799438476563,
                         0.0
                     ],
                     "goal_rotation": [
@@ -1532,8 +212,8 @@
                         0.0
                     ],
                     "start_position": [
-                        1513.375,
-                        181.5070037841797,
+                        1618.02001953125,
+                        168.33799743652344,
                         0.0
                     ],
                     "start_rotation": [
@@ -1552,13 +232,13 @@
             "name": "RankShadow",
             "rect_transform": {
                 "position": [
-                    1521.8438720703125,
-                    196.01699829101563
+                    1608.907958984375,
+                    197.28799438476563
                 ],
-                "rotation": -0.30000001192092896,
+                "rotation": -0.20000000298023224,
                 "scale": [
-                    1.5001945495605469,
-                    1.0002059936523438
+                    2.0,
+                    1.0
                 ]
             },
             "text_renderer": {
@@ -1582,22 +262,6 @@
                 "max_width": 0.0,
                 "mesh_offsets": [
                     [
-                        100.0,
-                        0.0
-                    ],
-                    [
-                        100.0,
-                        0.0
-                    ],
-                    [
-                        100.0,
-                        0.0
-                    ],
-                    [
-                        100.0,
-                        0.0
-                    ],
-                    [
                         50.0,
                         0.0
                     ],
@@ -1611,6 +275,22 @@
                     ],
                     [
                         50.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
                         0.0
                     ],
                     [
@@ -1630,19 +310,19 @@
                         0.0
                     ],
                     [
-                        -50.0,
+                        -25.0,
                         0.0
                     ],
                     [
-                        -50.0,
+                        -25.0,
                         0.0
                     ],
                     [
-                        -50.0,
+                        -25.0,
                         0.0
                     ],
                     [
-                        -50.0,
+                        -25.0,
                         0.0
                     ]
                 ],
@@ -1663,7 +343,7 @@
                     0.0
                 ],
                 "scaling": [
-                    1.5,
+                    2.0,
                     1.0,
                     1.0
                 ],
@@ -1711,7 +391,7 @@
                         -0.30000001192092896
                     ],
                     "goal_scale": [
-                        1.5,
+                        2.0,
                         1.0,
                         1.0
                     ],
@@ -1747,12 +427,12 @@
             "name": "Rank",
             "rect_transform": {
                 "position": [
-                    1513.3751220703125,
-                    181.5067138671875
+                    1618.02001953125,
+                    168.33799743652344
                 ],
-                "rotation": -0.29987335205078125,
+                "rotation": -0.20000000298023224,
                 "scale": [
-                    1.5003089904785156,
+                    2.0002975463867188,
                     1.0002059936523438
                 ]
             },
@@ -1777,22 +457,6 @@
                 "max_width": 0.0,
                 "mesh_offsets": [
                     [
-                        100.0,
-                        0.0
-                    ],
-                    [
-                        100.0,
-                        0.0
-                    ],
-                    [
-                        100.0,
-                        0.0
-                    ],
-                    [
-                        100.0,
-                        0.0
-                    ],
-                    [
                         50.0,
                         0.0
                     ],
@@ -1806,6 +470,22 @@
                     ],
                     [
                         50.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
                         0.0
                     ],
                     [
@@ -1825,19 +505,19 @@
                         0.0
                     ],
                     [
-                        -50.0,
+                        -25.0,
                         0.0
                     ],
                     [
-                        -50.0,
+                        -25.0,
                         0.0
                     ],
                     [
-                        -50.0,
+                        -25.0,
                         0.0
                     ],
                     [
-                        -50.0,
+                        -25.0,
                         0.0
                     ]
                 ],
@@ -1858,7 +538,7 @@
                     0.0
                 ],
                 "scaling": [
-                    1.5,
+                    2.0,
                     1.0,
                     1.0
                 ],
@@ -1869,14 +549,479 @@
                 ]
             },
             "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "RectTransform",
+                "TextRenderer"
+            ],
+            "name": "ScoreText",
+            "rect_transform": {
+                "position": [
+                    1274.421142578125,
+                    934.4342041015625
+                ],
+                "rotation": -0.20000000298023224,
+                "scale": [
+                    2.0,
+                    1.0
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 0.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "Agency FB",
+                "font_size": 60,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        -50.0,
+                        0.0
+                    ],
+                    [
+                        -50.0,
+                        0.0
+                    ],
+                    [
+                        -50.0,
+                        0.0
+                    ],
+                    [
+                        -50.0,
+                        0.0
+                    ],
+                    [
+                        -25.0,
+                        0.0
+                    ],
+                    [
+                        -25.0,
+                        0.0
+                    ],
+                    [
+                        -25.0,
+                        0.0
+                    ],
+                    [
+                        -25.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "SCORE"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    2.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    1.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "RectTransform",
+                "TextRenderer"
+            ],
+            "name": "Stage",
+            "rect_transform": {
+                "position": [
+                    193.0125732421875,
+                    101.90164184570313
+                ],
+                "rotation": -0.20000000298023224,
+                "scale": [
+                    1.5,
+                    1.0
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 0.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "Agency FB",
+                "font_size": 81,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        50.0,
+                        0.0
+                    ],
+                    [
+                        50.0,
+                        0.0
+                    ],
+                    [
+                        50.0,
+                        0.0
+                    ],
+                    [
+                        50.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        25.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        -25.0,
+                        0.0
+                    ],
+                    [
+                        -25.0,
+                        0.0
+                    ],
+                    [
+                        -25.0,
+                        0.0
+                    ],
+                    [
+                        -25.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "STAGE 1"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.5,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "ObjectRailMovement",
+                "Particle",
+                "Trail"
+            ],
+            "file_name": "F-15C_Eagle.dat.obj",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": true,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "AnimationModel",
+            "object_rail_movement": {
+                "loop": false,
+                "orient_to_path": true,
+                "play_on_start": true,
+                "point_rotations": [
+                    [
+                        -0.3499999940395355,
+                        -0.699999988079071,
+                        0.0
+                    ],
+                    [
+                        -0.3499999940395355,
+                        -0.699999988079071,
+                        -0.9300000071525574
+                    ],
+                    [
+                        -0.3100000023841858,
+                        0.12999999523162842,
+                        -1.5920000076293945
+                    ],
+                    [
+                        -0.36000001430511475,
+                        1.4199999570846558,
+                        -2.621999979019165
+                    ],
+                    [
+                        -0.1899999976158142,
+                        2.0199999809265137,
+                        -2.621999979019165
+                    ],
+                    [
+                        -0.10000000149011612,
+                        2.25,
+                        -2.621999979019165
+                    ],
+                    [
+                        0.3700000047683716,
+                        3.5,
+                        -1.7419999837875366
+                    ],
+                    [
+                        0.3699999749660492,
+                        3.509999990463257,
+                        -1.7420001029968262
+                    ],
+                    [
+                        0.27000001072883606,
+                        3.510000467300415,
+                        0.4480000138282776
+                    ]
+                ],
+                "points": [
+                    [
+                        97.28700256347656,
+                        -20.28700065612793,
+                        130.0
+                    ],
+                    [
+                        -37.8129997253418,
+                        17.913000106811523,
+                        210.65199279785156
+                    ],
+                    [
+                        -58.91299819946289,
+                        32.7130012512207,
+                        251.95199584960938
+                    ],
+                    [
+                        -6.413000106811523,
+                        55.41299819946289,
+                        273.1520080566406
+                    ],
+                    [
+                        80.08699798583984,
+                        79.31300354003906,
+                        302.75201416015625
+                    ],
+                    [
+                        120.38700103759766,
+                        84.81300354003906,
+                        313.4519958496094
+                    ],
+                    [
+                        79.38700103759766,
+                        49.51300048828125,
+                        164.052001953125
+                    ],
+                    [
+                        28.687000274658203,
+                        15.512999534606934,
+                        63.85200119018555
+                    ],
+                    [
+                        1.687000036239624,
+                        1.2130000591278076,
+                        -35.847999572753906
+                    ]
+                ],
+                "speed": 1.399999976158142,
+                "use_point_rotations": true
+            },
+            "particles": [
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.9900000095367432,
+                        1.4900000095367432,
+                        4.389999866485596
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": true,
+                    "preset": "Resource/particle/burner2.csv"
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        2.299999952316284,
+                        0.8899999856948853,
+                        4.190000057220459
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": true,
+                    "preset": "Resource/particle/burner2.csv"
+                }
+            ],
+            "trails": [
+                {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "emissive": 1.0,
+                    "lifetime": 3.0,
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "minimum_distance": 0.10000000149011612,
+                    "play_on_start": true,
+                    "texture": "Resource/trail/trail.png",
+                    "width": 1.5
+                }
+            ],
+            "transform": {
+                "rotation": [
+                    0.26999998092651367,
+                    0.4480001926422119,
+                    3.510000705718994
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    1.6870025396347046,
+                    -35.84799575805664,
+                    1.2130026817321777
+                ]
+            },
+            "type": "EMPTY"
         }
     ],
     "rail_camera_groups": [
         {
-            "direction_mode": 0,
+            "direction_mode": 1,
             "name": "",
             "preset_sequence": [],
             "rail_speed": 1.0,
+            "target_object_name": "",
             "target_position": [
                 0.0,
                 0.0,

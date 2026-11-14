@@ -11,6 +11,7 @@
 #include "ModelRendererComponent.h"
 #include "ObjectRailMovementComponent.h"
 #include "ParticleComponent.h"
+#include "TrailComponent.h"
 #include "RailCamera.h"
 #include "RailPointComponent.h"
 #include "RectTransformComponent.h"
@@ -79,7 +80,15 @@ void ConfigureParticle(GameObject& gameObject, const ObjectData& objectData) {
 	if (!HasComponent(objectData, "Particle")) {
 		return;
 	}
-	gameObject.AddComponent<ParticleComponent>()->Configure(objectData.particle);
+	gameObject.AddComponent<ParticleComponent>()->Configure(
+		objectData.particles.empty() ? std::vector<ParticleComponentData>{ objectData.particle } : objectData.particles);
+}
+
+void ConfigureTrail(GameObject& gameObject, const ObjectData& objectData) {
+	if (!HasComponent(objectData, "Trail")) {
+		return;
+	}
+	gameObject.AddComponent<TrailComponent>()->Configure(objectData.trails);
 }
 
 } // namespace
@@ -140,6 +149,10 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 				spriteRenderer->SetTexture(objectData.sprite_file_name.empty() ? "Resource/title/title.png" : objectData.sprite_file_name);
 				spriteRenderer->SetSize(objectData.spriteSize);
 				spriteRenderer->SetEmissive(objectData.spriteEmissiveColor, objectData.spriteEmissiveIntensity);
+				spriteRenderer->SetColor(objectData.spriteColor);
+				spriteRenderer->SetUVScale(objectData.spriteUVScale);
+				spriteRenderer->SetUVOffset(objectData.spriteUVOffset);
+				spriteRenderer->SetUVRotation(objectData.spriteUVRotation);
 			}
 			if (HasComponent(objectData, "TextRenderer")) {
 				if (!gameObject->GetComponent<RectTransformComponent>()) {
@@ -183,6 +196,7 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 
 		ConfigureEasing(*gameObject, objectData);
 		ConfigureParticle(*gameObject, objectData);
+		ConfigureTrail(*gameObject, objectData);
 
 		gameObject->SetActive(objectData.active);
 		gameObject->SetEnablePostEffect(objectData.enablePostEffect);

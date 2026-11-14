@@ -39,6 +39,7 @@ public:
     void SetRotate(const Vector3& rotate) { baseRot = rotate; }
     void SetTranslate(const Vector3& translate) { basePos = translate; }
     void SetMoveEnabled(bool isMoveEnabled) { isMoveEnabled_ = isMoveEnabled; }
+	void ResetRailOffset();
     Vector3 GetRotate() const { return rotate_; }
     Vector3 GetTranslate() const { return translate_; }
     bool IsHit() const { return isHit; }
@@ -121,8 +122,8 @@ private:
     SpriteRendererComponent* reticleSprite[3]{};
 	// UIスプライトはワールドTransformではなくRectTransformを参照する。
     RectTransformComponent* reticleTransform[3]{};
-	Vector3 reticlePosition[3] = { {960.0f, 440.0f}, {960.0f, 440.0f}, {960.0f, 440.0f} };
-    Vector3 reticleSize[3] = { {800.0f, 800.0f}, {800.0f, 800.0f}, {700.0f, 700.0f} };
+	Vector3 reticlePosition = { 960.0f, 540.0f };
+    Vector3 reticleSize = { 700.0f, 700.0f };
     Vector3 reticleRotation[3] = { { 0.0f },{ 0.0f }, {0.0f} };
 	float reticleRotationMultiplier[3] = { 5.0f, 1.0f, 3.0f }; // レティクルの回転角度に対する倍率
 

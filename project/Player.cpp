@@ -54,6 +54,25 @@ void Player::Update(float deltaTime) {
 
 }
 
+void Player::ResetRailOffset() {
+	playerInput = {};
+	currentPitch = 0.0f;
+	currentYaw = 0.0f;
+	currentRoll = 0.0f;
+	angularVelocity = {};
+	currentLocalOffset = {};
+	playerPositionOffset = {};
+	velocity = {};
+	launchVelocity_ = {};
+
+	translate_ = basePos;
+	rotate_ = baseRot;
+	if (GetGameObject()) {
+		GetGameObject()->GetTransform()->transform.translate = translate_;
+		GetGameObject()->GetTransform()->transform.rotate = rotate_;
+	}
+}
+
 void Player::Draw() {
 	
 	// 矢印の描画
@@ -74,7 +93,7 @@ void Player::UpdateReticle() {
 	reticleRotation[1].z = rotate_.z * reticleRotationMultiplier[1];
 	reticleRotation[2].z = rotate_.z * reticleRotationMultiplier[2];
 
-	Vector3 targetReticlePos = { 960.0f, 440.0f, 0.0f };
+	Vector3 targetReticlePos = { 960.0f, 540.0f, 0.0f };
 	Vector3 targetReticleSize = { 700.0f, 700.0f, 0.0f };
 
 	if (lockedTarget && !lockedTarget->IsDead()) {
@@ -98,10 +117,10 @@ void Player::UpdateReticle() {
 
 	const float reticleSpeed = 15.0f;
 	const float reticleT = 1.0f - std::exp(-reticleSpeed * deltaTime_);
-	reticlePosition[2].x = Lerp(reticlePosition[2].x, targetReticlePos.x, reticleT);
-	reticlePosition[2].y = Lerp(reticlePosition[2].y, targetReticlePos.y, reticleT);
-	reticleSize[2].x = Lerp(reticleSize[2].x, targetReticleSize.x, reticleT);
-	reticleSize[2].y = Lerp(reticleSize[2].y, targetReticleSize.y, reticleT);
+	reticlePosition.x = Lerp(reticlePosition.x, targetReticlePos.x, reticleT);
+	reticlePosition.y = Lerp(reticlePosition.y, targetReticlePos.y, reticleT);
+	reticleSize.x = Lerp(reticleSize.x, targetReticleSize.x, reticleT);
+	reticleSize.y = Lerp(reticleSize.y, targetReticleSize.y, reticleT);
 
 	constexpr Vector2 kReticleBaseSize[] = { {800.0f, 800.0f}, {800.0f, 800.0f}, {700.0f, 700.0f} };
 	for (int i = 0; i < 3; ++i) {
@@ -110,18 +129,18 @@ void Player::UpdateReticle() {
 		}
 		reticleSprite[i]->SetColor(lockOnTimer >= requiredLockOnTime && lockedTarget != nullptr
 			? Vector4{ 1.0f, 0.0f, 0.0f, 1.0f }
-			: Vector4{ 0.0f, 1.0f, 0.0f, 1.0f });
-		reticleTransform[i]->position = { reticlePosition[i].x, reticlePosition[i].y };
+			: Vector4{ 0.5f, 0.5f, 1.0f, 1.0f });
+		reticleTransform[2]->position = { reticlePosition.x, reticlePosition.y };
 		reticleTransform[i]->rotation = reticleRotation[i].z;
-		reticleTransform[i]->scale = {
-			reticleSize[i].x / kReticleBaseSize[i].x,
-			reticleSize[i].y / kReticleBaseSize[i].y,
+		reticleTransform[2]->scale = {
+			reticleSize.x / kReticleBaseSize[i].x,
+			reticleSize.y / kReticleBaseSize[i].y,
 		};
 		reticleSprite[i]->Update();
 	}
 
 	// 矢印はロックオン完了前だけ、レティクル範囲外の最寄りの敵を指す。
-	const Vector2 center = { 960.0f, 440.0f };
+	const Vector2 center = { 960.0f, 540.0f };
 	const float arrowRadius = 400.0f;
 
 	const bool isLockedOn =
@@ -211,8 +230,8 @@ void Player::UpdateLockOn(const std::vector<Enemy*>& enemies) {
 	float closestIndicatorDist = FLT_MAX;
 
 	// レティクルの座標と、ロックオンを許可する範囲（ピクセル）
-	float centerX = reticlePosition[0].x;
-	float centerY = reticlePosition[0].y;
+	float centerX = reticlePosition.x;
+	float centerY = reticlePosition.y;
 
 	for (Enemy* enemy : enemies) {
 		if (!enemy || enemy->IsDead()) continue;

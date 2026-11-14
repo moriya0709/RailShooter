@@ -26,6 +26,12 @@ public:
 	float GetEmissiveIntensity() const { return emissiveIntensity_; }
 	void SetColor(const Vector4& color) { color_ = color; }
 	const Vector4& GetColor() const { return color_; }
+	void SetUVScale(const Vector2& scale) { uvScale_ = scale; }
+	const Vector2& GetUVScale() const { return uvScale_; }
+	void SetUVOffset(const Vector2& offset) { uvOffset_ = offset; }
+	const Vector2& GetUVOffset() const { return uvOffset_; }
+	void SetUVRotation(float rotation) { uvRotation_ = rotation; }
+	float GetUVRotation() const { return uvRotation_; }
 
 private:
 	// 初期化後にのみ有効。GameObject の寿命とともに Sprite も破棄される。
@@ -35,4 +41,7 @@ private:
 	Vector3 emissiveColor_ = { 1.0f, 1.0f, 1.0f };
 	float emissiveIntensity_ = 0.0f;
 	Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f };
+	Vector2 uvScale_ = { 1.0f, 1.0f };
+	Vector2 uvOffset_ = { 0.0f, 0.0f };
+	float uvRotation_ = 0.0f;
 };

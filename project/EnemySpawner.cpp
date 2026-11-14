@@ -3,6 +3,7 @@
 #include "EnemyBoss.h"
 #include "ModelRendererComponent.h"
 #include "ParticleComponent.h"
+#include "TrailComponent.h"
 #include "RailCamera.h"
 
 namespace {
@@ -49,6 +50,9 @@ std::unique_ptr<GameObject> CreateEnemyObjectFromTemplate(const SpawnData& data,
 
 	if (const auto* sourceParticle = templateObject->GetComponent<ParticleComponent>()) {
 		enemyObject->AddComponent<ParticleComponent>()->Configure(sourceParticle->GetSettings());
+	}
+	if (const auto* sourceTrail = templateObject->GetComponent<TrailComponent>()) {
+		enemyObject->AddComponent<TrailComponent>()->Configure(sourceTrail->GetSettings());
 	}
 
 	return enemyObject;

@@ -270,6 +270,8 @@
     </ClCompile>
     <ClCompile Include="PlayerBulletNormal.cpp" />
     <ClCompile Include="ParticleComponent.cpp" />
+
+    <ClCompile Include="TrailComponent.cpp" />
     <ClCompile Include="ParticlePreviewEditor.cpp" />
     <ClCompile Include="EnemyNormal.cpp" />
     <ClCompile Include="EnemySpawner.cpp" />
@@ -475,6 +477,8 @@
     <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="PlayerBulletNormal.h" />
     <ClInclude Include="ParticleComponent.h" />
+
+    <ClInclude Include="TrailComponent.h" />
     <ClInclude Include="ParticlePreviewEditor.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Enemy.h" />

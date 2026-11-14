@@ -35,9 +35,9 @@
                     1.0
                 ],
                 "translation": [
-                    342.5422058105469,
-                    210.11752319335938,
-                    143.79991149902344
+                    0.0,
+                    -57.929351806640625,
+                    167.4550018310547
                 ]
             },
             "type": "EMPTY"
@@ -403,9 +403,9 @@
                     ],
                     "duration": 2.0,
                     "goal_color": [
-                        0.0,
+                        0.49803921580314636,
+                        0.49803921580314636,
                         1.0,
-                        0.0,
                         1.0
                     ],
                     "goal_position": [
@@ -429,8 +429,8 @@
                     "rotation": true,
                     "scale": false,
                     "start_color": [
-                        1.0,
-                        1.0,
+                        0.49803921580314636,
+                        0.49803921580314636,
                         1.0,
                         0.0
                     ],
@@ -457,16 +457,22 @@
             "rect_transform": {
                 "position": [
                     960.0,
-                    440.0
+                    540.0
                 ],
-                "rotation": 5.960464477539063e-08,
+                "rotation": 0.0,
                 "scale": [
-                    0.9999955892562866,
-                    0.9999955892562866
+                    1.0,
+                    1.0
                 ]
             },
             "sprite_file_name": "Resource/reticle/reticle.png",
             "sprite_renderer": {
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
                 "emissive_color": [
                     1.0,
                     1.0,
@@ -476,6 +482,15 @@
                 "size": [
                     800.0,
                     800.0
+                ],
+                "uv_offset": [
+                    0.0,
+                    0.0
+                ],
+                "uv_rotation": 0.0,
+                "uv_scale": [
+                    1.0,
+                    1.0
                 ]
             },
             "transform": {
@@ -517,9 +532,9 @@
                     ],
                     "duration": 2.0,
                     "goal_color": [
-                        0.0,
+                        0.49803921580314636,
+                        0.49803921580314636,
                         1.0,
-                        0.0,
                         1.0
                     ],
                     "goal_position": [
@@ -533,9 +548,9 @@
                         0.0
                     ],
                     "goal_scale": [
-                        1.0,
-                        1.0,
-                        1.0
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929
                     ],
                     "loop": false,
                     "play_on_start": true,
@@ -543,8 +558,8 @@
                     "rotation": false,
                     "scale": true,
                     "start_color": [
-                        1.0,
-                        1.0,
+                        0.49803921580314636,
+                        0.49803921580314636,
                         1.0,
                         0.0
                     ],
@@ -571,16 +586,22 @@
             "rect_transform": {
                 "position": [
                     960.0,
-                    440.0
+                    540.0
                 ],
-                "rotation": 5.960464477539063e-08,
+                "rotation": 0.0,
                 "scale": [
-                    1.0,
-                    1.0
+                    0.8000000715255737,
+                    0.8000000715255737
                 ]
             },
             "sprite_file_name": "Resource/reticle/reticle2.png",
             "sprite_renderer": {
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
                 "emissive_color": [
                     1.0,
                     1.0,
@@ -590,6 +611,15 @@
                 "size": [
                     800.0,
                     800.0
+                ],
+                "uv_offset": [
+                    0.0,
+                    0.0
+                ],
+                "uv_rotation": 0.0,
+                "uv_scale": [
+                    1.0,
+                    1.0
                 ]
             },
             "transform": {
@@ -631,9 +661,9 @@
                     ],
                     "duration": 2.0,
                     "goal_color": [
-                        0.0,
+                        0.49803921580314636,
+                        0.49803921580314636,
                         1.0,
-                        0.0,
                         1.0
                     ],
                     "goal_position": [
@@ -657,8 +687,8 @@
                     "rotation": true,
                     "scale": true,
                     "start_color": [
-                        1.0,
-                        1.0,
+                        0.49803921580314636,
+                        0.49803921580314636,
                         1.0,
                         0.0
                     ],
@@ -685,9 +715,9 @@
             "rect_transform": {
                 "position": [
                     960.0,
-                    440.0
+                    540.0
                 ],
-                "rotation": -4.76837158203125e-07,
+                "rotation": 0.0,
                 "scale": [
                     1.0,
                     1.0
@@ -695,6 +725,12 @@
             },
             "sprite_file_name": "Resource/reticle/reticle3.png",
             "sprite_renderer": {
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
                 "emissive_color": [
                     1.0,
                     1.0,
@@ -704,6 +740,15 @@
                 "size": [
                     700.0,
                     700.0
+                ],
+                "uv_offset": [
+                    0.0,
+                    0.0
+                ],
+                "uv_rotation": 0.0,
+                "uv_scale": [
+                    1.0,
+                    1.0
                 ]
             },
             "transform": {
@@ -726,7 +771,7 @@
             "type": "EMPTY"
         },
         {
-            "active": true,
+            "active": false,
             "components": [
                 "ModelRenderer"
             ],
@@ -766,9 +811,9 @@
                     1.0
                 ],
                 "translation": [
-                    342.5422058105469,
-                    210.11752319335938,
-                    143.79991149902344
+                    0.0,
+                    -57.929351806640625,
+                    167.4550018310547
                 ]
             },
             "type": "EMPTY"
@@ -780,19 +825,21 @@
             ],
             "group": "Particle",
             "name": "DeathParticle1",
-            "particle": {
-                "count": 9,
-                "frequency": 0.25999999046325684,
-                "group": "obj",
-                "local_offset": [
-                    0.0,
-                    0.0,
-                    10.0
-                ],
-                "override_emission_settings": false,
-                "play_on_start": true,
-                "preset": "Resource/particle/fire.csv"
-            },
+            "particles": [
+                {
+                    "count": 9,
+                    "frequency": 0.25999999046325684,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        10.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": true,
+                    "preset": "Resource/particle/fire.csv"
+                }
+            ],
             "transform": {
                 "rotation": [
                     0.2999979257583618,
@@ -819,19 +866,21 @@
             ],
             "group": "Particle",
             "name": "DeathParticle2",
-            "particle": {
-                "count": 9,
-                "frequency": 0.25999999046325684,
-                "group": "obj",
-                "local_offset": [
-                    0.0,
-                    0.0,
-                    10.0
-                ],
-                "override_emission_settings": false,
-                "play_on_start": true,
-                "preset": "Resource/particle/smoke.csv"
-            },
+            "particles": [
+                {
+                    "count": 9,
+                    "frequency": 0.25999999046325684,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        10.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": true,
+                    "preset": "Resource/particle/smoke.csv"
+                }
+            ],
             "transform": {
                 "rotation": [
                     0.2999979257583618,
@@ -2646,19 +2695,34 @@
                 "toon_shading": true
             },
             "name": "EnemyNormal",
-            "particle": {
-                "count": 8,
-                "frequency": 0.10000000149011612,
-                "group": "obj",
-                "local_offset": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "override_emission_settings": false,
-                "play_on_start": false,
-                "preset": "Resource/particle/hit.csv"
-            },
+            "particles": [
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/hit.csv"
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": true,
+                    "preset": "Resource/particle/burner.csv"
+                }
+            ],
             "transform": {
                 "rotation": [
                     -0.0,
@@ -2970,7 +3034,7 @@
                     0.0
                 ],
                 "emissive_intensity": 0.0,
-                "enable_post_effect": false,
+                "enable_post_effect": true,
                 "font_family": "HGP創英角ｺﾞｼｯｸUB",
                 "font_size": 42,
                 "max_width": 0.0,
@@ -3103,7 +3167,7 @@
                     1.0
                 ],
                 "emissive_intensity": 0.0,
-                "enable_post_effect": false,
+                "enable_post_effect": true,
                 "font_family": "HGP創英角ｺﾞｼｯｸUB",
                 "font_size": 100,
                 "max_width": 0.0,
@@ -3359,7 +3423,7 @@
                     0.0
                 ],
                 "emissive_intensity": 0.0,
-                "enable_post_effect": false,
+                "enable_post_effect": true,
                 "font_family": "HGP創英角ｺﾞｼｯｸUB",
                 "font_size": 72,
                 "max_width": 0.0,
@@ -3615,7 +3679,7 @@
                     0.0
                 ],
                 "emissive_intensity": 0.0,
-                "enable_post_effect": false,
+                "enable_post_effect": true,
                 "font_family": "HGS創英角ｺﾞｼｯｸUB",
                 "font_size": 174,
                 "max_width": 0.0,
@@ -3871,7 +3935,7 @@
                     0.0
                 ],
                 "emissive_intensity": 0.0,
-                "enable_post_effect": false,
+                "enable_post_effect": true,
                 "font_family": "HGS創英角ｺﾞｼｯｸUB",
                 "font_size": 60,
                 "max_width": 0.0,
@@ -4200,7 +4264,7 @@
                     1.0
                 ],
                 "emissive_intensity": 0.0,
-                "enable_post_effect": false,
+                "enable_post_effect": true,
                 "font_family": "HGP創英角ｺﾞｼｯｸUB",
                 "font_size": 100,
                 "max_width": 0.0,
@@ -6068,7 +6132,7 @@
             "type": "EMPTY"
         },
         {
-            "active": true,
+            "active": false,
             "components": [
                 "RectTransform",
                 "SpriteRenderer"
@@ -6087,6 +6151,12 @@
             },
             "sprite_file_name": "Resource/subsidy.png",
             "sprite_renderer": {
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
                 "emissive_color": [
                     1.0,
                     1.0,
@@ -6096,6 +6166,15 @@
                 "size": [
                     1920.0,
                     1080.0
+                ],
+                "uv_offset": [
+                    0.0,
+                    0.0
+                ],
+                "uv_rotation": 0.0,
+                "uv_scale": [
+                    1.0,
+                    1.0
                 ]
             },
             "transform": {
@@ -6153,7 +6232,7 @@
                 "play_on_start": true,
                 "point_rotations": [
                     [
-                        0.0,
+                        0.6299999952316284,
                         0.0,
                         0.0
                     ],
@@ -6165,15 +6244,30 @@
                     [
                         -0.10000000149011612,
                         0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0,
                         6.28000020980835
                     ],
                     [
-                        -0.1599999964237213,
+                        0.0,
+                        0.0,
+                        6.28000020980835
+                    ],
+                    [
+                        -0.2639999985694885,
                         0.0,
                         6.28000020980835
                     ]
                 ],
                 "points": [
+                    [
+                        128.32200622558594,
+                        372.94500732421875,
+                        -600.0
+                    ],
                     [
                         128.32200622558594,
                         230.5449981689453,
@@ -6186,13 +6280,18 @@
                     ],
                     [
                         128.32200622558594,
-                        248.94500732421875,
+                        230.5449981689453,
                         300.0
                     ],
                     [
                         128.32200622558594,
-                        263.5450134277344,
+                        230.5449981689453,
                         600.0
+                    ],
+                    [
+                        128.32200622558594,
+                        340.6000061035156,
+                        900.0
                     ]
                 ],
                 "speed": 1.0,
@@ -6200,8 +6299,8 @@
             },
             "transform": {
                 "rotation": [
-                    -0.1600000113248825,
-                    6.279999732971191,
+                    -0.1741929054260254,
+                    6.28000020980835,
                     0.0
                 ],
                 "scaling": [
@@ -6210,9 +6309,9 @@
                     1.0
                 ],
                 "translation": [
-                    128.32199096679688,
-                    600.0,
-                    263.54498291015625
+                    128.32200622558594,
+                    810.9033203125,
+                    303.1616516113281
                 ]
             },
             "type": "EMPTY"
@@ -6261,7 +6360,715 @@
                 "translation": [
                     100.0,
                     109.36100006103516,
-                    251.90199279785156
+                    216.40199279785156
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.2999999523162842
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.7843137383460999
+                    ],
+                    "goal_position": [
+                        450.0,
+                        280.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": false,
+                    "position": false,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        450.0,
+                        280.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        -0.3100000023841858
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "use_game_time": true
+                },
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25436410307884216,
+                        -0.30000001192092896
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        0.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "goal_position": [
+                        426.8340148925781,
+                        151.38999938964844,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "loop": false,
+                    "play_on_start": false,
+                    "position": false,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.7843137383460999
+                    ],
+                    "start_position": [
+                        1536.5489501953125,
+                        320.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Score",
+            "name": "Rating",
+            "rect_transform": {
+                "position": [
+                    450.0,
+                    280.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    2.288818359375e-05,
+                    2.288818359375e-05
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 0.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.7843191623687744
+                ],
+                "emissive_color": [
+                    1.0,
+                    0.0,
+                    0.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 80,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.7575916051864624,
+                    0.8108108043670654,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": ""
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    4.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.2999999523162842
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.7843137383460999
+                    ],
+                    "goal_position": [
+                        450.0,
+                        350.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": false,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        450.0,
+                        350.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        -0.3100000023841858
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "use_game_time": true
+                },
+                {
+                    "color": false,
+                    "control_point_1": [
+                        0.25436410307884216,
+                        0.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        0.0
+                    ],
+                    "duration": 0.6000000238418579,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.7843137383460999
+                    ],
+                    "goal_position": [
+                        450.0,
+                        151.38999938964844,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        0.5,
+                        0.5,
+                        0.5
+                    ],
+                    "loop": false,
+                    "play_on_start": false,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.7843137383460999
+                    ],
+                    "start_position": [
+                        450.0,
+                        350.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Score",
+            "name": "RatingScore",
+            "rect_transform": {
+                "position": [
+                    450.0,
+                    151.39454650878906
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    0.5000114440917969,
+                    0.5000114440917969
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 0.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.7843191623687744
+                ],
+                "emissive_color": [
+                    1.0,
+                    0.0,
+                    0.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 60,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.7575916051864624,
+                    0.8108108043670654,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": ""
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    5.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 1.0,
+                    "goal_color": [
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.7843137383460999
+                    ],
+                    "goal_position": [
+                        960.0,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": false,
+                    "start_color": [
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        786.0999755859375,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "ClearText",
+            "rect_transform": {
+                "position": [
+                    960.0,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 0.0,
+                "color": [
+                    0.0,
+                    1.0,
+                    0.0,
+                    0.7843137383460999
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 179,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "Misson Clear"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
                 ]
             },
             "type": "EMPTY"
@@ -6295,7 +7102,7 @@
                 "outline_thickness": 0.009999999776482582,
                 "toon_shading": true
             },
-            "name": "RailPoint_停止_73",
+            "name": "RailPoint_停止_76",
             "transform": {
                 "rotation": [
                     0.0,
@@ -6310,7 +7117,7 @@
                 "translation": [
                     100.0,
                     109.36067199707031,
-                    251.90199279785156
+                    216.40199279785156
                 ]
             },
             "type": "RAIL"
@@ -6344,7 +7151,7 @@
                 "outline_thickness": 0.009999999776482582,
                 "toon_shading": true
             },
-            "name": "RailPoint_停止_74",
+            "name": "RailPoint_停止_77",
             "transform": {
                 "rotation": [
                     0.0,
@@ -6359,7 +7166,7 @@
                 "translation": [
                     100.0,
                     109.36067199707031,
-                    251.90199279785156
+                    216.40199279785156
                 ]
             },
             "type": "RAIL"
@@ -6393,7 +7200,7 @@
                 "outline_thickness": 0.009999999776482582,
                 "toon_shading": true
             },
-            "name": "RailPoint_停止_75",
+            "name": "RailPoint_停止_78",
             "transform": {
                 "rotation": [
                     0.0,
@@ -6408,10 +7215,2903 @@
                 "translation": [
                     100.0,
                     109.36067199707031,
-                    251.90199279785156
+                    216.40199279785156
                 ]
             },
             "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "Clear",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_停止_79",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    100.0,
+                    109.36034393310547,
+                    216.40199279785156
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "Clear",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_停止_80",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    100.0,
+                    109.36034393310547,
+                    216.40199279785156
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "Clear",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_停止_81",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    100.0,
+                    109.36034393310547,
+                    216.40199279785156
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": false,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "goal_position": [
+                        983.0,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": false,
+                    "start_color": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        960.0,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        1.0,
+                        -1.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_0",
+            "rect_transform": {
+                "position": [
+                    983.0,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.100000023841858,
+                    1.100000023841858
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 0.0,
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.3921568691730499
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "MISSION CLEAR"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.100000023841858,
+                    1.0,
+                    1.100000023841858
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.3921568691730499
+                    ],
+                    "goal_position": [
+                        78.47799682617188,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.100000023841858,
+                        1.100000023841858,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        278.4779968261719,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_1",
+            "rect_transform": {
+                "position": [
+                    78.47799682617188,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.100000023841858,
+                    1.100000023841858
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 0.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "M"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.100000023841858,
+                    1.0,
+                    1.100000023841858
+                ],
+                "translation": [
+                    1.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.3921568691730499
+                    ],
+                    "goal_position": [
+                        217.18600463867188,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.100000023841858,
+                        1.100000023841858,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        417.1860046386719,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_2",
+            "rect_transform": {
+                "position": [
+                    217.18600463867188,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.100000023841858,
+                    1.100000023841858
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 20.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "I"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.100000023841858,
+                    1.0,
+                    1.100000023841858
+                ],
+                "translation": [
+                    2.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.3921568691730499
+                    ],
+                    "goal_position": [
+                        333.9909973144531,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.100000023841858,
+                        1.100000023841858,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        533.9910278320313,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_3",
+            "rect_transform": {
+                "position": [
+                    333.9910888671875,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.100000023841858,
+                    1.100000023841858
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 20.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "S"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    3.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.3921568691730499
+                    ],
+                    "goal_position": [
+                        501.90301513671875,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.100000023841858,
+                        1.100000023841858,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        701.9030151367188,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_4",
+            "rect_transform": {
+                "position": [
+                    501.90264892578125,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.100000023841858,
+                    1.100000023841858
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 20.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "S"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    4.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.3921568691730499
+                    ],
+                    "goal_position": [
+                        618.7080078125,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.100000023841858,
+                        1.100000023841858,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        818.7080078125,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_5",
+            "rect_transform": {
+                "position": [
+                    618.7080078125,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.100000023841858,
+                    1.100000023841858
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 20.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "I"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    5.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.3921568691730499
+                    ],
+                    "goal_position": [
+                        750.114990234375,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.100000023841858,
+                        1.100000023841858,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        750.114990234375,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_6",
+            "rect_transform": {
+                "position": [
+                    750.1148681640625,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.100000023841858,
+                    1.100000023841858
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 20.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "O"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    6.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.3921568691730499
+                    ],
+                    "goal_position": [
+                        936.2730102539063,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.100000023841858,
+                        1.100000023841858,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        936.2730102539063,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_7",
+            "rect_transform": {
+                "position": [
+                    936.2733154296875,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.100000023841858,
+                    1.100000023841858
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 20.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "N"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    7.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.3921568691730499
+                    ],
+                    "goal_position": [
+                        1211.2139892578125,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.100000023841858,
+                        1.100000023841858,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        1411.2139892578125,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_8",
+            "rect_transform": {
+                "position": [
+                    1211.2137451171875,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.100000023841858,
+                    1.100000023841858
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 20.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "C"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    8.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.3921568691730499
+                    ],
+                    "goal_position": [
+                        1381.5980224609375,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.100000023841858,
+                        1.100000023841858,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        1381.5980224609375,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_9",
+            "rect_transform": {
+                "position": [
+                    1381.5980224609375,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.100000023841858,
+                    1.100000023841858
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 20.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "L"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    9.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.3921568691730499
+                    ],
+                    "goal_position": [
+                        1533.0770263671875,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.100000023841858,
+                        1.100000023841858,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        1733.0770263671875,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_10",
+            "rect_transform": {
+                "position": [
+                    1533.077392578125,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.100000023841858,
+                    1.100000023841858
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 20.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "E"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    10.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.3921568691730499
+                    ],
+                    "goal_position": [
+                        1691.8609619140625,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.100000023841858,
+                        1.100000023841858,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        1891.8609619140625,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_11",
+            "rect_transform": {
+                "position": [
+                    1691.8609619140625,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.100000023841858,
+                    1.100000023841858
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 20.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "A"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    11.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "RectTransform",
+                "TextRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": true,
+                    "control_point_1": [
+                        0.25,
+                        1.0
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        1.0
+                    ],
+                    "duration": 0.4000000059604645,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.3921568691730499
+                    ],
+                    "goal_position": [
+                        1861.594970703125,
+                        540.0,
+                        0.0
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "goal_scale": [
+                        1.100000023841858,
+                        1.100000023841858,
+                        1.0
+                    ],
+                    "loop": false,
+                    "play_on_start": true,
+                    "position": true,
+                    "rotation": false,
+                    "scale": true,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "start_position": [
+                        2061.594970703125,
+                        540.0,
+                        0.0
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "group": "Clear",
+            "name": "MissionClear_12",
+            "rect_transform": {
+                "position": [
+                    1861.594970703125,
+                    540.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "text_renderer": {
+                "bold": true,
+                "character_spacing": 20.0,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "enable_post_effect": true,
+                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_size": 256,
+                "max_width": 0.0,
+                "mesh_offsets": [
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ],
+                    [
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "outline_color": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 1.0,
+                "text": "R"
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    12.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "RectTransform",
+                "SpriteRenderer"
+            ],
+            "group": "PlayerHUD",
+            "name": "scale_1",
+            "rect_transform": {
+                "position": [
+                    960.0,
+                    90.0
+                ],
+                "rotation": 0.0,
+                "scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "sprite_file_name": "Resource/reticle/scale.png",
+            "sprite_renderer": {
+                "color": [
+                    0.49803921580314636,
+                    0.49803921580314636,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "size": [
+                    700.0,
+                    700.0
+                ],
+                "uv_offset": [
+                    0.0,
+                    0.0
+                ],
+                "uv_rotation": 0.0,
+                "uv_scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "RectTransform",
+                "SpriteRenderer"
+            ],
+            "group": "PlayerHUD",
+            "name": "scale_2",
+            "rect_transform": {
+                "position": [
+                    1700.0,
+                    540.0
+                ],
+                "rotation": 1.5700000524520874,
+                "scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "sprite_file_name": "Resource/reticle/scale.png",
+            "sprite_renderer": {
+                "color": [
+                    0.49803921580314636,
+                    0.49803921580314636,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "size": [
+                    700.0,
+                    700.0
+                ],
+                "uv_offset": [
+                    0.0,
+                    0.0
+                ],
+                "uv_rotation": 0.0,
+                "uv_scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    1.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "RectTransform",
+                "SpriteRenderer"
+            ],
+            "group": "PlayerHUD",
+            "name": "scale_3",
+            "rect_transform": {
+                "position": [
+                    220.0,
+                    540.0
+                ],
+                "rotation": -1.5700000524520874,
+                "scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "sprite_file_name": "Resource/reticle/scale.png",
+            "sprite_renderer": {
+                "color": [
+                    0.49803921580314636,
+                    0.49803921580314636,
+                    1.0,
+                    1.0
+                ],
+                "emissive_color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "emissive_intensity": 0.0,
+                "size": [
+                    700.0,
+                    700.0
+                ],
+                "uv_offset": [
+                    0.0,
+                    0.0
+                ],
+                "uv_rotation": 0.0,
+                "uv_scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    2.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
         }
     ],
     "rail_camera_groups": [
@@ -6622,6 +10322,14 @@
             "direction_mode": 1,
             "name": "Clear",
             "preset_sequence": [
+                {
+                    "name": "停止",
+                    "rotate": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
                 {
                     "name": "停止",
                     "rotate": [

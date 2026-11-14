@@ -56,6 +56,8 @@ public:
 	void SetFlipY(bool isFlipY) { this->isFlipY_ = isFlipY; }
 	void SetTextureLeftTop(const Vector2& textureLeftTop) { this->textureLeftTop = textureLeftTop; }
 	void SetTextureSize(const Vector2& textureSize) { this->textureSize = textureSize; }
+	// テクスチャ切り出し後の UV に対して適用する正規化 UV 変換。
+	void SetUVTransform(const Vector2& scale, float rotation, const Vector2& offset);
 	// Offsets are in normalized local space, in row-major order from top-left to bottom-right.
 	void SetMeshOffsets(const std::array<Vector2, kMeshVertexCount>& offsets) { meshOffsets_ = offsets; }
 	const std::array<Vector2, kMeshVertexCount>& GetMeshOffsets() const { return meshOffsets_; }

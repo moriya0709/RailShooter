@@ -297,6 +297,19 @@ struct ParticleComponentData {
 	Vector3 localOffset = { 0.0f, 0.0f, 0.0f };
 };
 
+// TrailComponent のレベル保存用設定。1 設定につき 1 本のトレイルを生成する。
+struct TrailComponentData {
+	std::string texturePath = "Resource/trail/trail.png";
+	std::string presetPath;
+	Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	float width = 1.5f;
+	float lifetime = 1.5f;
+	float minDistance = 0.1f;
+	float emissive = 50.0f;
+	bool playOnStart = true;
+	Vector3 localOffset = { 0.0f, 0.0f, 0.0f };
+};
+
 struct ObjectData {
     std::string type;
     std::string name;
@@ -310,6 +323,10 @@ struct ObjectData {
 	Vector2 spriteSize = { 128.0f, 128.0f };
 	Vector3 spriteEmissiveColor = { 1.0f, 1.0f, 1.0f };
 	float spriteEmissiveIntensity = 0.0f;
+	Vector4 spriteColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	Vector2 spriteUVScale = { 1.0f, 1.0f };
+	Vector2 spriteUVOffset = { 0.0f, 0.0f };
+	float spriteUVRotation = 0.0f;
 	std::string text = "New Text";
 	std::string textFontFamily = "Meiryo UI";
 	int textFontSize = 32;
@@ -370,7 +387,11 @@ struct ObjectData {
 	// EasingComponent 専用。1 オブジェクトに複数の設定を持てる。
 	std::vector<EasingData> easings;
 	// ParticleComponent 専用。
+	// 1 オブジェクトに複数の発生設定を持てる。particle は旧レベル互換用の先頭設定。
+	std::vector<ParticleComponentData> particles;
 	ParticleComponentData particle;
+	// TrailComponent 専用。1 オブジェクトに複数の設定を持てる。
+	std::vector<TrailComponentData> trails;
 
 	// スポナー専用。カメラがこの距離まで近づくと出現タイマーを開始する。
 	float spawnDistance = 20.0f;

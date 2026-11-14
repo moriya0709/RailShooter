@@ -316,6 +316,8 @@ private:
 	// クリア演出
 	bool isClearAction = false;
 	float clearActiveTime_ = 2.0f;
+	int clearTextIndex_ = 12;
+	bool clearTextCompleted_ = false;
 
 
 	// レベルデータからオブジェクト生成、配置
@@ -330,6 +332,9 @@ private:
 
 	// Gizmo
 	void GizmoUpdate(bool showEditorControls);
+
+	// レベルに含まれていなくてもエラーにならないよう
+	void deactivate(GameObject* object);
 
 
 };

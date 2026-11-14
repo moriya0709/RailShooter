@@ -307,7 +307,7 @@ void EnemyNormal::OnCollisionBullet(int damage) {
 		// コンボ加算
 		ScoreManager::GetInstance()->AddCombo();
 		// ヒットストップ
-		HitStopManager::GetInstance()->Request(20, 0.25f);
+		HitStopManager::GetInstance()->Request(10, 0.25f);
 
 		// スコア演出
 		if (auto* comboObject = GameObject::FindByName("ComboText")) {

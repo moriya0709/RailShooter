@@ -143,6 +143,17 @@ void Level::LoadJson(const std::string fileName) {
 					newData.spriteEmissiveColor = { spriteRenderer["emissive_color"][0].get<float>(), spriteRenderer["emissive_color"][1].get<float>(),
 						spriteRenderer["emissive_color"][2].get<float>() };
 				}
+				if (spriteRenderer.contains("color") && spriteRenderer["color"].is_array() && spriteRenderer["color"].size() == 4) {
+					newData.spriteColor = { spriteRenderer["color"][0].get<float>(), spriteRenderer["color"][1].get<float>(),
+						spriteRenderer["color"][2].get<float>(), spriteRenderer["color"][3].get<float>() };
+				}
+				if (spriteRenderer.contains("uv_scale") && spriteRenderer["uv_scale"].is_array() && spriteRenderer["uv_scale"].size() == 2) {
+					newData.spriteUVScale = { spriteRenderer["uv_scale"][0].get<float>(), spriteRenderer["uv_scale"][1].get<float>() };
+				}
+				if (spriteRenderer.contains("uv_offset") && spriteRenderer["uv_offset"].is_array() && spriteRenderer["uv_offset"].size() == 2) {
+					newData.spriteUVOffset = { spriteRenderer["uv_offset"][0].get<float>(), spriteRenderer["uv_offset"][1].get<float>() };
+				}
+				newData.spriteUVRotation = spriteRenderer.value("uv_rotation", newData.spriteUVRotation);
 			}
 			if (object.contains("rect_transform")) {
 				const auto& rect = object["rect_transform"];
@@ -287,16 +298,48 @@ void Level::LoadJson(const std::string fileName) {
 				// 旧レベルの単一設定を、新形式の先頭設定として移行する。
 				newData.easings.push_back(readEasing(object["easing"]));
 			}
-			if (object.contains("particle") && object["particle"].is_object()) {
-				const auto& particle = object["particle"];
-				newData.particle.particleGroup = particle.value("group", newData.particle.particleGroup);
-				newData.particle.presetPath = particle.value("preset", newData.particle.presetPath);
-				newData.particle.count = (std::max)(1u, particle.value("count", newData.particle.count));
-				newData.particle.frequency = (std::max)(0.0f, particle.value("frequency", newData.particle.frequency));
-				newData.particle.overrideEmissionSettings = particle.value("override_emission_settings", newData.particle.overrideEmissionSettings);
-				newData.particle.playOnStart = particle.value("play_on_start", newData.particle.playOnStart);
+			auto readParticle = [](const nlohmann::json& particle) {
+				ParticleComponentData data{};
+				data.particleGroup = particle.value("group", data.particleGroup);
+				data.presetPath = particle.value("preset", data.presetPath);
+				data.count = (std::max)(1u, particle.value("count", data.count));
+				data.frequency = (std::max)(0.0f, particle.value("frequency", data.frequency));
+				data.overrideEmissionSettings = particle.value("override_emission_settings", data.overrideEmissionSettings);
+				data.playOnStart = particle.value("play_on_start", data.playOnStart);
 				if (particle.contains("local_offset") && particle["local_offset"].is_array() && particle["local_offset"].size() == 3) {
-					newData.particle.localOffset = { particle["local_offset"][0].get<float>(), particle["local_offset"][1].get<float>(), particle["local_offset"][2].get<float>() };
+					data.localOffset = { particle["local_offset"][0].get<float>(), particle["local_offset"][1].get<float>(), particle["local_offset"][2].get<float>() };
+				}
+				return data;
+			};
+			if (object.contains("particles") && object["particles"].is_array()) {
+				for (const auto& particle : object["particles"]) {
+					if (particle.is_object()) newData.particles.push_back(readParticle(particle));
+				}
+			} else if (object.contains("particle") && object["particle"].is_object()) {
+				// 旧レベルの単一設定を新しいリスト形式へ移行する。
+				newData.particles.push_back(readParticle(object["particle"]));
+			}
+			if (!newData.particles.empty()) {
+				newData.particle = newData.particles.front();
+			}
+			if (object.contains("trails") && object["trails"].is_array()) {
+				for (const auto& trail : object["trails"]) {
+					if (!trail.is_object()) continue;
+					TrailComponentData data{};
+					data.texturePath = trail.value("texture", data.texturePath);
+					data.presetPath = trail.value("preset", data.presetPath);
+					data.width = (std::max)(0.001f, trail.value("width", data.width));
+					data.lifetime = (std::max)(0.001f, trail.value("lifetime", data.lifetime));
+					data.minDistance = (std::max)(0.0f, trail.value("minimum_distance", data.minDistance));
+					data.emissive = (std::max)(0.0f, trail.value("emissive", data.emissive));
+					data.playOnStart = trail.value("play_on_start", data.playOnStart);
+					if (trail.contains("color") && trail["color"].is_array() && trail["color"].size() == 4) {
+						data.color = { trail["color"][0].get<float>(), trail["color"][1].get<float>(), trail["color"][2].get<float>(), trail["color"][3].get<float>() };
+					}
+					if (trail.contains("local_offset") && trail["local_offset"].is_array() && trail["local_offset"].size() == 3) {
+						data.localOffset = { trail["local_offset"][0].get<float>(), trail["local_offset"][1].get<float>(), trail["local_offset"][2].get<float>() };
+					}
+					newData.trails.push_back(data);
 				}
 			}
 
@@ -454,6 +497,10 @@ void Level::SaveJson(const std::string fileName) {
 			newObjJson["sprite_renderer"]["size"] = { obj.spriteSize.x, obj.spriteSize.y };
 			newObjJson["sprite_renderer"]["emissive_color"] = { obj.spriteEmissiveColor.x, obj.spriteEmissiveColor.y, obj.spriteEmissiveColor.z };
 			newObjJson["sprite_renderer"]["emissive_intensity"] = obj.spriteEmissiveIntensity;
+			newObjJson["sprite_renderer"]["color"] = { obj.spriteColor.x, obj.spriteColor.y, obj.spriteColor.z, obj.spriteColor.w };
+			newObjJson["sprite_renderer"]["uv_scale"] = { obj.spriteUVScale.x, obj.spriteUVScale.y };
+			newObjJson["sprite_renderer"]["uv_offset"] = { obj.spriteUVOffset.x, obj.spriteUVOffset.y };
+			newObjJson["sprite_renderer"]["uv_rotation"] = obj.spriteUVRotation;
 		}
 		if (std::find(obj.components.begin(), obj.components.end(), "RectTransform") != obj.components.end()) {
 			newObjJson["rect_transform"]["position"] = { obj.rectPosition.x, obj.rectPosition.y };
@@ -527,16 +574,39 @@ void Level::SaveJson(const std::string fileName) {
 			}
 		}
 		if (std::find(obj.components.begin(), obj.components.end(), "Particle") != obj.components.end()) {
-			auto& particle = newObjJson["particle"];
-			particle["group"] = obj.particle.particleGroup;
-			if (!obj.particle.presetPath.empty()) {
-				particle["preset"] = obj.particle.presetPath;
+			auto& particles = newObjJson["particles"];
+			particles = nlohmann::json::array();
+			const auto& settings = obj.particles.empty() ? std::vector<ParticleComponentData>{ obj.particle } : obj.particles;
+			for (const ParticleComponentData& particle : settings) {
+				nlohmann::json serialized = {
+					{ "group", particle.particleGroup },
+					{ "count", particle.count },
+					{ "frequency", particle.frequency },
+					{ "override_emission_settings", particle.overrideEmissionSettings },
+					{ "play_on_start", particle.playOnStart },
+					{ "local_offset", { particle.localOffset.x, particle.localOffset.y, particle.localOffset.z } }
+				};
+				if (!particle.presetPath.empty()) serialized["preset"] = particle.presetPath;
+				particles.push_back(std::move(serialized));
 			}
-			particle["count"] = obj.particle.count;
-			particle["frequency"] = obj.particle.frequency;
-			particle["override_emission_settings"] = obj.particle.overrideEmissionSettings;
-			particle["play_on_start"] = obj.particle.playOnStart;
-			particle["local_offset"] = { obj.particle.localOffset.x, obj.particle.localOffset.y, obj.particle.localOffset.z };
+		}
+		if (std::find(obj.components.begin(), obj.components.end(), "Trail") != obj.components.end()) {
+			auto& trails = newObjJson["trails"];
+			trails = nlohmann::json::array();
+			for (const TrailComponentData& trail : obj.trails) {
+				nlohmann::json serialized = {
+					{ "texture", trail.texturePath },
+					{ "color", { trail.color.x, trail.color.y, trail.color.z, trail.color.w } },
+					{ "width", trail.width },
+					{ "lifetime", trail.lifetime },
+					{ "minimum_distance", trail.minDistance },
+					{ "emissive", trail.emissive },
+					{ "play_on_start", trail.playOnStart },
+					{ "local_offset", { trail.localOffset.x, trail.localOffset.y, trail.localOffset.z } }
+				};
+				if (!trail.presetPath.empty()) serialized["preset"] = trail.presetPath;
+				trails.push_back(std::move(serialized));
+			}
 		}
 		if (!obj.components.empty()) {
 			newObjJson["components"] = obj.components;

@@ -9,6 +9,7 @@
 #include "RailPointComponent.h"
 #include "ObjectRailMovementComponent.h"
 #include "ParticleComponent.h"
+#include "TrailComponent.h"
 #include "EnemySpawnerComponent.h"
 #include "EasingComponent.h"
 #include "EnemyNormal.h"
@@ -953,6 +954,10 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 				auto* spriteRenderer = copyObject->AddComponent<SpriteRendererComponent>();
 				spriteRenderer->SetTexture(copyData.sprite_file_name.empty() ? "Resource/title/title.png" : copyData.sprite_file_name);
 				spriteRenderer->SetEmissive(copyData.spriteEmissiveColor, copyData.spriteEmissiveIntensity);
+				spriteRenderer->SetColor(copyData.spriteColor);
+				spriteRenderer->SetUVScale(copyData.spriteUVScale);
+				spriteRenderer->SetUVOffset(copyData.spriteUVOffset);
+				spriteRenderer->SetUVRotation(copyData.spriteUVRotation);
 			}
 			if (sourceObject->GetComponent<TextRendererComponent>()) {
 				if (!copyObject->GetComponent<RectTransformComponent>()) copyObject->AddComponent<RectTransformComponent>();
@@ -979,7 +984,11 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 					copyData.objectRailPointRotations, copyData.objectRailUsePointRotations);
 			}
 			if (sourceObject->GetComponent<ParticleComponent>()) {
-				copyObject->AddComponent<ParticleComponent>()->Configure(copyData.particle);
+				copyObject->AddComponent<ParticleComponent>()->Configure(
+					copyData.particles.empty() ? std::vector<ParticleComponentData>{ copyData.particle } : copyData.particles);
+			}
+			if (sourceObject->GetComponent<TrailComponent>()) {
+				copyObject->AddComponent<TrailComponent>()->Configure(copyData.trails);
 			}
 			if (sourceObject->GetComponent<EnemySpawnerComponent>()) {
 				auto* spawner = copyObject->AddComponent<EnemySpawnerComponent>();
@@ -1453,6 +1462,11 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 					if (ImGui::DragFloat2("Size", &spriteSize.x, 1.0f, 1.0f, 4096.0f)) {
 						spriteRenderer->SetSize(spriteSize);
 					}
+					Vector4 spriteColor = spriteRenderer->GetColor();
+					if (ImGui::ColorEdit4("Color##SpriteRenderer", &spriteColor.x)) {
+						spriteRenderer->SetColor(spriteColor);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].spriteColor = spriteColor;
+					}
 					Vector3 emissiveColor = spriteRenderer->GetEmissiveColor();
 					float emissiveIntensity = spriteRenderer->GetEmissiveIntensity();
 					bool emissiveChanged = ImGui::ColorEdit3("Emissive Color##SpriteRenderer", &emissiveColor.x);
@@ -1463,6 +1477,23 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 							auto& objectData = level->GetLevelData()->objects[selectedIndex];
 							objectData.spriteEmissiveColor = emissiveColor;
 							objectData.spriteEmissiveIntensity = emissiveIntensity;
+						}
+					}
+					Vector2 uvScale = spriteRenderer->GetUVScale();
+					Vector2 uvOffset = spriteRenderer->GetUVOffset();
+					float uvRotation = spriteRenderer->GetUVRotation();
+					bool uvChanged = ImGui::DragFloat2("UV Scale##SpriteRenderer", &uvScale.x, 0.01f, -10.0f, 10.0f);
+					uvChanged |= ImGui::DragFloat2("UV Offset##SpriteRenderer", &uvOffset.x, 0.01f);
+					uvChanged |= ImGui::DragFloat("UV Rotation##SpriteRenderer", &uvRotation, 0.01f, -6.28318f, 6.28318f);
+					if (uvChanged) {
+						spriteRenderer->SetUVScale(uvScale);
+						spriteRenderer->SetUVOffset(uvOffset);
+						spriteRenderer->SetUVRotation(uvRotation);
+						if (selectedIndex != -1) {
+							auto& objectData = level->GetLevelData()->objects[selectedIndex];
+							objectData.spriteUVScale = uvScale;
+							objectData.spriteUVOffset = uvOffset;
+							objectData.spriteUVRotation = uvRotation;
 						}
 					}
 				}
@@ -1678,7 +1709,16 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 			if (auto* particle = selectedObject->GetComponent<ParticleComponent>()) {
 				if (ImGui::CollapsingHeader("Particle", ImGuiTreeNodeFlags_DefaultOpen)) {
 					if (DrawParticleComponentInspector(*particle) && selectedIndex != -1) {
-						level->GetLevelData()->objects[selectedIndex].particle = particle->GetSettings();
+						auto& data = level->GetLevelData()->objects[selectedIndex];
+						data.particles = particle->GetSettings();
+						data.particle = data.particles.front();
+					}
+				}
+			}
+			if (auto* trail = selectedObject->GetComponent<TrailComponent>()) {
+				if (ImGui::CollapsingHeader("Trail", ImGuiTreeNodeFlags_DefaultOpen)) {
+					if (DrawTrailComponentInspector(*trail) && selectedIndex != -1) {
+						level->GetLevelData()->objects[selectedIndex].trails = trail->GetSettings();
 					}
 				}
 			}
@@ -1911,9 +1951,15 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 					addSerializedComponent("ObjectRailMovement");
 				}
 				if (!selectedObject->GetComponent<ParticleComponent>() && ImGui::Button("Particle")) {
-					objectData.particle = ParticleComponentData{};
-					selectedObject->AddComponent<ParticleComponent>()->Configure(objectData.particle);
+					objectData.particles = { ParticleComponentData{} };
+					objectData.particle = objectData.particles.front();
+					selectedObject->AddComponent<ParticleComponent>()->Configure(objectData.particles);
 					addSerializedComponent("Particle");
+				}
+				if (!selectedObject->GetComponent<TrailComponent>() && ImGui::Button("Trail")) {
+					objectData.trails = { TrailComponentData{} };
+					selectedObject->AddComponent<TrailComponent>()->Configure(objectData.trails);
+					addSerializedComponent("Trail");
 				}
 				if (!selectedObject->GetComponent<EnemySpawnerComponent>() && ImGui::Button("Enemy Spawner")) {
 					auto* spawner = selectedObject->AddComponent<EnemySpawnerComponent>();

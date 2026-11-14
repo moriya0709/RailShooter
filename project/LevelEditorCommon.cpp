@@ -13,6 +13,7 @@
 #include "ObjectRailMovementComponent.h"
 #include "EasingComponent.h"
 #include "ParticleComponent.h"
+#include "TrailComponent.h"
 #include "EnemySpawnerComponent.h"
 #include "EnemyNormal.h"
 #include "SceneManager.h"
@@ -88,6 +89,10 @@ void DrawComponentRemovalInspector(GameObject& object, ObjectData& objectData) {
 	if (object.GetComponent<ParticleComponent>() && ImGui::Button("Remove Particle")) {
 		object.RemoveComponent<ParticleComponent>();
 		removeSerializedComponent("Particle");
+	}
+	if (object.GetComponent<TrailComponent>() && ImGui::Button("Remove Trail")) {
+		object.RemoveComponent<TrailComponent>();
+		removeSerializedComponent("Trail");
 	}
 	if (object.GetComponent<EnemySpawnerComponent>()) {
 		if (isSpawner) {

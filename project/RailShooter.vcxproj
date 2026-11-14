@@ -110,6 +110,8 @@
     <ClCompile Include="PlayerBulletMissile.cpp" />
     <ClCompile Include="PlayerBulletNormal.cpp" />
     <ClCompile Include="ParticleComponent.cpp" />
+
+    <ClCompile Include="TrailComponent.cpp" />
     <ClCompile Include="ParticlePreviewEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -403,6 +405,8 @@
     <ClInclude Include="PlayerBulletMissile.h" />
     <ClInclude Include="PlayerBulletNormal.h" />
     <ClInclude Include="ParticleComponent.h" />
+
+    <ClInclude Include="TrailComponent.h" />
     <ClInclude Include="ParticlePreviewEditor.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TransformComponent.h" />

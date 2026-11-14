@@ -14,16 +14,7 @@ void ScoreManager::Initialize() {
 void ScoreManager::Update() {
 	scoreMultiplier = 1.0f + (combo / 10.0f); // コンボ数に応じてスコア倍率を計算
 
-	// スピードキル評価に応じたスコア加算値を設定
-	if (rating == "Normal") {
-		ratingScore = kRatingScores[0];
-	} else if (rating == "Good") {
-		ratingScore = kRatingScores[1];
-	} else if (rating == "Great") {
-		ratingScore = kRatingScores[2];
-	} else if (rating == "Perfect") {
-		ratingScore = kRatingScores[3];
-	}
+	UpdateRatingScore();
 
 	// ランクはコンボ倍率ではなく、プレイで獲得した総スコアから決める。
 	if (score >= rankThresholds[4]) {
@@ -36,6 +27,26 @@ void ScoreManager::Update() {
 		rank = "B";
 	} else {
 		rank = "C";
+	}
+}
+
+void ScoreManager::SetRating(const std::string& newRating) {
+	rating = newRating;
+	// 撃破処理は ScoreManager::Update の後に起きるため、次フレームを
+	// 待たずに加点とUI表示へ今回の評価点を渡す。
+	UpdateRatingScore();
+}
+
+void ScoreManager::UpdateRatingScore() {
+	// スピードキル評価に応じたスコア加算値を設定
+	if (rating == "Normal") {
+		ratingScore = kRatingScores[0];
+	} else if (rating == "Good") {
+		ratingScore = kRatingScores[1];
+	} else if (rating == "Great") {
+		ratingScore = kRatingScores[2];
+	} else if (rating == "Perfect") {
+		ratingScore = kRatingScores[3];
 	}
 }
 

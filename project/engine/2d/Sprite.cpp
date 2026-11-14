@@ -188,6 +188,14 @@ void Sprite::DrawPostEffectMask() {
 	Draw();
 }
 
+void Sprite::SetUVTransform(const Vector2& scale, float rotation, const Vector2& offset) {
+	if (!materialData) return;
+	const Matrix4x4 scaleMatrix = MakeScaleMatrix({ scale.x, scale.y, 1.0f });
+	const Matrix4x4 rotationMatrix = MakeRotateZMatrix(rotation);
+	const Matrix4x4 translationMatrix = MakeTranslateMatrix({ offset.x, offset.y, 0.0f });
+	materialData->uvTransform = Multiply(Multiply(scaleMatrix, rotationMatrix), translationMatrix);
+}
+
 // テクスチャ変更
 void Sprite::ChangeTexture(const std::string& textureFilePath) {
 	textureFilePath_ = textureFilePath;

@@ -4,9 +4,12 @@
 #include "CommonStructs.h"
 #include "ParticleEmitter.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
+#include <vector>
 
-// Owns one ParticleEmitter and keeps its emission point attached to the owner.
+// Owns multiple ParticleEmitters and keeps their emission points attached to the owner.
 // Particle groups are created by Game during startup; the group name selects one
 // of those shared meshes/materials while the emitter settings stay per object.
 class ParticleComponent : public Component {
@@ -18,12 +21,13 @@ public:
 	int GetUpdateOrder() const override { return 100; }
 
 	void Configure(const ParticleComponentData& data);
-	const ParticleComponentData& GetSettings() const { return settings_; }
-	bool HasEmitter() const { return emitter_ != nullptr; }
-	bool HasValidParticleGroup() const;
+	void Configure(const std::vector<ParticleComponentData>& data);
+	const std::vector<ParticleComponentData>& GetSettings() const { return settings_; }
+	bool HasEmitter() const;
+	bool HasValidParticleGroup(size_t index) const;
 
-	void SetPlaying(bool playing) { playing_ = playing; }
-	bool IsPlaying() const { return playing_; }
+	void SetPlaying(bool playing);
+	bool IsPlaying() const;
 	// Off by default to retain world-space offsets for existing particle effects.
 	// Enable only for effects that must follow the owner's facing direction.
 	void SetLocalOffsetFollowsOwnerRotation(bool enabled) { localOffsetFollowsOwnerRotation_ = enabled; }
@@ -35,14 +39,14 @@ private:
 	void EnsureEmitter();
 	void SyncEmitterPosition();
 
-	ParticleComponentData settings_{};
-	std::unique_ptr<ParticleEmitter> emitter_;
-	bool playing_ = true;
+	std::vector<ParticleComponentData> settings_;
+	std::vector<std::unique_ptr<ParticleEmitter>> emitters_;
+	std::vector<bool> playing_;
 	bool needsRecreate_ = true;
 	bool localOffsetFollowsOwnerRotation_ = false;
-	uint32_t baseEmissionCount_ = 1;
-	float baseEmissionFrequency_ = 0.0f;
-	bool hasBaseEmissionSettings_ = false;
+	std::vector<uint32_t> baseEmissionCounts_;
+	std::vector<float> baseEmissionFrequencies_;
+	std::vector<bool> hasBaseEmissionSettings_;
 };
 
 #ifdef USE_IMGUI

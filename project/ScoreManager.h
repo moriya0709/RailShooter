@@ -58,7 +58,7 @@ public:
 	static ScoreManager* GetInstance();
 
 	// スピードキル評価の設定
-	void SetRating(const std::string& newRating) { rating = newRating; }
+	void SetRating(const std::string& newRating);
 
 private:
 	int score = 0;
@@ -72,6 +72,7 @@ private:
 	std::vector<int> kRatingScores = { 0,1000,3000,5000 };
 	int ratingScore = 0; // キルの速度に応じたスコア加算値
 	std::string rating = "Normal"; // キルの速度に応じた評価(Normal, Good, Great, Perfect)
+	void UpdateRatingScore();
 
 	// ランク
 	std::string rank = "C";

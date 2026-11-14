@@ -25,6 +25,7 @@
 #include "Enemy.h"
 #include "CollisionManager.h"
 #include "Line.h"
+#include "Calc.h"
 
 using namespace DirectX;
 
@@ -205,9 +206,11 @@ private:
 	float glitchWaveSpeed = 5.0f;      // アニメーションの波の速さ (目安: 5.0f 程度)
 	float glitchWaveThreshold = 0.0f;  // エフェクトが止まる境界値 (0.0fにすると常に止まらない)
 
+	float intensity = 0.0f; // エフェクトの強さ
+
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
-	Vector3 rayMarchingSunDir = { 0.0f, 0.15f, -1.0f };
+	Vector3 rayMarchingSunDir = { -0.13f, -0.16f, -1.0f };
 	float rayMarchingCloudCoverage = 0.22f;
 	float rayMarchingCloudBottom = -330.0f;
 	float rayMarchingCloudTop = -1000.0f;
@@ -278,6 +281,11 @@ private:
 	};
 	float width = 0.1f; // 弾の幅
 	float trailMaxLifeTime = 1.0f; // トレイルの寿命
+
+	// フェード
+	bool isFadeIn = false;
+	bool isFadeOut = false;
+	float fadeTime = 30.0f;
 
 	// レベルデータからオブジェクト生成、配置
 	void CreateLevel();

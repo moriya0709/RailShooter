@@ -22,11 +22,24 @@ void Player::Initialize() {
 		reticleTransform[index] = reticleObject[index]->GetComponent<RectTransformComponent>();
 	}
 
+	// 目盛り
+	scaleObject[0] = GameObject::FindByName("scale_1");
+	scaleObject[1] = GameObject::FindByName("scale_2");
+	scaleObject[2] = GameObject::FindByName("scale_3");
+
+	for (int index = 0; index < 3; ++index) {
+		if (!scaleObject[index]) {
+			OutputDebugStringA("Player: scale object is missing from the level.\n");
+			continue;
+		}
+		scaleSprite[index] = scaleObject[index]->GetComponent<SpriteRendererComponent>();
+	}
+
 	// 矢印の初期化
-	arrow = std::make_unique<Sprite>();
-	arrow->Initialize("Resource/arrow/arrow.png");
-	arrow->SetSize({ 100.0f, 100.0f });
-	arrow->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f });
+	arrowObject = GameObject::FindByName("arrow");
+	if (arrowObject) {
+		arrowTransform = arrowObject->GetComponent<RectTransformComponent>();
+	}
 
 	// 初期状態を Normal に設定
 	currentState = Normal;
@@ -74,11 +87,6 @@ void Player::ResetRailOffset() {
 }
 
 void Player::Draw() {
-	
-	// 矢印の描画
-	if (isArrowActive) {
-		arrow->Draw();
-	}
 }
 
 void Player::UpdateReticle() {
@@ -92,6 +100,14 @@ void Player::UpdateReticle() {
 	reticleRotation[0].z = rotate_.z * reticleRotationMultiplier[0];
 	reticleRotation[1].z = rotate_.z * reticleRotationMultiplier[1];
 	reticleRotation[2].z = rotate_.z * reticleRotationMultiplier[2];
+
+	// 目盛りスクロール
+	scaleUVOffset[0].x = rotate_.y;
+	scaleUVOffset[1].x = rotate_.x;
+	scaleUVOffset[2].x = rotate_.x;
+	scaleSprite[0]->SetUVOffset(scaleUVOffset[0]);
+	scaleSprite[1]->SetUVOffset(scaleUVOffset[1]);
+	scaleSprite[2]->SetUVOffset(scaleUVOffset[2]);
 
 	Vector3 targetReticlePos = { 960.0f, 540.0f, 0.0f };
 	Vector3 targetReticleSize = { 700.0f, 700.0f, 0.0f };
@@ -147,7 +163,7 @@ void Player::UpdateReticle() {
 		lockedTarget != nullptr &&
 		lockOnTimer >= requiredLockOnTime;
 
-	isArrowActive = false;
+	arrowObject->SetActive(false);
 	if (!isLockedOn && indicatorTarget && !indicatorTarget->IsDead()) {
 		const Vector3 targetPos = indicatorTarget->GetTranslate();
 		const float clipX = targetPos.x * viewProjMat.m[0][0] + targetPos.y * viewProjMat.m[1][0] + targetPos.z * viewProjMat.m[2][0] + viewProjMat.m[3][0];
@@ -176,13 +192,13 @@ void Player::UpdateReticle() {
 			direction.x /= length;
 			direction.y /= length;
 
-			arrow->SetPosition({
+			arrowTransform->position = {
 				center.x + direction.x * arrowRadius,
 				center.y + direction.y * arrowRadius,
-			});
-			arrow->SetRotation(std::atan2(direction.y, direction.x));
-			arrow->Update();
-			isArrowActive = true;
+			};
+			arrowTransform->rotation = std::atan2(direction.y, direction.x);
+			arrowObject->SetActive(true);
+			arrowObject->Update();
 		}
 	}
 

@@ -127,10 +127,15 @@ private:
     Vector3 reticleRotation[3] = { { 0.0f },{ 0.0f }, {0.0f} };
 	float reticleRotationMultiplier[3] = { 5.0f, 1.0f, 3.0f }; // レティクルの回転角度に対する倍率
 
+    // 目盛り
+    GameObject* scaleObject[3]{};
+    SpriteRendererComponent* scaleSprite[3]{};
+	Vector2 scaleUVOffset[3] = { { 0.0f, 0.0f },{ 0.0f, 0.0f },{ 0.0f, 0.0f } };
+    
     // 矢印
     Enemy* indicatorTarget = nullptr;
-	std::unique_ptr <Sprite> arrow;
-	bool isArrowActive = true;
+    GameObject* arrowObject = nullptr;
+    RectTransformComponent* arrowTransform = nullptr;
 
     // 当たったか
     bool isHit = false;

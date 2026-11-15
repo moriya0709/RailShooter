@@ -284,7 +284,10 @@ ModelData ParticleManager::LoadObjFile(const std::string& directoryPath, const s
 	std::string line; // ファイルから読んだ1行を格納するもの
 
 	std::ifstream file(directoryPath + "/" + filename); // ファイルを開く
-	assert(file.is_open()); // とりあえず開けなかったら止める
+	if (!file.is_open()) {
+		OutputDebugStringA(("ParticleManager: unable to open particle model: " + directoryPath + "/" + filename + "\n").c_str());
+		return modelData;
+	}
 
 	while (std::getline(file, line)) {
 		std::string identifier;
@@ -522,6 +525,10 @@ void ParticleManager::CreateParticleGroup(const std::string& groupName, const st
 
 	ParticleGroup newGroup;
 	newGroup.modelData = LoadObjFile(directoryPath, filename);
+	if (newGroup.modelData.vertices.empty()) {
+		OutputDebugStringA(("ParticleManager: particle group has no vertices: " + groupName + "\n").c_str());
+		return;
+	}
 
 	// ★ 現在の Initialize 内にある「頂点バッファの作成」「VBVの設定」「マップしてコピー」の処理をここに書く
 	newGroup.vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * newGroup.modelData.vertices.size());
@@ -755,6 +762,10 @@ void ParticleManager::CreateParticleGroup(const std::string& groupName, const st
 
 	ParticleGroup newGroup;
 	newGroup.modelData.vertices = vertices; // 頂点配列をそのまま代入
+	if (newGroup.modelData.vertices.empty()) {
+		OutputDebugStringA(("ParticleManager: particle group has no vertices: " + groupName + "\n").c_str());
+		return;
+	}
 
 	// ★ 現在の Initialize 内にある「頂点バッファの作成」「VBVの設定」「マップしてコピー」の処理をここに書く
 	newGroup.vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * newGroup.modelData.vertices.size());

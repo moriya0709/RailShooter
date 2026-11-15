@@ -33,6 +33,10 @@ public:
 	void SetLocalOffsetFollowsOwnerRotation(bool enabled) { localOffsetFollowsOwnerRotation_ = enabled; }
 	// 1.0 preserves the preset rate; lower values extend the emission interval.
 	void SetEmissionRateScale(float scale);
+	// 指定した設定番号のエミッタだけを即時発生させる。0 が先頭の設定。
+	// 存在しない index や無効な particle group の場合は false を返す。
+	bool Emit(size_t index);
+	// 既存コードとの互換用。登録済みの全エミッタを即時発生させる。
 	void Emit();
 
 private:

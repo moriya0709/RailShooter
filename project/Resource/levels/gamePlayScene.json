@@ -36,7 +36,7 @@
                 ],
                 "translation": [
                     0.0,
-                    -64.66317749023438,
+                    -214.30873107910156,
                     167.4550018310547
                 ]
             },
@@ -812,7 +812,7 @@
                 ],
                 "translation": [
                     0.0,
-                    -64.66317749023438,
+                    -202.30873107910156,
                     167.4550018310547
                 ]
             },
@@ -2733,7 +2733,20 @@
                     ],
                     "override_emission_settings": false,
                     "play_on_start": false,
-                    "preset": "Resource/particle/fire.csv"
+                    "preset": "Resource/particle/death.csv"
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/death2.csv"
                 }
             ],
             "transform": {
@@ -3417,8 +3430,8 @@
                 ],
                 "rotation": 0.0,
                 "scale": [
-                    1.0895540714263916,
-                    1.0895540714263916
+                    2.288818359375e-05,
+                    2.288818359375e-05
                 ]
             },
             "text_renderer": {
@@ -3671,10 +3684,10 @@
                     1536.5489501953125,
                     152.92396545410156
                 ],
-                "rotation": 0.026866227388381958,
+                "rotation": -0.2999931573867798,
                 "scale": [
-                    1.0895540714263916,
-                    1.0895540714263916
+                    2.288818359375e-05,
+                    2.288818359375e-05
                 ]
             },
             "text_renderer": {
@@ -3924,13 +3937,13 @@
             "name": "KillScore",
             "rect_transform": {
                 "position": [
-                    1536.5489501953125,
-                    320.0
+                    426.859375,
+                    151.39385986328125
                 ],
                 "rotation": 0.0,
                 "scale": [
-                    1.0895540714263916,
-                    1.0895540714263916
+                    0.5000114440917969,
+                    0.5000114440917969
                 ]
             },
             "text_renderer": {
@@ -10199,13 +10212,13 @@
             "name": "arrow",
             "rect_transform": {
                 "position": [
-                    608.8912963867188,
-                    348.3683776855469
+                    600.3788452148438,
+                    364.8639831542969
                 ],
-                "rotation": -2.6419873237609863,
+                "rotation": -2.6883978843688965,
                 "scale": [
-                    0.9925376176834106,
-                    0.9925376176834106
+                    0.7625092267990112,
+                    0.7625092267990112
                 ]
             },
             "sprite_file_name": "Resource/arrow/arrow.png",
@@ -157254,6 +157267,117 @@
                 ]
             },
             "type": "MESH"
+        },
+        {
+            "active": false,
+            "components": [
+                "ModelRenderer",
+                "Easing"
+            ],
+            "easings": [
+                {
+                    "color": false,
+                    "control_point_1": [
+                        0.25,
+                        0.25
+                    ],
+                    "control_point_2": [
+                        0.75,
+                        0.75
+                    ],
+                    "duration": 0.5,
+                    "goal_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "goal_position": [
+                        1.0,
+                        0.0,
+                        -140240.46875
+                    ],
+                    "goal_rotation": [
+                        0.0,
+                        0.0,
+                        6.28000020980835
+                    ],
+                    "goal_scale": [
+                        0.30000001192092896,
+                        0.30000001192092896,
+                        0.30000001192092896
+                    ],
+                    "loop": true,
+                    "play_on_start": true,
+                    "position": false,
+                    "rotation": true,
+                    "scale": false,
+                    "start_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "start_position": [
+                        1.0,
+                        0.0,
+                        -140240.46875
+                    ],
+                    "start_rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "start_scale": [
+                        0.30000001192092896,
+                        0.30000001192092896,
+                        0.30000001192092896
+                    ],
+                    "use_game_time": true
+                }
+            ],
+            "file_name": "F-16A_FightingFalcon.dat.obj",
+            "group": "Enemy",
+            "model_renderer": {
+                "color_override": [
+                    0.03921568766236305,
+                    0.03921568766236305,
+                    0.03921568766236305,
+                    1.0
+                ],
+                "color_override_enabled": true,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": true,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "EnemyNormal_Death",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    0.30000001192092896,
+                    0.30000001192092896,
+                    0.30000001192092896
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
         }
     ],
     "rail_camera_groups": [

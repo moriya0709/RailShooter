@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <cstddef>
 #include <memory>
@@ -21,8 +21,13 @@ void DrawToolbar(Level& level, const std::vector<std::unique_ptr<GameObject>>& l
 
 // Draws the city-generation controls and appends the generated buildings to the level.
 // The generated objects use random positions within the user-specified 3D bounds.
-void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& levelObjects,
-	GameObject*& selectedObject);
+void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& levelObjects,GameObject*& selectedObject);
+
+std::vector<std::string> GetCityBuildingModelsL();
+std::vector<std::string> GetCityBuildingModelsM();
+std::vector<std::string> GetCityBuildingModelsS();
+std::vector<std::string> GetModelsFromDirectory(const std::string& directoryPath);
+
 
 // Applies saved LOD settings. Legacy objects in the city group also receive the
 // conventional city/Higth, city/Medium and city/Low variants automatically.

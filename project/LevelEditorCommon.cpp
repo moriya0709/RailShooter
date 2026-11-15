@@ -213,9 +213,13 @@ void UpdateEnemyCollisions(Player& player,
 
 				// ヒットエフェクト
 				if (auto* hitParticle = enemyObject->GetComponent<ParticleComponent>()) {
-					enemy->GetTranslate();
-					hitParticle->Emit();
+					hitParticle->Emit(0);
 
+					// デスエフェクト
+					if (enemy->IsDead()) {
+						hitParticle->Emit(2);
+						hitParticle->Emit(3);
+					}
 
 				}
 			}

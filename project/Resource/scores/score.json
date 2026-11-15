@@ -2,7 +2,15 @@
     "ranking": [
         {
             "name": "PLAYER",
+            "score": 120205
+        },
+        {
+            "name": "PLAYER",
             "score": 76319
+        },
+        {
+            "name": "PLAYER",
+            "score": 62749
         },
         {
             "name": "PLAYER",
@@ -31,14 +39,6 @@
         {
             "name": "PLAYER",
             "score": 44459
-        },
-        {
-            "name": "PLAYER",
-            "score": 44439
-        },
-        {
-            "name": "PLAYER",
-            "score": 44329
         }
     ]
 }

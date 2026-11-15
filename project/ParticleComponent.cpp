@@ -155,6 +155,16 @@ void ParticleComponent::Emit() {
 	}
 }
 
+bool ParticleComponent::Emit(size_t index) {
+	EnsureEmitter();
+	SyncEmitterPosition();
+	if (index >= emitters_.size() || !emitters_[index]) {
+		return false;
+	}
+	emitters_[index]->Emit();
+	return true;
+}
+
 #ifdef USE_IMGUI
 #include <externals/imgui/imgui.h>
 
@@ -184,6 +194,9 @@ bool DrawParticleComponentInspector(ParticleComponent& component) {
 		ParticleComponentData& settings = settingsList[index];
 		const std::string label = "Particle " + std::to_string(index + 1);
 		if (ImGui::CollapsingHeader(label.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+			if (ImGui::Button("Emit This Setting")) {
+				component.Emit(index);
+			}
 			if (!component.HasValidParticleGroup(index)) {
 				ImGui::TextColored(ImVec4(1.0f, 0.35f, 0.35f, 1.0f),
 					"Unknown particle group: %s", settings.particleGroup.c_str());

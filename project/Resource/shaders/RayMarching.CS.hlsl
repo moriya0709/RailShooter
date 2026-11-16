@@ -391,7 +391,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 skyRayDir = normalize(rayDir + float3(0, horizonHeight, 0));
     float3 skyColor = CalculateAtmosphere(cameraPos, skyRayDir, normalizedSunDir);
 
-    float3 ambientRayDir = normalize(float3(rayDir.x, max(rayDir.y, 0.05), rayDir.z));
+    float3 ambientRayDir = normalize(float3(rayDir.x, max(rayDir.y, 0.2), rayDir.z));
     float3 cloudAmbientSkyColor = CalculateAtmosphere(cameraPos, ambientRayDir, normalizedSunDir);
 
     float sunHeight = normalizedSunDir.y;

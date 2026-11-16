@@ -757,7 +757,35 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 		}
 	}
 
+	// 残骸
+	for (const auto& enemyObject : enemies) {
+		auto* emeny = enemyObject->GetComponent<Enemy>();
+		if (emeny && emeny->IsDefeated()) {
+			if (auto* debris = GameObject::FindByName("EnemyNormal_Death")) {
+				debris->SetActive(true);
+				if (auto* debrisTransform = debris->GetComponent<TransformComponent>()) {
+					debrisTransform->SetTranslate(emeny->GetTransform().translate);
+					debrisTransform->SetRotate(emeny->GetTransform().rotate);
+					debrisTransform->SetScale(emeny->GetTransform().scale);
+				}
+			}
+		}
+	}
+
+	if (auto* debris = GameObject::FindByName("EnemyNormal_Death")) {
+		if (auto* debrisTransform = debris->GetComponent<TransformComponent>()) {
+			Vector3 rotation = debrisTransform->GetRotate();
+			rotation.z = std::remainder(
+				rotation.z + 6.28f * deltaTime,
+				2.0f * 3.14f);
+			debrisTransform->SetRotate(rotation);
+		}
+	}
+
 	if (isClearAction) {
+		auto* arrowObject = GameObject::FindByName("arrow");
+		deactivate(arrowObject);
+
 		if (activeRailGroupName_ == "StageRailCamera") {
 			if (clearActiveTime_ > 0.0f) {
 				clearActiveTime_ -= 1.0f / 60.0f;
@@ -777,7 +805,6 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					auto* scaleObject1 = GameObject::FindByName("scale_1");
 					auto* scaleObject2 = GameObject::FindByName("scale_2");
 					auto* scaleObject3 = GameObject::FindByName("scale_3");
-					auto* arrowObject = GameObject::FindByName("arrow");
 
 					deactivate(reticle_1);
 					deactivate(reticle_2);
@@ -793,7 +820,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					deactivate(scaleObject1);
 					deactivate(scaleObject2);
 					deactivate(scaleObject3);
-					deactivate(arrowObject);
+
 				}
 			} else {
 				// クリア演出の開始

@@ -302,12 +302,18 @@ struct TrailComponentData {
 	std::string texturePath = "Resource/trail/trail.png";
 	std::string presetPath;
 	Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	Vector4 finalColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	float width = 1.5f;
 	float lifetime = 1.5f;
 	float minDistance = 0.1f;
 	float emissive = 50.0f;
+	// パーティクルと同様に、各 RGBA 要素を終了色へ補間するか指定する。
+	Vector4Int isColorChange = { 0, 0, 0, 0 };
+	float colorChangeSpeed = 1.0f;
 	bool playOnStart = true;
 	Vector3 localOffset = { 0.0f, 0.0f, 0.0f };
+	// 機体のノズルなど、オフセットをオーナーの姿勢に追従させる。
+	bool localOffsetFollowsOwnerRotation = true;
 };
 
 struct ObjectData {

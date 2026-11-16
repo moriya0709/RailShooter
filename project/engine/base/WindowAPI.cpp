@@ -89,6 +89,13 @@ void WindowAPI::Update() {
 	if (input->TriggerKey(DIK_F11)) {
 		ToggleFullscreen();
 	}
+
+	// カーソル中心固定
+	if (isCursorFixed_) {
+		POINT pt = { kClientWidth / 2, kClientHeight / 2 };
+		ClientToScreen(hwnd, &pt);
+		SetCursorPos(pt.x, pt.y);
+	}
 }
 
 void WindowAPI::Finalize() {

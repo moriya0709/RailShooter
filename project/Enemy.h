@@ -28,7 +28,8 @@ public:
 
 	virtual void SetTransform(const Transform& transform) = 0;
 
-	virtual Vector3 GetTranslate() const = 0;
+	virtual Transform GetTransform() const = 0;
+	virtual bool IsDefeated() const = 0;
 	virtual void OnCollisionBullet(int damage) = 0;
 	virtual bool IsDead() const = 0;
 	virtual bool IsHit() const = 0;

@@ -34,6 +34,9 @@ public:
 	void ToggleFullscreen();
 	void SetFullscreen(bool fullscreen);
 
+	// カーソル固定
+	bool SetCursorFixed_(bool isCursorFixed) { return isCursorFixed_ = isCursorFixed; }
+
 private:
 	// ウィンドウハンドル
 	HWND hwnd = nullptr;
@@ -43,6 +46,9 @@ private:
 	// フルスクリーン状態
 	bool isFullscreen_ = false;
 	RECT windowRect_{}; // 元のウィンドウサイズ保存
+
+	// カーソル固定
+	bool isCursorFixed_ = false;
 
 };
 

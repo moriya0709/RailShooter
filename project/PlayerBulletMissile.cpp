@@ -67,7 +67,7 @@ void PlayerBulletMissile::Update() {
 
 	// 1. ロックオン対象に向かって中心軸 (centerPos) の進行方向を変更
 	if (target_ && !target_->IsDead()) {
-		Vector3 dir = target_->GetTranslate() - centerPos;
+		Vector3 dir = target_->GetTransform().translate - centerPos;
 		float length = std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
 
 		if (length > 0.001f) {

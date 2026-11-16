@@ -310,7 +310,6 @@ void DrawBuildingLodInspector(ModelRendererComponent& renderer, ObjectData& obje
 #endif
 }
 
-#ifdef USE_IMGUI
 // 簡易的なAABB衝突判定用構造体
 struct BoundingBox {
 	float minX, minZ;
@@ -322,6 +321,7 @@ struct BoundingBox {
 };
 
 void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& levelObjects, GameObject*& selectedObject) {
+#ifdef USE_IMGUI
 	CityGeneratorSettings& settings = GetCityGeneratorSettings();
 	ImGui::SetNextWindowSize(ImVec2(400.0f, 600.0f), ImGuiCond_FirstUseEver);
 	if (!ImGui::Begin("City Generator")) {

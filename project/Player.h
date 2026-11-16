@@ -151,7 +151,7 @@ private:
     // 6連射ミサイル制御用パラメータ
     Enemy* previousLockedTarget = nullptr; // 前フレームのターゲット保持用
     float lockOnTimer = 0.0f;              // ロックオン継続時間
-    float requiredLockOnTime = 1.0f;       // ミサイル発射に必要なロックオン時間（秒）
+    float requiredLockOnTime = 2.0f;       // ミサイル発射に必要なロックオン時間（秒）
     int remainingMissiles = 0;       // 残りの発射可能数
     float missileBurstTimer = 0.0f;  // 次のミサイル発射までのタイマー
     float missileInterval = 0.3f;   // ミサイル同士の発射間隔（秒）
@@ -161,6 +161,9 @@ private:
 
     // 操作不可
 	bool isMoveEnabled_ = true;
+
+    // マウス感度
+    const float sensitivity = 0.1f;
 
     // 移動
     void Move();

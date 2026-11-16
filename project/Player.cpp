@@ -113,7 +113,7 @@ void Player::UpdateReticle() {
 	Vector3 targetReticleSize = { 700.0f, 700.0f, 0.0f };
 
 	if (lockedTarget && !lockedTarget->IsDead()) {
-		const Vector3 targetPos = lockedTarget->GetTranslate();
+		const Vector3 targetPos = lockedTarget->GetTransform().translate;
 		const float clipX = targetPos.x * viewProjMat.m[0][0] + targetPos.y * viewProjMat.m[1][0] + targetPos.z * viewProjMat.m[2][0] + viewProjMat.m[3][0];
 		const float clipY = targetPos.x * viewProjMat.m[0][1] + targetPos.y * viewProjMat.m[1][1] + targetPos.z * viewProjMat.m[2][1] + viewProjMat.m[3][1];
 		const float clipW = targetPos.x * viewProjMat.m[0][3] + targetPos.y * viewProjMat.m[1][3] + targetPos.z * viewProjMat.m[2][3] + viewProjMat.m[3][3];
@@ -165,7 +165,7 @@ void Player::UpdateReticle() {
 
 	arrowObject->SetActive(false);
 	if (!isLockedOn && indicatorTarget && !indicatorTarget->IsDead()) {
-		const Vector3 targetPos = indicatorTarget->GetTranslate();
+		const Vector3 targetPos = indicatorTarget->GetTransform().translate;
 		const float clipX = targetPos.x * viewProjMat.m[0][0] + targetPos.y * viewProjMat.m[1][0] + targetPos.z * viewProjMat.m[2][0] + viewProjMat.m[3][0];
 		const float clipY = targetPos.x * viewProjMat.m[0][1] + targetPos.y * viewProjMat.m[1][1] + targetPos.z * viewProjMat.m[2][1] + viewProjMat.m[3][1];
 		const float clipW = targetPos.x * viewProjMat.m[0][3] + targetPos.y * viewProjMat.m[1][3] + targetPos.z * viewProjMat.m[2][3] + viewProjMat.m[3][3];
@@ -218,7 +218,7 @@ void Player::UpdateLockOn(const std::vector<Enemy*>& enemies) {
 		// ロックオン完了状態の場合：現在のターゲットが生存＆カメラ前方にいるかをチェック
 		bool keepTarget = false;
 		if (!lockedTarget->IsDead()) {
-			Vector3 targetPos = lockedTarget->GetTranslate();
+			Vector3 targetPos = lockedTarget->GetTransform().translate;
 			float w = targetPos.x * viewProjMat.m[0][3] + targetPos.y * viewProjMat.m[1][3] + targetPos.z * viewProjMat.m[2][3] + viewProjMat.m[3][3];
 
 			// カメラの前方にいるなら範囲外に出てもロックオンを継続する
@@ -253,7 +253,7 @@ void Player::UpdateLockOn(const std::vector<Enemy*>& enemies) {
 		if (!enemy || enemy->IsDead()) continue;
 
 		// 矢印のターゲット判定
-		const Vector3 diff = enemy->GetTranslate() - translate_;
+		const Vector3 diff = enemy->GetTransform().translate - translate_;
 		const float distSq = Dot(diff, diff);
 
 		if (distSq < closestIndicatorDist) {
@@ -261,7 +261,7 @@ void Player::UpdateLockOn(const std::vector<Enemy*>& enemies) {
 			indicatorTarget = enemy;
 		}
 
-		Vector3 targetPos = enemy->GetTranslate();
+		Vector3 targetPos = enemy->GetTransform().translate;
 
 		// 1. W成分を計算してカメラの前方にいるか判定
 		float w = targetPos.x * viewProjMat.m[0][3] + targetPos.y * viewProjMat.m[1][3] + targetPos.z * viewProjMat.m[2][3] + viewProjMat.m[3][3];
@@ -345,13 +345,13 @@ OBB Player::GetOBB() {
 void Player::Move() {
 	auto* input = Input::GetInstance();
 
+
 	// 毎フレーム入力をリセットする
 	playerInput.axisX = 0.0f;
 	playerInput.axisY = 0.0f;
 
 	if (input->PushKey(DIK_W)) {
 		playerInput.axisY = 1.0f;
-
 	}
 	if (input->PushKey(DIK_S)) {
 		playerInput.axisY = -1.0f;
@@ -362,6 +362,13 @@ void Player::Move() {
 	if (input->PushKey(DIK_D)) {
 		playerInput.axisX = 1.0f;
 	}
+	
+	// マウスの移動量（相対値）を取得
+	float mouseDX = static_cast<float>(input->GetMouseX());
+	float mouseDY = static_cast<float>(input->GetMouseY());
+
+	playerInput.axisY -= mouseDY * sensitivity;
+	playerInput.axisX += mouseDX * sensitivity;
 
 	// 毎フレームクールダウンを減らす
 	if (bulletCoolTime > 0.0f) {

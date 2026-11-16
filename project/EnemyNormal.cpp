@@ -290,6 +290,7 @@ void EnemyNormal::OnCollisionBullet(int damage) {
 	hp -= damage;
 	if (hp <= 0) {
 		isDead_ = true;
+		isDefeated_ = true;
 
 		// キルの速度に応じた評価を設定
 		if (aliveTime < kRatingChangeTime[0]) {
@@ -341,15 +342,7 @@ void EnemyNormal::OnCollisionBullet(int damage) {
 			}
 		}
 
-		// 残骸
-		if (auto* debris = GameObject::FindByName("EnemyNormal_Death")) {
-			debris->SetActive(true);
-			if (auto* debrisTransform = debris->GetComponent<TransformComponent>()) {
-				debrisTransform->SetTranslate(transform.translate);
-				debrisTransform->SetRotate(transform.rotate);
-				debrisTransform->SetScale(transform.scale);
-			}
-		}
+		
 
 	} else {
 		// スコア加算(ヒット時)

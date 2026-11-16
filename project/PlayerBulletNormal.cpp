@@ -29,7 +29,7 @@ void PlayerBulletNormal::Initialize(const Vector3 position, Enemy* target, const
 
 	// 発射時からロックオン対象へ向けることで、ホーミングを即時に開始する。
 	if (target_ && !target_->IsDead()) {
-		forward = target_->GetTranslate() - position;
+		forward = target_->GetTransform().translate - position;
 	}
 
 	// スケールの影響を受けないよう正規化して、速度を掛ける。
@@ -65,7 +65,7 @@ void PlayerBulletNormal::Update() {
 
 	// 発射直後から毎フレーム、ロックオン対象へ進行方向を補正する。
 	if (target_ && !target_->IsDead()) {
-		Vector3 dir = target_->GetTranslate() - transform.translate;
+		Vector3 dir = target_->GetTransform().translate - transform.translate;
 		float length = std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
 
 		if (length > 0.001f) {

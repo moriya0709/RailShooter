@@ -332,9 +332,18 @@ void Level::LoadJson(const std::string fileName) {
 					data.lifetime = (std::max)(0.001f, trail.value("lifetime", data.lifetime));
 					data.minDistance = (std::max)(0.0f, trail.value("minimum_distance", data.minDistance));
 					data.emissive = (std::max)(0.0f, trail.value("emissive", data.emissive));
+					data.colorChangeSpeed = (std::max)(0.0f, trail.value("color_change_speed", data.colorChangeSpeed));
 					data.playOnStart = trail.value("play_on_start", data.playOnStart);
+					data.localOffsetFollowsOwnerRotation = trail.value(
+						"local_offset_follows_rotation", data.localOffsetFollowsOwnerRotation);
 					if (trail.contains("color") && trail["color"].is_array() && trail["color"].size() == 4) {
 						data.color = { trail["color"][0].get<float>(), trail["color"][1].get<float>(), trail["color"][2].get<float>(), trail["color"][3].get<float>() };
+					}
+					if (trail.contains("final_color") && trail["final_color"].is_array() && trail["final_color"].size() == 4) {
+						data.finalColor = { trail["final_color"][0].get<float>(), trail["final_color"][1].get<float>(), trail["final_color"][2].get<float>(), trail["final_color"][3].get<float>() };
+					}
+					if (trail.contains("color_change") && trail["color_change"].is_array() && trail["color_change"].size() == 4) {
+						data.isColorChange = { trail["color_change"][0].get<int>(), trail["color_change"][1].get<int>(), trail["color_change"][2].get<int>(), trail["color_change"][3].get<int>() };
 					}
 					if (trail.contains("local_offset") && trail["local_offset"].is_array() && trail["local_offset"].size() == 3) {
 						data.localOffset = { trail["local_offset"][0].get<float>(), trail["local_offset"][1].get<float>(), trail["local_offset"][2].get<float>() };
@@ -597,11 +606,15 @@ void Level::SaveJson(const std::string fileName) {
 				nlohmann::json serialized = {
 					{ "texture", trail.texturePath },
 					{ "color", { trail.color.x, trail.color.y, trail.color.z, trail.color.w } },
+					{ "final_color", { trail.finalColor.x, trail.finalColor.y, trail.finalColor.z, trail.finalColor.w } },
+					{ "color_change", { trail.isColorChange.x, trail.isColorChange.y, trail.isColorChange.z, trail.isColorChange.w } },
+					{ "color_change_speed", trail.colorChangeSpeed },
 					{ "width", trail.width },
 					{ "lifetime", trail.lifetime },
 					{ "minimum_distance", trail.minDistance },
 					{ "emissive", trail.emissive },
 					{ "play_on_start", trail.playOnStart },
+					{ "local_offset_follows_rotation", trail.localOffsetFollowsOwnerRotation },
 					{ "local_offset", { trail.localOffset.x, trail.localOffset.y, trail.localOffset.z } }
 				};
 				if (!trail.presetPath.empty()) serialized["preset"] = trail.presetPath;

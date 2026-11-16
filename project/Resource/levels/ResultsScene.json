@@ -23,7 +23,7 @@
                 "translation": [
                     0.0,
                     -60.0,
-                    0.0
+                    1.0
                 ]
             },
             "type": "EMPTY"
@@ -819,7 +819,6 @@
             "components": [
                 "ModelRenderer",
                 "ObjectRailMovement",
-                "Particle",
                 "Trail"
             ],
             "file_name": "F-15C_Eagle.dat.obj",
@@ -946,34 +945,6 @@
                 "speed": 1.399999976158142,
                 "use_point_rotations": true
             },
-            "particles": [
-                {
-                    "count": 8,
-                    "frequency": 0.10000000149011612,
-                    "group": "obj",
-                    "local_offset": [
-                        0.9900000095367432,
-                        1.4900000095367432,
-                        4.389999866485596
-                    ],
-                    "override_emission_settings": false,
-                    "play_on_start": true,
-                    "preset": "Resource/particle/burner2.csv"
-                },
-                {
-                    "count": 8,
-                    "frequency": 0.10000000149011612,
-                    "group": "obj",
-                    "local_offset": [
-                        2.299999952316284,
-                        0.8899999856948853,
-                        4.190000057220459
-                    ],
-                    "override_emission_settings": false,
-                    "play_on_start": true,
-                    "preset": "Resource/particle/burner2.csv"
-                }
-            ],
             "trails": [
                 {
                     "color": [
@@ -982,17 +953,97 @@
                         1.0,
                         1.0
                     ],
-                    "emissive": 1.0,
+                    "color_change": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "color_change_speed": 1.0,
+                    "emissive": 0.5,
+                    "final_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
                     "lifetime": 3.0,
                     "local_offset": [
                         0.0,
                         0.0,
                         0.0
                     ],
+                    "local_offset_follows_rotation": false,
                     "minimum_distance": 0.10000000149011612,
                     "play_on_start": true,
-                    "texture": "Resource/trail/trail.png",
+                    "texture": "Resource/trail/trail2.png",
                     "width": 1.5
+                },
+                {
+                    "color": [
+                        0.0941176488995552,
+                        0.4000000059604645,
+                        1.0,
+                        1.0
+                    ],
+                    "color_change": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "color_change_speed": 1.0,
+                    "emissive": 3.0,
+                    "final_color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "lifetime": 0.15000000596046448,
+                    "local_offset": [
+                        0.7099999785423279,
+                        -0.07999999821186066,
+                        -4.909999847412109
+                    ],
+                    "local_offset_follows_rotation": true,
+                    "minimum_distance": 0.10000000149011612,
+                    "play_on_start": true,
+                    "texture": "Resource/trail/trail2.png",
+                    "width": 2.0
+                },
+                {
+                    "color": [
+                        0.0941176488995552,
+                        0.4000000059604645,
+                        1.0,
+                        1.0
+                    ],
+                    "color_change": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "color_change_speed": 1.0,
+                    "emissive": 3.0,
+                    "final_color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "lifetime": 0.15000000596046448,
+                    "local_offset": [
+                        -0.7099999785423279,
+                        -0.07999999821186066,
+                        -4.909999847412109
+                    ],
+                    "local_offset_follows_rotation": true,
+                    "minimum_distance": 0.10000000149011612,
+                    "play_on_start": true,
+                    "texture": "Resource/trail/trail2.png",
+                    "width": 2.0
                 }
             ],
             "transform": {

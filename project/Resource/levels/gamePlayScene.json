@@ -25,9 +25,9 @@
             "name": "MainCamera",
             "transform": {
                 "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
+                    0.15563367307186127,
+                    -0.4007203280925751,
+                    0.4007203280925751
                 ],
                 "scaling": [
                     1.0,
@@ -35,9 +35,9 @@
                     1.0
                 ],
                 "translation": [
-                    0.0,
-                    -214.30873107910156,
-                    167.4550018310547
+                    0.0010149783920496702,
+                    -160.39303588867188,
+                    167.45497131347656
                 ]
             },
             "type": "EMPTY"
@@ -459,7 +459,7 @@
                     960.0,
                     540.0
                 ],
-                "rotation": 0.0,
+                "rotation": 0.5014748573303223,
                 "scale": [
                     1.0,
                     1.0
@@ -588,7 +588,7 @@
                     960.0,
                     540.0
                 ],
-                "rotation": 0.0,
+                "rotation": 0.10029496997594833,
                 "scale": [
                     0.8000000715255737,
                     0.8000000715255737
@@ -717,7 +717,7 @@
                     960.0,
                     540.0
                 ],
-                "rotation": 0.0,
+                "rotation": 0.3008849024772644,
                 "scale": [
                     1.0,
                     1.0
@@ -801,9 +801,9 @@
             "name": "cockpit",
             "transform": {
                 "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
+                    -0.12611696124076843,
+                    0.10029496997594833,
+                    -0.10029496997594833
                 ],
                 "scaling": [
                     1.0,
@@ -811,9 +811,9 @@
                     1.0
                 ],
                 "translation": [
-                    0.0,
-                    -202.30873107910156,
-                    167.4550018310547
+                    0.09568065404891968,
+                    -160.39303588867188,
+                    167.45333862304688
                 ]
             },
             "type": "EMPTY"
@@ -2669,7 +2669,8 @@
             "components": [
                 "ModelRenderer",
                 "Particle",
-                "EnemyNormal"
+                "EnemyNormal",
+                "Trail"
             ],
             "file_name": "F-16A_FightingFalcon.dat.obj",
             "group": "Enemy",
@@ -2683,7 +2684,7 @@
                 "color_override_enabled": false,
                 "color_override_unlit": false,
                 "enable_post_effect": true,
-                "motion_blur_enabled": true,
+                "motion_blur_enabled": false,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -2747,6 +2748,41 @@
                     "override_emission_settings": false,
                     "play_on_start": false,
                     "preset": "Resource/particle/death2.csv"
+                }
+            ],
+            "trails": [
+                {
+                    "color": [
+                        0.0941176488995552,
+                        0.4000000059604645,
+                        1.0,
+                        1.0
+                    ],
+                    "color_change": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "color_change_speed": 1.0,
+                    "emissive": 3.0,
+                    "final_color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "lifetime": 0.15000000596046448,
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "local_offset_follows_rotation": true,
+                    "minimum_distance": 0.10000000149011612,
+                    "play_on_start": true,
+                    "texture": "Resource/trail/trail2.png",
+                    "width": 0.5
                 }
             ],
             "transform": {
@@ -3061,7 +3097,7 @@
                 ],
                 "emissive_intensity": 0.0,
                 "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
+                "font_family": "Agency FB",
                 "font_size": 42,
                 "max_width": 0.0,
                 "mesh_offsets": [
@@ -3194,7 +3230,7 @@
                 ],
                 "emissive_intensity": 0.0,
                 "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
+                "font_family": "Agency FB",
                 "font_size": 100,
                 "max_width": 0.0,
                 "mesh_offsets": [
@@ -3450,7 +3486,7 @@
                 ],
                 "emissive_intensity": 0.0,
                 "enable_post_effect": true,
-                "font_family": "HGP創英角ｺﾞｼｯｸUB",
+                "font_family": "Agency FB",
                 "font_size": 72,
                 "max_width": 0.0,
                 "mesh_offsets": [
@@ -3706,7 +3742,7 @@
                 ],
                 "emissive_intensity": 0.0,
                 "enable_post_effect": true,
-                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_family": "Agency FB",
                 "font_size": 174,
                 "max_width": 0.0,
                 "mesh_offsets": [
@@ -3962,7 +3998,7 @@
                 ],
                 "emissive_intensity": 0.0,
                 "enable_post_effect": true,
-                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_family": "Agency FB",
                 "font_size": 60,
                 "max_width": 0.0,
                 "mesh_offsets": [
@@ -6226,7 +6262,8 @@
             "active": false,
             "components": [
                 "ModelRenderer",
-                "ObjectRailMovement"
+                "ObjectRailMovement",
+                "Trail"
             ],
             "file_name": "F-15C_Eagle.dat.obj",
             "group": "Clear",
@@ -6240,7 +6277,7 @@
                 "color_override_enabled": false,
                 "color_override_unlit": false,
                 "enable_post_effect": true,
-                "motion_blur_enabled": true,
+                "motion_blur_enabled": false,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -6323,10 +6360,111 @@
                 "speed": 1.0,
                 "use_point_rotations": true
             },
+            "trails": [
+                {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "color_change": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "color_change_speed": 1.0,
+                    "emissive": 1.0,
+                    "final_color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "lifetime": 1.5,
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "local_offset_follows_rotation": true,
+                    "minimum_distance": 0.10000000149011612,
+                    "play_on_start": true,
+                    "texture": "Resource/trail/trail2.png",
+                    "width": 1.0
+                },
+                {
+                    "color": [
+                        0.0941176488995552,
+                        0.4000000059604645,
+                        1.0,
+                        1.0
+                    ],
+                    "color_change": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "color_change_speed": 1.0,
+                    "emissive": 3.0,
+                    "final_color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "lifetime": 0.15000000596046448,
+                    "local_offset": [
+                        0.7099999785423279,
+                        -0.07999999821186066,
+                        -4.909999847412109
+                    ],
+                    "local_offset_follows_rotation": true,
+                    "minimum_distance": 0.10000000149011612,
+                    "play_on_start": true,
+                    "texture": "Resource/trail/trail2.png",
+                    "width": 2.0
+                },
+                {
+                    "color": [
+                        0.0941176488995552,
+                        0.4000000059604645,
+                        1.0,
+                        1.0
+                    ],
+                    "color_change": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "color_change_speed": 1.0,
+                    "emissive": 3.0,
+                    "final_color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "lifetime": 0.15000000596046448,
+                    "local_offset": [
+                        -0.7099999785423279,
+                        -0.07999999821186066,
+                        -4.909999847412109
+                    ],
+                    "local_offset_follows_rotation": true,
+                    "minimum_distance": 0.10000000149011612,
+                    "play_on_start": true,
+                    "texture": "Resource/trail/trail2.png",
+                    "width": 2.0
+                }
+            ],
             "transform": {
                 "rotation": [
-                    0.021798761561512947,
-                    6.700972557067871,
+                    -0.09999147057533264,
+                    -0.454235315322876,
                     0.0
                 ],
                 "scaling": [
@@ -6336,8 +6474,8 @@
                 ],
                 "translation": [
                     128.32200622558594,
-                    438.09991455078125,
-                    224.25210571289063
+                    -118.28158569335938,
+                    223.84075927734375
                 ]
             },
             "type": "EMPTY"
@@ -6549,7 +6687,7 @@
                 ],
                 "emissive_intensity": 0.0,
                 "enable_post_effect": true,
-                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_family": "Agency FB",
                 "font_size": 80,
                 "max_width": 0.0,
                 "mesh_offsets": [
@@ -6805,7 +6943,7 @@
                 ],
                 "emissive_intensity": 0.0,
                 "enable_post_effect": true,
-                "font_family": "HGS創英角ｺﾞｼｯｸUB",
+                "font_family": "Agency FB",
                 "font_size": 60,
                 "max_width": 0.0,
                 "mesh_offsets": [
@@ -7858,13 +7996,13 @@
             "name": "MissionClear_2",
             "rect_transform": {
                 "position": [
-                    219.8811798095703,
+                    288.6341552734375,
                     540.0
                 ],
                 "rotation": 0.0,
                 "scale": [
-                    1.0851765871047974,
-                    1.0851765871047974
+                    0.7070350646972656,
+                    0.7070350646972656
                 ]
             },
             "text_renderer": {
@@ -8054,13 +8192,13 @@
             "name": "MissionClear_3",
             "rect_transform": {
                 "position": [
-                    333.9909973144531,
+                    354.84588623046875,
                     540.0
                 ],
                 "rotation": 0.0,
                 "scale": [
-                    1.100000023841858,
-                    1.100000023841858
+                    0.9852980375289917,
+                    0.9852980375289917
                 ]
             },
             "text_renderer": {
@@ -8250,13 +8388,13 @@
             "name": "MissionClear_4",
             "rect_transform": {
                 "position": [
-                    501.90301513671875,
+                    504.26318359375,
                     540.0
                 ],
                 "rotation": 0.0,
                 "scale": [
-                    1.100000023841858,
-                    1.100000023841858
+                    1.0870192050933838,
+                    1.0870192050933838
                 ]
             },
             "text_renderer": {
@@ -10212,13 +10350,13 @@
             "name": "arrow",
             "rect_transform": {
                 "position": [
-                    600.3788452148438,
-                    364.8639831542969
+                    1182.2109375,
+                    207.40066528320313
                 ],
-                "rotation": -2.6883978843688965,
+                "rotation": -0.9817993640899658,
                 "scale": [
-                    0.7625092267990112,
-                    0.7625092267990112
+                    0.9175944924354553,
+                    0.9175944924354553
                 ]
             },
             "sprite_file_name": "Resource/arrow/arrow.png",
@@ -157271,70 +157409,7 @@
         {
             "active": false,
             "components": [
-                "ModelRenderer",
-                "Easing"
-            ],
-            "easings": [
-                {
-                    "color": false,
-                    "control_point_1": [
-                        0.25,
-                        0.25
-                    ],
-                    "control_point_2": [
-                        0.75,
-                        0.75
-                    ],
-                    "duration": 0.5,
-                    "goal_color": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "goal_position": [
-                        1.0,
-                        0.0,
-                        -140240.46875
-                    ],
-                    "goal_rotation": [
-                        0.0,
-                        0.0,
-                        6.28000020980835
-                    ],
-                    "goal_scale": [
-                        0.30000001192092896,
-                        0.30000001192092896,
-                        0.30000001192092896
-                    ],
-                    "loop": true,
-                    "play_on_start": true,
-                    "position": false,
-                    "rotation": true,
-                    "scale": false,
-                    "start_color": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "start_position": [
-                        1.0,
-                        0.0,
-                        -140240.46875
-                    ],
-                    "start_rotation": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "start_scale": [
-                        0.30000001192092896,
-                        0.30000001192092896,
-                        0.30000001192092896
-                    ],
-                    "use_game_time": true
-                }
+                "ModelRenderer"
             ],
             "file_name": "F-16A_FightingFalcon.dat.obj",
             "group": "Enemy",
@@ -157348,7 +157423,7 @@
                 "color_override_enabled": true,
                 "color_override_unlit": false,
                 "enable_post_effect": true,
-                "motion_blur_enabled": true,
+                "motion_blur_enabled": false,
                 "outline_color": [
                     1.0,
                     0.0,
@@ -157362,9 +157437,9 @@
             "name": "EnemyNormal_Death",
             "transform": {
                 "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
+                    -0.01634652353823185,
+                    -1.2078319787979126,
+                    2.2067856788635254
                 ],
                 "scaling": [
                     0.30000001192092896,
@@ -157372,9 +157447,9 @@
                     0.30000001192092896
                 ],
                 "translation": [
-                    0.0,
-                    0.0,
-                    0.0
+                    246.0349578857422,
+                    116.18307495117188,
+                    156.05062866210938
                 ]
             },
             "type": "EMPTY"

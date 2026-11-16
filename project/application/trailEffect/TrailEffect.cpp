@@ -1,6 +1,7 @@
 ﻿#include "TrailEffect.h"
 #include "ImGuiManager.h"
 
+#include <algorithm>
 void TrailEffect::Initialize(const std::string& textureName, const Transform& transform, float width, float maxLifetime) {
     // 渡された引数を使ってメンバ変数を初期化
     m_TextureName = textureName;
@@ -25,10 +26,20 @@ void TrailEffect::UpdateLifetimes() {
 }
 
 void TrailEffect::AddPoint(const Vector3& currentEmitterPos) {
-    // 距離チェックをして、必要なら先頭に追加
-    if (m_Points.empty() || Distance(m_Points.front().Position, currentEmitterPos) > MIN_DISTANCE) {
+    if (m_Points.empty()) {
         m_Points.push_front({ currentEmitterPos, 0.0f });
+        return;
     }
+
+    const Vector3 previousEmitterPos = m_Points.front().Position;
+    const float distance = Distance(previousEmitterPos, currentEmitterPos);
+    if (distance <= MIN_DISTANCE) {
+        return;
+    }
+
+    // フレームごとに追加する制御点は現在位置の1点だけにする。
+    // 高速移動時の中間点補間は行わず、頂点バッファの消費を一定に保つ。
+    m_Points.push_front({ currentEmitterPos, 0.0f });
 }
 
 void TrailEffect::GenerateVertices(const Vector3& cameraPos, std::vector<TrailVertex>& outVertices) {
@@ -66,9 +77,14 @@ void TrailEffect::GenerateVertices(const Vector3& cameraPos, std::vector<TrailVe
             right = Normalize(crossVec);
         }
 
-        float lifeRatio = pt.Age / MAX_LIFETIME;
+        const float lifeRatio = std::clamp(pt.Age / MAX_LIFETIME, 0.0f, 1.0f);
         float currentWidth = m_Width * (1.0f - lifeRatio);
         Vector4 currentColor = m_Color;
+		const float colorProgress = std::clamp(lifeRatio * m_ColorChangeSpeed, 0.0f, 1.0f);
+		if (m_IsColorChange.x != 0) currentColor.x = std::lerp(m_Color.x, m_FinalColor.x, colorProgress);
+		if (m_IsColorChange.y != 0) currentColor.y = std::lerp(m_Color.y, m_FinalColor.y, colorProgress);
+		if (m_IsColorChange.z != 0) currentColor.z = std::lerp(m_Color.z, m_FinalColor.z, colorProgress);
+		if (m_IsColorChange.w != 0) currentColor.w = std::lerp(m_Color.w, m_FinalColor.w, colorProgress);
         currentColor.w *= (1.0f - lifeRatio);
 
         TrailVertex vLeft, vRight;

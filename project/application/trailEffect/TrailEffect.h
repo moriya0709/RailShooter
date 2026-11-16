@@ -37,6 +37,9 @@ public:
     // setter
     void SetTranslate(Vector3 translate) { translate_ = translate; }
 	void SetColor(Vector4 color) { m_Color = color; }
+	void SetFinalColor(Vector4 color) { m_FinalColor = color; }
+	void SetColorChangeSpeed(float speed) { m_ColorChangeSpeed = speed; }
+	void SetColorChange(const Vector4Int& enabled) { m_IsColorChange = enabled; }
 	void SetWidth(float width) { m_Width = width; }
 	void SetLifetime(float lifetime) { MAX_LIFETIME = lifetime; }
 	void SetDistance(float distance) { MIN_DISTANCE = distance; }
@@ -56,6 +59,9 @@ private:
     std::deque<TrailPoint> m_Points;
     float m_Width = 1.5f;
     Vector4 m_Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	Vector4 m_FinalColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	Vector4Int m_IsColorChange = { 0, 0, 0, 0 };
+	float m_ColorChangeSpeed = 1.0f;
     float deltaTime = 0.1f;
 	float MAX_LIFETIME = 1.5f; // 消えるまでの時間
 	float MIN_DISTANCE = 0.1f; // ユニット以上動いたら新しいポイントを追加

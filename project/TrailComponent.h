@@ -24,7 +24,7 @@ public:
 
 	void SetPlaying(bool playing);
 	bool IsPlaying() const;
-	void SetLocalOffsetFollowsOwnerRotation(bool enabled) { localOffsetFollowsOwnerRotation_ = enabled; }
+	void SetLocalOffsetFollowsOwnerRotation(bool enabled);
 	void Finish();
 
 private:
@@ -35,7 +35,6 @@ private:
 	std::vector<std::shared_ptr<TrailEffect>> trails_;
 	std::vector<bool> playing_;
 	bool needsRecreate_ = true;
-	bool localOffsetFollowsOwnerRotation_ = false;
 };
 
 #ifdef USE_IMGUI

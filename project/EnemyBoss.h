@@ -24,10 +24,10 @@ public:
 
 	void SetTransform(const Transform& transform) override { this->transform = transform; }
 
-	Vector3 GetTranslate() const override { return transform.translate; }
+	Transform GetTransform() const override { return transform; }
 	void OnCollisionBullet(int damage) override;
 	bool IsDead() const override { return isDead_; }
-	bool IsDefeated() const { return isDefeated_; }
+	bool IsDefeated() const override { return isDefeated_; }
 	bool IsHit() const override { return isHit; }
 
 	// 移動パターンの設定

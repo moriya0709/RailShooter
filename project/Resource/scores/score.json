@@ -18,6 +18,10 @@
         },
         {
             "name": "PLAYER",
+            "score": 59849
+        },
+        {
+            "name": "PLAYER",
             "score": 58029
         },
         {
@@ -35,10 +39,6 @@
         {
             "name": "PLAYER",
             "score": 46549
-        },
-        {
-            "name": "PLAYER",
-            "score": 45429
         }
     ]
 }

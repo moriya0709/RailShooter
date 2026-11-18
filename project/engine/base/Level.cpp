@@ -44,6 +44,10 @@ void Level::LoadJson(const std::string fileName) {
 			RailCameraGroupData settings{};
 			settings.groupName = group["name"].get<std::string>();
 			settings.railSpeed = (std::max)(0.0f, group.value("rail_speed", 1.0f));
+			const bool defaultEnemySpawning =
+				settings.groupName != "StartRailCamera" && settings.groupName != "Clear";
+			settings.enableEnemySpawning =
+				group.value("enable_enemy_spawning", defaultEnemySpawning);
 			const int mode = group.value("direction_mode", static_cast<int>(RailCameraDirectionMode::FollowPath));
 			settings.directionMode = static_cast<RailCameraDirectionMode>(std::clamp(mode, 0, 2));
 			if (group.contains("target_position") && group["target_position"].is_array() && group["target_position"].size() == 3) {
@@ -454,6 +458,7 @@ void Level::SaveJson(const std::string fileName) {
 		deserialized["rail_camera_groups"].push_back({
 			{ "name", group.groupName },
 			{ "rail_speed", group.railSpeed },
+			{ "enable_enemy_spawning", group.enableEnemySpawning },
 			{ "direction_mode", static_cast<int>(group.directionMode) },
 			{ "target_position", { group.targetPosition.x, group.targetPosition.y, group.targetPosition.z }},
 			{ "target_object_name", group.targetObjectName },

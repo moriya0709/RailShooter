@@ -89,7 +89,8 @@ public:
 	// 弾
 	std::list<std::unique_ptr<GameObject>> bulletObjects_;
 	std::list<EnemyBullet*> bullets_;
-	float shotCoolTime = 20.0f; // 射撃のクールタイム
+	float shotCoolTime = 2.0f; // 射撃のクールタイム
+	bool isShot = false;
 
 	// 当たったか
 	bool isHit = false;

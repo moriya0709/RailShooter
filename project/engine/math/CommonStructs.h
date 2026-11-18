@@ -258,6 +258,8 @@ struct RailCameraGroupData {
 	std::string targetObjectName;
     std::vector<TrackSequenceItem> presetSequence;
     float railSpeed = 1.0f;
+	// このレールカメラグループがアクティブな間、敵スポナーを更新するか。
+	bool enableEnemySpawning = true;
 };
 
 // EasingComponent が保持する、レベル保存可能なアニメーション設定。

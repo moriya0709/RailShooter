@@ -51,6 +51,7 @@ public:
 	}
 
 	void SetActive(bool active) { activeSelf_ = active; }
+	bool GetActive() const { return activeSelf_; }
 	bool IsActive() const { return activeSelf_; }
 	// true のとき、このオブジェクトの可視ピクセルだけにポストエフェクトを適用する。
 	void SetEnablePostEffect(bool enabled) { enablePostEffect_ = enabled; }

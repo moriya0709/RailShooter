@@ -42,6 +42,9 @@ void SceneManager::DrawPostEffectExcluded2D() {
 void SceneManager::Draw3D() {
 	scene_->Draw3D();
 }
+void SceneManager::DrawShadow() {
+	scene_->DrawShadow();
+}
 void SceneManager::DrawPostEffectMask() {
 	scene_->DrawPostEffectMask();
 }

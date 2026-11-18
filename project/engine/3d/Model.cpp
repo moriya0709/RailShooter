@@ -1,4 +1,4 @@
-#include "Model.h"
+﻿#include "Model.h"
 #include "DirectXCommon.h"
 #include "TextureManager.h"
 #include "SkyBox.h"
@@ -9,6 +9,7 @@
 #include "Line.h"
 #include "SrvManager.h"
 #include "ObjectCommon.h"
+#include "ShadowMap.h"
 #include <assimp/matrix3x3.h>
 #include <assimp/GltfMaterial.h>
 #include <assimp/vector3.h>
@@ -411,6 +412,12 @@ void Model::Draw(const std::string& textureOverride, bool useMaterialBlend) {
 		dxCommon_->GetCommandList()->DrawIndexedInstanced(range.indexCount, 1, range.indexOffset, 0, 0);
 	};
 
+	// シャドウマップ
+	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(
+		IsSkinning() ? 17 : 16,
+		ShadowMap::GetInstance()->GetSRV()
+	);
+
 	// アウトライン用PSOでは通常の不透明／透明PSOに切り替えない。
 	// ここで切り替えると、透明マテリアルを持つモデルのアウトラインが
 	// 通常シェーダーで描画されてしまう。
@@ -437,6 +444,24 @@ void Model::Draw(const std::string& textureOverride, bool useMaterialBlend) {
 			}
 		}
 		ObjectCommon::GetInstance()->SetMaterialBlendPipelineState(IsSkinning(), false);
+	}
+}
+
+void Model::DrawShadow() {
+	if (IsSkinning()) {
+		// スキニング済み頂点は通常描画と同じ outputVertexResource を使用する。
+		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+	} else {
+		D3D12_VERTEX_BUFFER_VIEW inputVbv{};
+		inputVbv.BufferLocation = inputVertexResource->GetGPUVirtualAddress();
+		inputVbv.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());
+		inputVbv.StrideInBytes = sizeof(VertexData);
+		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &inputVbv);
+	}
+
+	dxCommon_->GetCommandList()->IASetIndexBuffer(&indexBufferView);
+	for (const MaterialRange& range : modelData.materialRanges) {
+		dxCommon_->GetCommandList()->DrawIndexedInstanced(range.indexCount, 1, range.indexOffset, 0, 0);
 	}
 }
 

@@ -3040,6 +3040,21 @@ void GamePlayScene::Draw3D() {
 
 }
 
+void GamePlayScene::DrawShadow() {
+	for (auto& object : levelObjects) {
+		object->DrawShadow();
+	}
+	for (auto& preview : spawnerPreviewObjects) {
+		preview->DrawShadow();
+	}
+	for (auto& preview : pathPreviewObjects) {
+		preview->DrawShadow();
+	}
+	for (auto& enemyObject : enemies) {
+		enemyObject->DrawShadow();
+	}
+}
+
 void GamePlayScene::DrawPostEffectMask() {
 	for (const auto& object : levelObjects) {
 		object->DrawPostEffectMask();

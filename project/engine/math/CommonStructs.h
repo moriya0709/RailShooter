@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <windows.h>
 #include <cstdint>
 #include <string>
@@ -18,6 +18,7 @@ struct TransformationMatrix {
     Matrix4x4 WVP;
     Matrix4x4 World;
     Matrix4x4 prevWVP;
+	Matrix4x4 LightWVP;
 };
 // テクスチャ
 struct MaterialData {

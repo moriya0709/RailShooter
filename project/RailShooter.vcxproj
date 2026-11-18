@@ -61,7 +61,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GameTimer.cpp" />
-	<ClCompile Include="engine\base\HitStopManager.cpp" />
+    <ClCompile Include="engine\base\HitStopManager.cpp" />
     <ClCompile Include="game\GamePlayScene.cpp" />
     <ClCompile Include="engine\base\M_Framework.cpp" />
     <ClCompile Include="game\Game.cpp" />
@@ -93,6 +93,7 @@
     <ClCompile Include="ResultsScene.cpp" />
     <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="SelectScene.cpp" />
+    <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="SpriteRendererComponent.cpp" />
     <ClCompile Include="TextRendererComponent.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
@@ -110,7 +111,6 @@
     <ClCompile Include="PlayerBulletMissile.cpp" />
     <ClCompile Include="PlayerBulletNormal.cpp" />
     <ClCompile Include="ParticleComponent.cpp" />
-
     <ClCompile Include="TrailComponent.cpp" />
     <ClCompile Include="ParticlePreviewEditor.cpp" />
   </ItemGroup>
@@ -313,6 +313,22 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="Resource\shaders\ShadowMap.PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resource\shaders\ShadowMap.VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimatorComponent.h" />
@@ -357,7 +373,7 @@
     <ClInclude Include="engine\math\Calc.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameTimer.h" />
-	<ClInclude Include="engine\base\HitStopManager.h" />
+    <ClInclude Include="engine\base\HitStopManager.h" />
     <ClInclude Include="game\GamePlayScene.h" />
     <ClInclude Include="engine\base\M_Framework.h" />
     <ClInclude Include="game\Game.h" />
@@ -380,6 +396,7 @@
     <ClInclude Include="ResultsScene.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="SelectScene.h" />
+    <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="SpriteRendererComponent.h" />
     <ClInclude Include="TextRendererComponent.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
@@ -405,7 +422,6 @@
     <ClInclude Include="PlayerBulletMissile.h" />
     <ClInclude Include="PlayerBulletNormal.h" />
     <ClInclude Include="ParticleComponent.h" />
-
     <ClInclude Include="TrailComponent.h" />
     <ClInclude Include="ParticlePreviewEditor.h" />
     <ClInclude Include="resource.h" />

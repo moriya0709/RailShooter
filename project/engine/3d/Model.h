@@ -33,6 +33,9 @@ public:
 	// textureOverride が指定されている場合は、全マテリアルのベースカラー
 	// テクスチャだけをそのパスで描画する。共有 Model のマテリアルは変更しない。
 	void Draw(const std::string& textureOverride = {}, bool useMaterialBlend = true);
+	// ライト視点から深度のみを書き込むシャドウパス用の描画。
+	// 呼び出し側で ShadowMap の PSO と b0 の変換行列を設定しておく。
+	void DrawShadow();
 	// モデルは共有されるため、描画直前にこのレンダラーで使うライティング方式を設定する。
 	void SetToonShading(bool enabled);
 

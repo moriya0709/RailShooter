@@ -17,6 +17,7 @@ public:
 	// ここへ描いた要素はブルームや色調補正を含む一切のポストエフェクトを受けない。
 	virtual void DrawPostEffectExcluded2D() {}
 	virtual void Draw3D() = 0;
+	virtual void DrawShadow() {}
 	virtual void DrawPostEffectMask() = 0;
 	// 終了
 	virtual void Finalize() = 0;

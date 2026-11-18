@@ -5,6 +5,7 @@ struct TransformationMatrix
     float32_t4x4 WVP;
     float32_t4x4 World;
     float32_t4x4 prevWVP;
+    float32_t4x4 LightWVP;
 };
 
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
@@ -35,6 +36,9 @@ VertexShaderOutput main(VertexShaderInput input)
     // ==========================================
     output.currentClipPos = output.position; // 現在の位置（output.positionと同じ）
     output.prevClipPos = mul(input.position, gTransformationMatrix.prevWVP); // 1フレーム前の位置
+    
+    // ライト視点での座標を計算
+    output.posLightSpace = mul(input.position, gTransformationMatrix.LightWVP);
     
     return output;
 }

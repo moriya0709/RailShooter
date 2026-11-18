@@ -13,6 +13,8 @@ public:
 	virtual void Initialize() {}
 	virtual void Update() {}
 	virtual void Draw() {}
+	// ライト視点から深度だけを書き込むシャドウマップ用の描画。
+	virtual void DrawShadow() {}
 	// ポストエフェクト対象を識別するマスク用の描画。対応する Renderer だけがオーバーライドする。
 	virtual void DrawPostEffectMask() {}
 	// 値が小さいコンポーネントほど先に Update される。移動系が描画用の

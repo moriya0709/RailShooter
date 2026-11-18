@@ -16,6 +16,7 @@ public:
 	void Draw2D();
 	void DrawPostEffectExcluded2D();
 	void Draw3D();
+	void DrawShadow();
 	void DrawPostEffectMask();
 
 	// 時間スケールの設定（0.0f～1.0f）

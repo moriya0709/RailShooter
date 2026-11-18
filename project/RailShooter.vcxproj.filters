@@ -100,6 +100,8 @@
     <FxCompile Include="Resource\shaders\RayMarching.VS.hlsl">
       <Filter>シェーダー ファイル</Filter>
     </FxCompile>
+    <FxCompile Include="Resource\shaders\ShadowMap.PS.hlsl" />
+    <FxCompile Include="Resource\shaders\ShadowMap.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="externals\imgui\imgui.cpp">
@@ -262,15 +264,14 @@
       <Filter>ソース ファイル\engine\3d</Filter>
     </ClCompile>
     <ClCompile Include="GameTimer.cpp" />
-	<ClCompile Include="engine\base\HitStopManager.cpp">
-	  <Filter>ソース ファイル\engine\base</Filter>
-	</ClCompile>
+    <ClCompile Include="engine\base\HitStopManager.cpp">
+      <Filter>ソース ファイル\engine\base</Filter>
+    </ClCompile>
     <ClCompile Include="Player.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="PlayerBulletNormal.cpp" />
     <ClCompile Include="ParticleComponent.cpp" />
-
     <ClCompile Include="TrailComponent.cpp" />
     <ClCompile Include="ParticlePreviewEditor.cpp" />
     <ClCompile Include="EnemyNormal.cpp" />
@@ -289,6 +290,7 @@
     <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="ResultsScene.cpp" />
     <ClCompile Include="EnemyBoss.cpp" />
+    <ClCompile Include="ShadowMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -468,16 +470,15 @@
     <ClInclude Include="engine\3d\Object.h" />
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="GameTimer.h" />
-	<ClInclude Include="engine\base\HitStopManager.h">
-	  <Filter>ヘッダー ファイル\engine\base</Filter>
-	</ClInclude>
+    <ClInclude Include="engine\base\HitStopManager.h">
+      <Filter>ヘッダー ファイル\engine\base</Filter>
+    </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="PlayerBulletNormal.h" />
     <ClInclude Include="ParticleComponent.h" />
-
     <ClInclude Include="TrailComponent.h" />
     <ClInclude Include="ParticlePreviewEditor.h" />
     <ClInclude Include="resource.h" />
@@ -500,6 +501,7 @@
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="ResultsScene.h" />
     <ClInclude Include="EnemyBoss.h" />
+    <ClInclude Include="ShadowMap.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

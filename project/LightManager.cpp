@@ -95,3 +95,41 @@ void LightManager::UpdateSunLight() {
 	currentAmbientColor = Lerp(nightAmbient, currentAmbientColor, dayFactor);
 	ambientLightData_->color = currentAmbientColor;
 }
+
+void LightManager::UpdateLightCamera(const Vector3& targetPosition) {
+	// 1. ライトのビュー行列を作成
+	Vector3 lightDir = Normalize(directionalLightData_->direction);
+	float distance = 50.0f; // 影を描画する範囲に合わせて距離を調整
+	Vector3 lightPos = {
+		targetPosition.x - lightDir.x * distance,
+		targetPosition.y - lightDir.y * distance,
+		targetPosition.z - lightDir.z * distance
+	};
+
+	// 上方向ベクトル（真下を向いている場合の特異点対策）
+	Vector3 up = { 0.0f, 1.0f, 0.0f };
+	if (std::abs(lightDir.x) < 0.001f && std::abs(lightDir.z) < 0.001f) {
+		up = { 1.0f, 0.0f, 0.0f };
+	}
+
+	lightViewMatrix_ = MakeLookAtMatrix(lightPos, targetPosition, up);
+
+	// 2. ライトのプロジェクション行列を作成（平行投影 / Orthographic）
+	float viewWidth = 100.0f;  // 影をカバーする幅
+	float viewHeight = 100.0f; // 影をカバーする高さ
+	float nearZ = 0.1f;
+	float farZ = 100.0f;       // ライトカメラからの深度
+
+	// 幅と高さから left, top, right, bottom を計算して6つの引数を渡す
+	float left = -viewWidth / 2.0f;
+	float right = viewWidth / 2.0f;
+	float top = viewHeight / 2.0f;
+	float bottom = -viewHeight / 2.0f;
+
+	lightProjectionMatrix_ = MakeOrthographicMatrix(left, top, right, bottom, nearZ, farZ);
+}
+
+Matrix4x4 LightManager::GetLightViewProjection() const {
+	// View と Projection を掛け合わせた行列を返す
+	return Multiply(lightViewMatrix_, lightProjectionMatrix_);
+}

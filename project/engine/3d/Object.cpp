@@ -67,6 +67,10 @@ void Object::Update() {
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	transformationMatrixData->World = worldMatrix;
 
+	// シャドウマップ用のライト行列を計算
+	Matrix4x4 lightVP = LightManager::GetInstance()->GetLightViewProjection();
+	transformationMatrixData->LightWVP = Multiply(worldMatrix, lightVP);
+
 	// 現在のWVP行列を計算
 	currentWVP_ = Multiply(worldMatrix, camera_->GetViewProjectionMatrix());
 	transformationMatrixData->WVP = currentWVP_;

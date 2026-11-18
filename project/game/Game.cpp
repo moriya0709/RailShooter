@@ -87,6 +87,9 @@ void Game::Initialize() {
 	// トレイルエフェクト
 	TrailEffectManager::GetInstance()->Initialize();
 
+	// シャドウマップ
+	ShadowMap::GetInstance()->Initialize(srvManager.get());
+
 	// シーンマネージャーの生成
 	// 最初のシーン生成
 	sceneFactory_ = std::make_unique<SceneFactory>();
@@ -127,6 +130,9 @@ void Game::Update() {
 	// トレイルエフェクト更新
 	TrailEffectManager::GetInstance()->UpdateAll(deltaTime_);
 
+	// シャドウマップ
+	ShadowMap::GetInstance()->Update();
+
 	// ImGui受付終了
 	imGuiManager->End();
 }
@@ -135,8 +141,16 @@ void Game::Draw() {
 	// 描画前処理
 	M_Framework::BeginFrame();
 	srvManager->PreDraw();
-	PostEffect::GetInstance()->PreDraw();
 
+	// ライト視点で深度だけを描画する。通常の Draw3D は D24 / 2 RTV 用のため、
+	// シャドウ用 D32 / RTV なしの描画先では使用しない。
+	ShadowMap::GetInstance()->PreDrawShadow();
+	ShadowMap::GetInstance()->SetPipelineState();
+	SceneManager::GetInstance()->DrawShadow();
+	ShadowMap::GetInstance()->PostDrawShadow();
+
+	// シャドウパス後に通常のレンダーターゲットを設定してからシーンを描画する。
+	PostEffect::GetInstance()->PreDraw();
 	// シーンマネージャー描画(3D)
 	SceneManager::GetInstance()->Draw3D();
 

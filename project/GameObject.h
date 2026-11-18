@@ -110,6 +110,19 @@ public:
 		}
 	}
 
+	void DrawShadow() {
+		if (!activeSelf_) {
+			return;
+		}
+		Initialize();
+		for (const auto& component : components_) {
+			if (component->IsEnabled()) {
+				component->StartIfNeeded();
+				component->DrawShadow();
+			}
+		}
+	}
+
 	// 通常シーンを描いた後、深度テストを使って可視部分だけをマスクへ描く。
 	void DrawPostEffectMask() {
 		if (!activeSelf_ || !enablePostEffect_) {

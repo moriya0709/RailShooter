@@ -41,6 +41,7 @@ public:
 	void Draw2D() override;
 	void DrawPostEffectExcluded2D() override;
 	void Draw3D() override;
+	void DrawShadow() override;
 	void DrawPostEffectMask() override;
 	// 終了
 	void Finalize() override;

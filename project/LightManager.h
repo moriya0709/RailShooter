@@ -91,6 +91,10 @@ public:
 	void SetUseSunLight(bool use) { isSunLight_ = use; }
 	void UpdateSunLight();
 
+	// ライトカメラの行列を更新・取得
+	void UpdateLightCamera(const Vector3& targetPosition);
+	Matrix4x4 GetLightViewProjection() const;
+
 private:
 	LightManager() = default;
 	~LightManager() = default;
@@ -110,6 +114,9 @@ private:
 	AmbientLight* ambientLightData_ = nullptr;
 	PointLight* pointLightData_ = nullptr;
 	SpotLight* spotLightData_ = nullptr;
+
+	Matrix4x4 lightViewMatrix_;
+	Matrix4x4 lightProjectionMatrix_;
 
 	bool isSunLight_ = true;
 };

@@ -9,6 +9,10 @@ struct Matrix4x4 final {
     float m[4][4];
 };
 
+struct Matrix3x3 final {
+    float m[3][3];
+};
+
 struct Vector4 final {
     float x;
     float y;
@@ -106,6 +110,8 @@ Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2);
 
 // 行列の乗算
 Matrix4x4 Multiply(Matrix4x4 matrix1, Matrix4x4 matrix2);
+// 減算
+Vector3 Subtract(const Vector3& v1, const Vector3& v2);
 
 // 単位行列の作成
 Matrix4x4 MakeIdentityMatrix();
@@ -189,4 +195,5 @@ void StartFadeIn(bool& isFadeIn,bool& isFadeOut);
 void StartFadeOut(bool& isFadeIn, bool& isFadeOut);
 // 毎フレーム呼び出す更新関数
 void UpdateFade(bool& isFadeIn, bool& isFadeOut,float& intensity, float time);
-
+// カメラ（またはライト）の視点View行列
+Matrix4x4 MakeLookAtMatrix(const Vector3& eye, const Vector3& target, const Vector3& up);

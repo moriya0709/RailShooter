@@ -114,6 +114,14 @@ Matrix4x4 Multiply(Matrix4x4 matrix1, Matrix4x4 matrix2)
     return result;
 }
 
+Vector3 Subtract(const Vector3& v1, const Vector3& v2) {
+    Vector3 result;
+    result.x = v1.x - v2.x;
+    result.y = v1.y - v2.y;
+    result.z = v1.z - v2.z;
+    return result;
+}
+
 Matrix4x4 MakeIdentityMatrix()
 {
     static const Matrix4x4 result { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
@@ -746,4 +754,27 @@ void UpdateFade(bool& isFadeIn, bool& isFadeOut, float& intensity,float time) {/
             isFadeOut = false; // 完了したらフラグを下ろす
         }
     }
+}
+
+Matrix4x4 MakeLookAtMatrix(const Vector3& eye, const Vector3& target, const Vector3& up) {
+    // 1. Z軸（前方向）：カメラからターゲットへのベクトルを正規化
+    Vector3 zAxis = Normalize(Subtract(target, eye));
+
+    // 2. X軸（右方向）：上方向とZ軸の外積（Cross）を正規化
+    Vector3 xAxis = Normalize(Cross(up, zAxis));
+
+    // 3. Y軸（上方向）：Z軸とX軸の外積（既に正規化された同士なので直交する）
+    Vector3 yAxis = Cross(zAxis, xAxis);
+
+    // 4. ビュー行列の構築（平行移動成分は各軸と視点位置の内積のマイナス）
+    Matrix4x4 result = {};
+    result.m[0][0] = xAxis.x;  result.m[0][1] = yAxis.x;  result.m[0][2] = zAxis.x;  result.m[0][3] = 0.0f;
+    result.m[1][0] = xAxis.y;  result.m[1][1] = yAxis.y;  result.m[1][2] = zAxis.y;  result.m[1][3] = 0.0f;
+    result.m[2][0] = xAxis.z;  result.m[2][1] = yAxis.z;  result.m[2][2] = zAxis.z;  result.m[2][3] = 0.0f;
+    result.m[3][0] = -Dot(xAxis, eye);
+    result.m[3][1] = -Dot(yAxis, eye);
+    result.m[3][2] = -Dot(zAxis, eye);
+    result.m[3][3] = 1.0f;
+
+    return result;
 }

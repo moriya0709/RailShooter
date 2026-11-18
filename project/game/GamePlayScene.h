@@ -41,6 +41,7 @@ public:
 	void Draw2D() override;
 	void DrawPostEffectExcluded2D() override;
 	void Draw3D() override;
+	void DrawShadow() override;
 	void DrawPostEffectMask() override;
 	// 終了
 	void Finalize() override;
@@ -207,7 +208,7 @@ private:
 
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
-	Vector3 rayMarchingSunDir = { -0.13f, -0.16f, -1.0f };
+	Vector3 rayMarchingSunDir = { -0.13f, -1.0f, -1.0f };
 	float rayMarchingCloudCoverage = 0.16f;
 	float rayMarchingCloudBottom = 5000.0f;
 	float rayMarchingCloudTop = 4000.0f;
@@ -221,7 +222,7 @@ private:
 	float thunderBrightness = 120.0f;
 	float horizonHeight = 0.2f;
 	float fogDensity = 0.020;
-	float fogHeight = 300.000;
+	float fogHeight = 250.000;
 	float fogScattering = 0.5f;
 	Vector3 fogColor = { 0.8f, 0.85f, 0.9f };
 

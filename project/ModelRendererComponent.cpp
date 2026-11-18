@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "LightManager.h"
 #include "TextureManager.h"
+#include "ShadowMap.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -121,6 +122,19 @@ void ModelRendererComponent::Draw() {
 		model_->Draw(activeTextureOverridePath_);
 	}
 
+}
+
+void ModelRendererComponent::DrawShadow() {
+	if (!model_ || IsCulledByDistance()) {
+		return;
+	}
+
+	// 通常描画と同じワールド行列に、ShadowMap::Update で算出したライト VP を掛ける。
+	transformationMatrixData->LightWVP = Multiply(
+		transformationMatrixData->World, ShadowMap::GetInstance()->GetLightVP());
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(
+		0, transformationMatrixResource->GetGPUVirtualAddress());
+	model_->DrawShadow();
 }
 
 void ModelRendererComponent::DrawOutline() {

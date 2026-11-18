@@ -7,6 +7,7 @@
     float32_t3 worldPosition : TEXCOORD1;
     float32_t4 currentClipPos : TEXCOORD2;
     float32_t4 prevClipPos : TEXCOORD3;
+    float32_t4 posLightSpace : TEXCOORD4;
 };
 
 struct PixelShaderOutput

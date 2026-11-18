@@ -98,7 +98,9 @@ Texture2D<float32_t4> gNormalTexture : register(t2);
 Texture2D<float32_t4> gRoughnessTexture : register(t3);
 Texture2D<float32_t4> gMetallicTexture : register(t4);
 Texture2D<float32_t4> gEmissionTexture : register(t5);
+Texture2D<float> gShadowMap : register(t6);
 SamplerState gSampler : register(s0);
+SamplerComparisonState gShadowSampler : register(s1);
 
 PixelShaderOutput main(VertexShaderOutput input)
 {
@@ -171,6 +173,20 @@ PixelShaderOutput main(VertexShaderOutput input)
         float4 spot = float4(0, 0, 0, 0);
         float4 fresnel = float4(0, 0, 0, 0); // フレネル/リムライト用
         
+        // 影の計算
+        float3 projCoords = input.posLightSpace.xyz / input.posLightSpace.w;
+        float2 shadowUV = float2(projCoords.x * 0.5f + 0.5f, -projCoords.y * 0.5f + 0.5f);
+        float shadowFactor = 1.0f;
+        // 範囲外（画面外）は影にしないための判定
+        if (saturate(shadowUV.x) == shadowUV.x && saturate(shadowUV.y) == shadowUV.y &&
+            projCoords.z >= 0.0f && projCoords.z <= 1.0f)
+        {
+            // コンパリソンサンプラーで深度を比較（1.0 = 光が当たる、0.0 = 影）。
+            // 受け手側にも小さなバイアスを入れ、深度丸め誤差での自己シャドウを防ぐ。
+            shadowFactor = gShadowMap.SampleCmpLevelZero(gShadowSampler, shadowUV, projCoords.z - 0.0015f);
+        }
+        
+        
         // 平行光 (Directional Light)
         if (gDirectionalLight.isDisplay)
         {
@@ -189,8 +205,8 @@ PixelShaderOutput main(VertexShaderOutput input)
                 // 従来
                 diffuse = pow(halfLambert, 2.0f);
             }
-            directional = gDirectionalLight.color * (diffuse * diffuseWeight) * gDirectionalLight.intensity;
-        
+            directional = gDirectionalLight.color * (diffuse * diffuseWeight) * gDirectionalLight.intensity * shadowFactor;
+            
             // --- 鏡面反射 (Specular) ---
             if (NdotL > 0.0f)
             {
@@ -198,7 +214,7 @@ PixelShaderOutput main(VertexShaderOutput input)
                 float NdotH = saturate(dot(normal, halfwayDir));
                 float specularPower = lerp(256.0f, 2.0f, roughness);
                 float specFactor = pow(NdotH, specularPower);
-                directionalSpecular = float4(gDirectionalLight.color.rgb * specularColor * specFactor * gDirectionalLight.intensity, 1.0f);
+                directionalSpecular = float4(gDirectionalLight.color.rgb * specularColor * specFactor * gDirectionalLight.intensity * shadowFactor, 1.0f);
             }
         }
 

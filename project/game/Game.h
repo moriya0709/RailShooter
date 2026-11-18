@@ -25,6 +25,7 @@
 #include "ParticlePreviewEditor.h"
 #include "GameTimer.h"
 #include "HitStopManager.h"
+#include "ShadowMap.h"
 
 class Game : public M_Framework {
 public:

@@ -89,13 +89,17 @@ public:
 	// 弾
 	std::list<std::unique_ptr<GameObject>> bulletObjects_;
 	std::list<EnemyBullet*> bullets_;
-	float shotCoolTime = 20.0f; // 射撃のクールタイム
+	float shotCoolTime = 2.0f; // 射撃のクールタイム
+	bool isShot = false;
 
 	// 当たったか
 	bool isHit = false;
 	float hitTimer_ = 0.0f;
 	float deltaTime_ = 1.0f / 60.0f;
 	Vector3 hitRadius = { 0.5f, 0.5f, 0.5f }; // 当たり判定の半径
+
+	// キル速度の評価変化時間
+	std::vector<float> kRatingChangeTime = { 5.0f, 10.0f, 15.0f };
 
 	// HP
 	int hp = 10;

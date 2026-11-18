@@ -300,10 +300,15 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 
 	// *スポナーの距離判定と敵の更新* //
 
+	// ActiveRailCamera グループごとの設定で、敵スポナーを更新するか決める。
+	bool canUpdateSpawners = GetOrCreateRailCameraGroup(
+		*level->GetLevelData(), activeRailGroupName_).enableEnemySpawning;
+
 	// エディタカメラ操作中ではない（ゲームプレイ中）場合のみ起動・生成を進める
 #ifdef USE_IMGUI
-	if (!isDebugCamera) {
-	#endif
+	canUpdateSpawners = canUpdateSpawners && !isDebugCamera;
+#endif
+	if (canUpdateSpawners) {
 		// レールカメラ上のプレイヤー座標（またはカメラ座標）を基準にする
 		Vector3 targetPos = player->GetTranslate();
 
@@ -318,9 +323,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				enemies.push_back(std::move(newEnemy));
 			}
 		}
-	#ifdef USE_IMGUI
 	}
-#endif
 
 	// カメラの現在の進行度を取得
 	float cameraProgress = railCamera->GetRailT();
@@ -727,7 +730,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			// そのままステージに切り換え
 			activeRailGroupName_ = "StageRailCamera";
 			level->GetLevelData()->activeRailCameraGroup = activeRailGroupName_;
-			railCamera->StopRail();
+			ResetEnemySpawning();
 
 			railCamera->StartRail();
 			player->SetMoveEnabled(true); // プレイヤーの移動を有効化
@@ -758,27 +761,46 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	}
 
 	// 残骸
-	for (const auto& enemyObject : enemies) {
-		auto* emeny = enemyObject->GetComponent<Enemy>();
-		if (emeny && emeny->IsDefeated()) {
-			if (auto* debris = GameObject::FindByName("EnemyNormal_Death")) {
-				debris->SetActive(true);
-				if (auto* debrisTransform = debris->GetComponent<TransformComponent>()) {
-					debrisTransform->SetTranslate(emeny->GetTransform().translate);
-					debrisTransform->SetRotate(emeny->GetTransform().rotate);
-					debrisTransform->SetScale(emeny->GetTransform().scale);
+	if (!isDebrisActive) {
+		for (const auto& enemyObject : enemies) {
+			auto* emeny = enemyObject->GetComponent<Enemy>();
+			if (emeny && emeny->IsDefeated()) {
+				if (auto* debris = GameObject::FindByName("EnemyNormal_Death")) {
+					debris->SetActive(true);
+					if (auto* debrisTransform = debris->GetComponent<TransformComponent>()) {
+						debrisTransform->SetTranslate(emeny->GetTransform().translate);
+						debrisTransform->SetRotate(emeny->GetTransform().rotate);
+						debrisTransform->SetScale(emeny->GetTransform().scale);
+					}
+					debrisActiveTime = 1.0f;
+					isDebrisActive = true;
 				}
+			}
+		}
+	} else {
+		if (auto* debris = GameObject::FindByName("EnemyNormal_Death")) {
+			if (auto* debrisTransform = debris->GetComponent<TransformComponent>()) {
+				Vector3 rotation = debrisTransform->GetRotate();
+				rotation.z = std::remainder(
+					rotation.z + 6.28f * deltaTime,
+					2.0f * 3.14f);
+				debrisTransform->SetRotate(rotation);
+			}
+
+			// 持続時間
+			if (debrisActiveTime > 0.0f) {
+				debrisActiveTime -= deltaTime;
+			} else {
+				isDebrisActive = false;
+				debris->SetActive(false);
 			}
 		}
 	}
 
-	if (auto* debris = GameObject::FindByName("EnemyNormal_Death")) {
-		if (auto* debrisTransform = debris->GetComponent<TransformComponent>()) {
-			Vector3 rotation = debrisTransform->GetRotate();
-			rotation.z = std::remainder(
-				rotation.z + 6.28f * deltaTime,
-				2.0f * 3.14f);
-			debrisTransform->SetRotate(rotation);
+	// 終点でセレクト
+	if (activeRailGroupName_ == "StageRailCamera") {
+		if (railCamera->IsRailFinished()) {
+			SceneManager::GetInstance()->ChangeScene("SELECT");
 		}
 	}
 
@@ -867,7 +889,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 
 				}
 
-				if (clearTextCompleted_ && railCamera->GetRailT() >= 4.5f) {
+				if (clearTextCompleted_ && railCamera->GetRailT() >= 4.0f) {
 					// テキストを非表示にする
 					for (int i = 1; i <= 12; ++i) {
 						auto* missionClearObject = GameObject::FindByName(
@@ -1688,6 +1710,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					if (ImGui::Combo("Camera Direction", &directionMode, directionModes, IM_ARRAYSIZE(directionModes))) {
 						railSettings.directionMode = static_cast<RailCameraDirectionMode>(directionMode);
 					}
+					ImGui::Checkbox("Enable Enemy Spawning", &railSettings.enableEnemySpawning);
 					if (railSettings.directionMode == RailCameraDirectionMode::LookAtTarget) {
 						ImGui::DragFloat3("Look At Target", &railSettings.targetPosition.x, 0.1f);
 						const char* targetPreview = railSettings.targetObjectName.empty()
@@ -1734,6 +1757,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				if (ImGui::Combo("Camera Direction", &directionMode, directionModes, IM_ARRAYSIZE(directionModes))) {
 					railSettings.directionMode = static_cast<RailCameraDirectionMode>(directionMode);
 				}
+				ImGui::Checkbox("Enable Enemy Spawning", &railSettings.enableEnemySpawning);
 				if (railSettings.directionMode == RailCameraDirectionMode::LookAtTarget) {
 					ImGui::DragFloat3("Look At Target", &railSettings.targetPosition.x, 0.1f);
 					const char* targetPreview = railSettings.targetObjectName.empty()

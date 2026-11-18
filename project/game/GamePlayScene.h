@@ -320,6 +320,10 @@ private:
 	int clearTextIndex_ = 12;
 	bool clearTextCompleted_ = false;
 
+	// 残骸
+	bool isDebrisActive = false;
+	float debrisActiveTime = 0.0f;
+
 
 	// レベルデータからオブジェクト生成、配置
 	void CreateLevel();

@@ -234,7 +234,7 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 	}
 
 	// 弾の生成
-	if (shotCoolTime <= 0) {
+	if (isShot) {
 		auto bulletObject = std::make_unique<GameObject>("EnemyBullet");
 		auto bullet = bulletObject->AddComponent<EnemyNormalBullet>();
 		bullet->Initialize(transform.translate, playerPosition);
@@ -242,7 +242,7 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 		bullets_.push_back(bullet);
 		bulletObjects_.push_back(std::move(bulletObject));
 
-		shotCoolTime = 0.5f; // クールタイムをリセット
+		shotCoolTime = 2.0f; // クールタイムをリセット
 	}
 
 	// 全ての弾を更新

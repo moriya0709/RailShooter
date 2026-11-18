@@ -233,7 +233,7 @@ void EnemyBoss::Update(Vector3 playerPosition, float currentPlayerProgress) {
 	}
 
 	// 弾の生成
-	if (shotCoolTime <= 0) {
+	if (isShot) {
 		auto bulletObject = std::make_unique<GameObject>("EnemyBullet");
 		auto bullet = bulletObject->AddComponent<EnemyNormalBullet>();
 		bullet->Initialize(transform.translate, playerPosition);
@@ -241,7 +241,7 @@ void EnemyBoss::Update(Vector3 playerPosition, float currentPlayerProgress) {
 		bullets_.push_back(bullet);
 		bulletObjects_.push_back(std::move(bulletObject));
 
-		shotCoolTime = 0.5f; // クールタイムをリセット
+		shotCoolTime = 2.0f; // クールタイムをリセット
 	}
 
 	// 全ての弾を更新
@@ -291,14 +291,25 @@ void EnemyBoss::OnCollisionBullet(int damage) {
 		isDead_ = true;
 		isDefeated_ = true;
 
+		// キルの速度に応じた評価を設定
+		if (aliveTime < kRatingChangeTime[0]) {
+			ScoreManager::GetInstance()->SetRating("Perfect");
+		} else if (aliveTime < kRatingChangeTime[1]) {
+			ScoreManager::GetInstance()->SetRating("Great");
+		} else if (aliveTime < kRatingChangeTime[2]) {
+			ScoreManager::GetInstance()->SetRating("Good");
+		} else {
+			ScoreManager::GetInstance()->SetRating("Normal");
+		}
+
 		// スコア加算(死亡時)
 		ScoreManager::GetInstance()->AddScore(scoreValueDeath, 1);
 		// コンボ加算
 		ScoreManager::GetInstance()->AddCombo();
 		// ヒットストップ
-		HitStopManager::GetInstance()->Request(120, 0.25f);
+		HitStopManager::GetInstance()->Request(20, 0.25f);
 
-		// スコア演出用のUIを表示
+		// スコア演出
 		if (auto* comboObject = GameObject::FindByName("ComboText")) {
 			comboObject->SetActive(true);
 			if (auto* comboEasing = comboObject->GetComponent<EasingComponent>()) {
@@ -317,6 +328,21 @@ void EnemyBoss::OnCollisionBullet(int damage) {
 				killScoreEasing->Play(0);
 			}
 		}
+		if (auto* ratingObject = GameObject::FindByName("Rating")) {
+			ratingObject->SetActive(true);
+			if (auto* ratingEasing = ratingObject->GetComponent<EasingComponent>()) {
+				ratingEasing->Play(0);
+			}
+		}
+		if (auto* ratingScoreObject = GameObject::FindByName("RatingScore")) {
+			ratingScoreObject->SetActive(true);
+			if (auto* ratingScoreEasing = ratingScoreObject->GetComponent<EasingComponent>()) {
+				ratingScoreEasing->Play(0);
+			}
+		}
+
+
+
 	} else {
 		// スコア加算(ヒット時)
 		ScoreManager::GetInstance()->AddScore(scoreValueHit);

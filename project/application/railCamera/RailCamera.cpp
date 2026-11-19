@@ -392,7 +392,7 @@ void RailCamera::UpdateCameraTarget() {
 	Vector3 target = targetPosition;
 	if (!targetObjectName_.empty()) {
 		if (const GameObject* targetObject = GameObject::FindByName(targetObjectName_)) {
-			target = targetObject->GetTransform()->GetTranslate();
+			target = targetObject->GetTransformComponent()->GetTranslate();
 		}
 	}
 

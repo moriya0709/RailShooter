@@ -10,7 +10,7 @@ void PlayerBulletNormal::Initialize(const Vector3 position, Enemy* target, const
 	transform.translate = position;
 	previousTranslate_ = position;
 	if (GetGameObject()) {
-		GetGameObject()->GetTransform()->transform = transform;
+		GetGameObject()->GetTransformComponent()->SetTransform(transform);
 	}
 	target_ = target;
 	inheritedVelocity_ = inheritedVelocity;
@@ -101,7 +101,7 @@ void PlayerBulletNormal::Update() {
 	transform.translate.y += velocity.y * frameScale;
 	transform.translate.z += velocity.z * frameScale;
 	if (GetGameObject()) {
-		GetGameObject()->GetTransform()->transform = transform;
+		GetGameObject()->GetTransformComponent()->SetTransform(transform);
 	}
 
 	trailEffect->AddPoint(transform.translate);

@@ -1,4 +1,4 @@
-#include "LevelObjectFactory.h"
+﻿#include "LevelObjectFactory.h"
 
 #include <algorithm>
 
@@ -64,9 +64,9 @@ void ConfigureRailMovement(GameObject& gameObject, const ObjectData& objectData)
 
 void ConfigureRectTransform(GameObject& gameObject, const ObjectData& objectData) {
 	auto* rectTransform = gameObject.AddComponent<RectTransformComponent>();
-	rectTransform->position = objectData.rectPosition;
-	rectTransform->rotation = objectData.rectRotation;
-	rectTransform->scale = objectData.rectScale;
+	rectTransform->SetPosition(objectData.rectPosition);
+	rectTransform->SetRotation(objectData.rectRotation);
+	rectTransform->SetScale(objectData.rectScale);
 }
 
 void ConfigureEasing(GameObject& gameObject, const ObjectData& objectData) {
@@ -115,7 +115,7 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 		}
 
 		auto gameObject = std::make_unique<GameObject>(objectData.name);
-		gameObject->GetTransform()->transform = objectData.transform;
+		gameObject->GetTransformComponent()->SetTransform(objectData.transform);
 
 		if (isMesh) {
 			ConfigureModelRenderer(*gameObject->AddComponent<ModelRendererComponent>(), objectData, "cube.gltf");
@@ -138,8 +138,8 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 			}
 			if (HasComponent(objectData, "Collider")) {
 				auto* collider = gameObject->AddComponent<ColliderComponent>();
-				collider->size = objectData.colliderSize;
-				collider->centerOffset = objectData.colliderCenterOffset;
+				collider->SetSize(objectData.colliderSize);
+				collider->SetCenterOffset(objectData.colliderCenterOffset);
 			}
 			if (HasComponent(objectData, "SpriteRenderer")) {
 				if (!gameObject->GetComponent<RectTransformComponent>()) {

@@ -17,12 +17,13 @@ void SpriteRendererComponent::Update() {
 
 	if (const auto* rectTransform = GetGameObject()->GetComponent<RectTransformComponent>()) {
 		// UI 用の変換があるオブジェクトは、ワールド座標ではなく画面座標で描画する。
-		sprite_->SetPosition(rectTransform->position);
-		sprite_->SetRotation(rectTransform->rotation);
-		sprite_->SetSize({ size_.x * rectTransform->scale.x, size_.y * rectTransform->scale.y });
+		sprite_->SetPosition(rectTransform->GetPosition());
+		sprite_->SetRotation(rectTransform->GetRotation());
+		const Vector2 scale = rectTransform->GetScale();
+		sprite_->SetSize({ size_.x * scale.x, size_.y * scale.y });
 	} else {
 		// RectTransform を持たない既存オブジェクトとの互換用フォールバック。
-		const Transform& transform = GetGameObject()->GetTransform()->transform;
+		const Transform transform = GetGameObject()->GetTransformComponent()->GetTransform();
 		sprite_->SetPosition({ transform.translate.x, transform.translate.y });
 		sprite_->SetRotation(transform.rotate.z);
 		sprite_->SetSize({ size_.x * transform.scale.x, size_.y * transform.scale.y });

@@ -81,7 +81,7 @@ namespace {
 					// EnemyNormal と同様、スポーン地点が最初の制御点と違う場合は
 					// その間も経路として可視化する。
 					std::vector<Vector3> pathRoutePoints = spawnData.controlPoints;
-					Vector3 spawnPosition = object->GetTransform()->transform.translate;
+					Vector3 spawnPosition = object->GetTransformComponent()->GetTranslate();
 					spawnPosition.x += spawnData.offset.x;
 					spawnPosition.y += spawnData.offset.y;
 					spawnPosition.z += spawnData.offset.z;
@@ -126,7 +126,7 @@ void GamePlayScene::Initialize() {
 	// as a fallback for old levels without a Camera component.
 	if (!camera) {
 		fallbackCameraObject = std::make_unique<GameObject>("MainCamera");
-		fallbackCameraObject->GetTransform()->transform = cameraTransform;
+		fallbackCameraObject->GetTransformComponent()->SetTransform(cameraTransform);
 		camera = fallbackCameraObject->AddComponent<CameraComponent>();
 		fallbackCameraObject->Initialize();
 		cameraObject = fallbackCameraObject.get();
@@ -217,10 +217,10 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				level->GetLevelData()->objects[index].groupName != activeRailGroupName_) continue;
 			const auto& levelObject = levelObjects[index];
 			if (auto* railPoint = levelObject->GetComponent<RailPointComponent>(); railPoint && railPoint->IsEnabled() && levelObject->IsActive()) {
-				auto* transformComp = levelObject->GetTransform();
+				auto* transformComp = levelObject->GetTransformComponent();
 				RailPoint p{};
-				p.position = transformComp->transform.translate;
-				p.rotate = transformComp->transform.rotate;
+				p.position = transformComp->GetTranslate();
+				p.rotate = transformComp->GetRotate();
 				railCamera->points.push_back(p);
 			}
 		}
@@ -432,13 +432,13 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 
 		// パーティクル
 		if (deathParticle1) {
-			if (auto* transform = deathParticle1->GetTransform()) {
+			if (auto* transform = deathParticle1->GetTransformComponent()) {
 				transform->SetTranslate(player->GetTranslate());
 				transform->SetRotate(player->GetRotate());
 			}
 		}
 		if (deathParticle2) {
-			if (auto* transform = deathParticle2->GetTransform()) {
+			if (auto* transform = deathParticle2->GetTransformComponent()) {
 				transform->SetTranslate(player->GetTranslate());
 				transform->SetRotate(player->GetRotate());
 			}
@@ -1117,7 +1117,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 		float fps = ImGui::GetIO().Framerate;
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", fps > 0.0f ? 1000.0f / fps : 0.0f, fps);
 
-		Transform& cameraTransform = cameraObject->GetTransform()->transform;
+		Transform cameraTransform = cameraObject->GetTransformComponent()->GetTransform();
 		ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.1f, -500.0f, 500.0f);
 		ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -10.0f, 10.0f);
 
@@ -1610,7 +1610,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			ObjectData emptyData{};
 			emptyData.type = "EMPTY";
 			emptyData.name = objectName;
-			emptyData.transform = selectedObject->GetTransform()->transform;
+			emptyData.transform = selectedObject->GetTransformComponent()->GetTransform();
 			level->GetLevelData()->objects.push_back(emptyData);
 		}
 		ImGui::SameLine();
@@ -1813,7 +1813,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			}
 			copyData.transform.translate.x += 1.0f;
 			auto copyObject = std::make_unique<GameObject>(copyData.name);
-			copyObject->GetTransform()->transform = copyData.transform;
+			copyObject->GetTransformComponent()->SetTransform(copyData.transform);
 			const auto* sourceObject = levelObjects[objectToDuplicate].get();
 			if (sourceObject->GetComponent<ModelRendererComponent>()) {
 				auto* renderer = copyObject->AddComponent<ModelRendererComponent>();
@@ -1836,14 +1836,14 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			}
 			if (sourceObject->GetComponent<RectTransformComponent>()) {
 				auto* rectTransform = copyObject->AddComponent<RectTransformComponent>();
-				rectTransform->position = copyData.rectPosition;
-				rectTransform->rotation = copyData.rectRotation;
-				rectTransform->scale = copyData.rectScale;
+				rectTransform->SetPosition(copyData.rectPosition);
+				rectTransform->SetRotation(copyData.rectRotation);
+				rectTransform->SetScale(copyData.rectScale);
 			}
 			if (sourceObject->GetComponent<ColliderComponent>()) {
 				auto* collider = copyObject->AddComponent<ColliderComponent>();
-				collider->size = copyData.colliderSize;
-				collider->centerOffset = copyData.colliderCenterOffset;
+				collider->SetSize(copyData.colliderSize);
+				collider->SetCenterOffset(copyData.colliderCenterOffset);
 			}
 			if (sourceObject->GetComponent<SpriteRendererComponent>()) {
 				if (!copyObject->GetComponent<RectTransformComponent>()) copyObject->AddComponent<RectTransformComponent>();
@@ -1987,9 +1987,9 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			// 2. TransformComponent の追加と配置設定
 			auto transformComp = newObject->AddComponent<TransformComponent>();
 
-			transformComp->transform.translate = camera->GetTranslate();
-			transformComp->transform.rotate = camera->GetRotate();
-			transformComp->transform.scale = { 1.0f, 1.0f, 1.0f };
+			transformComp->SetTranslate(camera->GetTranslate());
+			transformComp->SetRotate(camera->GetRotate());
+			transformComp->SetScale({ 1.0f, 1.0f, 1.0f });
 
 			// 3. ModelRendererComponent の追加（モデルは固定で "rail.obj" を指定）
 			auto modelRenderer = newObject->AddComponent<ModelRendererComponent>();
@@ -2010,7 +2010,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			newObjectData.type = "RAIL"; // ★ ここを RAIL にする
 			newObjectData.name = objectName;
 			newObjectData.file_name = "rail.obj";
-			newObjectData.transform = transformComp->transform;
+			newObjectData.transform = transformComp->GetTransform();
 			newObjectData.components = { "ModelRenderer", "RailPoint" };
 
 			level->GetLevelData()->objects.push_back(newObjectData);
@@ -2024,10 +2024,10 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			auto transformComp = newObject->AddComponent<TransformComponent>();
 
 			// カメラの少し前に配置するなど、出しやすい位置に設定
-			transformComp->transform.translate = camera->GetTranslate();
-			transformComp->transform.translate.z += 10.0f;
-			transformComp->transform.rotate = { 0.0f, 0.0f, 0.0f };
-			transformComp->transform.scale = { 1.0f, 1.0f, 1.0f };
+			transformComp->SetTranslate(camera->GetTranslate());
+			transformComp->SetTranslate({ transformComp->GetTranslate().x, transformComp->GetTranslate().y,transformComp->GetTranslate().z + 10.0f });
+			transformComp->SetRotate({ 0.0f, 0.0f, 0.0f });
+			transformComp->SetScale({ 1.0f, 1.0f, 1.0f });
 
 			// エディタ上で視認するためのダミーモデル（例: "cube.obj"）をセット
 			auto modelRenderer = newObject->AddComponent<ModelRendererComponent>();
@@ -2045,7 +2045,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			newObjectData.name = objectName;
 			// file_name に「どの敵を出すか」の情報を間借りして保存するのもオススメです
 			newObjectData.file_name = "EnemyTypeA";
-			newObjectData.transform = transformComp->transform;
+			newObjectData.transform = transformComp->GetTransform();
 			newObjectData.components = { "ModelRenderer", "EnemySpawner" };
 
 			level->GetLevelData()->objects.push_back(newObjectData);
@@ -2084,9 +2084,9 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				// 2. TransformComponent の追加と配置設定
 				auto transformComp = newObject->AddComponent<TransformComponent>();
 				Vector3 spawnPos = camera->GetTranslate();
-				transformComp->transform.translate = { spawnPos.x, spawnPos.y, spawnPos.z + 10.0f };
-				transformComp->transform.rotate = { 0.0f, 0.0f, 0.0f };
-				transformComp->transform.scale = { 1.0f, 1.0f, 1.0f };
+				transformComp->SetTranslate({ spawnPos.x, spawnPos.y, spawnPos.z + 10.0f });
+				transformComp->SetRotate({ 0.0f, 0.0f, 0.0f });
+				transformComp->SetScale({ 1.0f, 1.0f, 1.0f });
 
 				// 3. ModelRendererComponent の追加とモデル設定
 				auto modelRenderer = newObject->AddComponent<ModelRendererComponent>();
@@ -2106,7 +2106,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				newObjectData.type = "MESH";
 				newObjectData.name = objectName;
 				newObjectData.file_name = droppedFileName;
-				newObjectData.transform = transformComp->transform;
+				newObjectData.transform = transformComp->GetTransform();
 				newObjectData.components = { "ModelRenderer" };
 
 				level->GetLevelData()->objects.push_back(newObjectData);
@@ -2168,13 +2168,15 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			ImGui::Separator();
 
 			// Transform は必須コンポーネント。Unity の Inspector と同じように常に表示する。
-			auto transformComp = selectedObject->GetTransform();
+			auto transformComp = selectedObject->GetTransformComponent();
 			if (transformComp && ImGui::CollapsingHeader(selectedObject->GetComponent<RectTransformComponent>() ? "Transform (3D - unused by Sprite)" : "Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-				bool transformChanged = ImGui::DragFloat3("Position", &transformComp->transform.translate.x, 0.1f);
-				transformChanged |= ImGui::DragFloat3("Rotation", &transformComp->transform.rotate.x, 0.05f);
-				transformChanged |= ImGui::DragFloat3("Scale", &transformComp->transform.scale.x, 0.1f);
-				if (transformChanged && selectedIndex != -1) {
-					level->GetLevelData()->objects[selectedIndex].transform = transformComp->transform;
+				auto transform = transformComp->GetTransform();
+				bool transformChanged = ImGui::DragFloat3("Position", &transform.translate.x, 0.1f);
+				transformChanged |= ImGui::DragFloat3("Rotation", &transform.rotate.x, 0.05f);
+				transformChanged |= ImGui::DragFloat3("Scale", &transform.scale.x, 0.1f);
+				if (transformChanged) {
+					transformComp->SetTransform(transform);
+					if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].transform = transform;
 				}
 			}
 
@@ -2197,15 +2199,21 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			}
 
 			if (auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>()) {
+				auto position = rectTransform->GetPosition();
+				auto rotation = rectTransform->GetRotation();
+				auto scale = rectTransform->GetScale();
 				if (ImGui::CollapsingHeader("Rect Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-					if (ImGui::DragFloat2("Position (px)", &rectTransform->position.x, 1.0f)) {
-						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].rectPosition = rectTransform->position;
+					if (ImGui::DragFloat2("Position (px)", &position.x, 1.0f)) {
+						rectTransform->SetPosition(position);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].rectPosition = position;
 					}
-					if (ImGui::DragFloat("Rotation (rad)", &rectTransform->rotation, 0.01f)) {
-						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].rectRotation = rectTransform->rotation;
+					if (ImGui::DragFloat("Rotation (rad)", &rotation, 0.01f)) {
+						rectTransform->SetRotation(rotation);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].rectRotation = rotation;
 					}
-					if (ImGui::DragFloat2("Scale", &rectTransform->scale.x, 0.01f, 0.01f, 100.0f)) {
-						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].rectScale = rectTransform->scale;
+					if (ImGui::DragFloat2("Scale", &scale.x, 0.01f, 0.01f, 100.0f)) {
+						rectTransform->SetScale(scale);
+						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].rectScale = scale;
 					}
 				}
 			}
@@ -2627,8 +2635,8 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 						ImGui::PopID();
 					}
 					if (ImGui::Button("Add Point At Object")) {
-						points.push_back(selectedObject->GetTransform()->GetTranslate());
-						rotations.push_back(selectedObject->GetTransform()->GetRotate());
+						points.push_back(selectedObject->GetTransformComponent()->GetTranslate());
+						rotations.push_back(selectedObject->GetTransformComponent()->GetRotate());
 						if (selectedIndex != -1) {
 							level->GetLevelData()->objects[selectedIndex].objectRailPoints = points;
 							level->GetLevelData()->objects[selectedIndex].objectRailPointRotations = rotations;
@@ -2819,16 +2827,16 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				}
 				if (!selectedObject->GetComponent<SpriteRendererComponent>() && ImGui::Button("Sprite Renderer")) {
 					auto* rectTransform = selectedObject->AddComponent<RectTransformComponent>();
-					rectTransform->position = { 960.0f, 540.0f };
+					rectTransform->SetPosition({ 960.0f, 540.0f });
 					auto* spriteRenderer = selectedObject->AddComponent<SpriteRendererComponent>();
 					spriteRenderer->SetTexture("Resource/title/title.png");
 					objectData.sprite_file_name = "Resource/title/title.png";
 					objectData.spriteSize = spriteRenderer->GetSize();
 					objectData.spriteEmissiveColor = { 1.0f, 1.0f, 1.0f };
 					objectData.spriteEmissiveIntensity = 0.0f;
-					objectData.rectPosition = rectTransform->position;
-					objectData.rectRotation = rectTransform->rotation;
-					objectData.rectScale = rectTransform->scale;
+					objectData.rectPosition = rectTransform->GetPosition();
+					objectData.rectRotation = rectTransform->GetRotation();
+					objectData.rectScale = rectTransform->GetScale();
 					addSerializedComponent("RectTransform");
 					addSerializedComponent("SpriteRenderer");
 				}
@@ -2836,7 +2844,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>();
 					if (!rectTransform) {
 						rectTransform = selectedObject->AddComponent<RectTransformComponent>();
-						rectTransform->position = { 960.0f, 540.0f };
+						rectTransform->SetPosition({ 960.0f, 540.0f });
 					}
 					auto* textRenderer = selectedObject->AddComponent<TextRendererComponent>();
 					textRenderer->SetText("New Text");
@@ -2854,9 +2862,9 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					objectData.textEmissiveColor = { 1.0f, 1.0f, 1.0f };
 					objectData.textEmissiveIntensity = 0.0f;
 					objectData.textCharacterSpacing = 0.0f;
-					objectData.rectPosition = rectTransform->position;
-					objectData.rectRotation = rectTransform->rotation;
-					objectData.rectScale = rectTransform->scale;
+					objectData.rectPosition = rectTransform->GetPosition();
+					objectData.rectRotation = rectTransform->GetRotation();
+					objectData.rectScale = rectTransform->GetScale();
 					addSerializedComponent("RectTransform");
 					addSerializedComponent("TextRenderer");
 				}
@@ -2866,9 +2874,9 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				}
 				if (!selectedObject->GetComponent<ObjectRailMovementComponent>() && ImGui::Button("Object Rail Movement")) {
 					auto* railMovement = selectedObject->AddComponent<ObjectRailMovementComponent>();
-					const Vector3 start = selectedObject->GetTransform()->GetTranslate();
+					const Vector3 start = selectedObject->GetTransformComponent()->GetTranslate();
 					const std::vector<Vector3> points = { start, start + Vector3{ 0.0f, 0.0f, 5.0f } };
-					const Vector3 rotation = selectedObject->GetTransform()->GetRotate();
+					const Vector3 rotation = selectedObject->GetTransformComponent()->GetRotate();
 					const std::vector<Vector3> rotations = { rotation, rotation };
 					railMovement->Configure(points, 1.0f, true, true, true, rotations, false);
 					objectData.objectRailPoints = points;
@@ -2883,11 +2891,11 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				if (!selectedObject->GetComponent<EasingComponent>() && ImGui::Button("Easing")) {
 					EasingData easingData{};
 					if (auto* rectTransform = selectedObject->GetComponent<RectTransformComponent>()) {
-						easingData.startPosition = easingData.goalPosition = { rectTransform->position.x, rectTransform->position.y, 0.0f };
-						easingData.startRotation = easingData.goalRotation = { 0.0f, 0.0f, rectTransform->rotation };
-						easingData.startScale = easingData.goalScale = { rectTransform->scale.x, rectTransform->scale.y, 1.0f };
+						easingData.startPosition = easingData.goalPosition = { rectTransform->GetPosition().x, rectTransform->GetPosition().y, 0.0f};
+						easingData.startRotation = easingData.goalRotation = { 0.0f, 0.0f, rectTransform->GetRotation()};
+						easingData.startScale = easingData.goalScale = { rectTransform->GetScale().x, rectTransform->GetScale().y, 1.0f};
 					} else {
-						const Transform& transform = selectedObject->GetTransform()->transform;
+						const Transform& transform = selectedObject->GetTransformComponent()->GetTransform();
 						easingData.startPosition = easingData.goalPosition = transform.translate;
 						easingData.startRotation = easingData.goalRotation = transform.rotate;
 						easingData.startScale = easingData.goalScale = transform.scale;
@@ -2927,8 +2935,8 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				if ((objectData.type == "EMPTY" || objectData.type == "empty") &&
 					!selectedObject->GetComponent<ColliderComponent>() && ImGui::Button("Collider")) {
 					auto* collider = selectedObject->AddComponent<ColliderComponent>();
-					objectData.colliderSize = collider->size;
-					objectData.colliderCenterOffset = collider->centerOffset;
+					objectData.colliderSize = collider->GetSize();
+					objectData.colliderCenterOffset = collider->GetCenterOffset();
 					addSerializedComponent("Collider");
 				}
 				if (!selectedObject->GetComponent<Player>() && ImGui::Button("Player Controller")) {
@@ -2941,7 +2949,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				}
 				if (!selectedObject->GetComponent<Enemy>() && ImGui::Button("Enemy Normal")) {
 					auto* enemy = selectedObject->AddComponent<EnemyNormal>();
-					enemy->SetTransform(selectedObject->GetTransform()->transform);
+					enemy->SetTransform(selectedObject->GetTransformComponent()->GetTransform());
 					addSerializedComponent("EnemyNormal");
 				}
 			}
@@ -3124,7 +3132,7 @@ void GamePlayScene::CreateRailPresetFromGroup(const std::string& groupName, cons
 	for (size_t i = 0; i < levelObjects.size(); ++i) {
 		if (level->GetLevelData()->objects[i].groupName == groupName) {
 			if (levelObjects[i]->GetComponent<RailPointComponent>()) {
-				groupTransforms.push_back(levelObjects[i]->GetTransform()->transform);
+				groupTransforms.push_back(levelObjects[i]->GetTransformComponent()->GetTransform());
 			}
 		}
 	}
@@ -3176,7 +3184,7 @@ void GamePlayScene::AppendRailPreset(const RailPresetData& preset) {
 		int64_t idx = std::distance(levelObjects.begin(), it.base()) - 1;
 		if (level->GetLevelData()->objects[idx].groupName == activeRailGroupName_ &&
 			obj->GetComponent<RailPointComponent>()) {
-			baseTransform = obj->GetTransform()->transform;
+			baseTransform = obj->GetTransformComponent()->GetTransform();
 			break;
 		}
 	}
@@ -3196,13 +3204,13 @@ void GamePlayScene::AppendRailPreset(const RailPresetData& preset) {
 		auto newObject = std::make_unique<GameObject>(objectName);
 		auto transformComp = newObject->AddComponent<TransformComponent>();
 
-		transformComp->transform.translate = { translation[0], translation[1], translation[2] };
-		transformComp->transform.rotate = {
+		transformComp->SetTranslate({ translation[0], translation[1], translation[2] });
+		transformComp->SetRotate({
 			rotation[0] * (3.14159265f / 180.0f),
 			rotation[1] * (3.14159265f / 180.0f),
 			rotation[2] * (3.14159265f / 180.0f)
-		};
-		transformComp->transform.scale = { 1.0f, 1.0f, 1.0f };
+			});
+		transformComp->SetScale({ 1.0f, 1.0f, 1.0f });
 
 		auto modelRenderer = newObject->AddComponent<ModelRendererComponent>();
 		modelRenderer->SetModel("rail.obj");
@@ -3215,7 +3223,7 @@ void GamePlayScene::AppendRailPreset(const RailPresetData& preset) {
 		newObjectData.name = objectName;
 		newObjectData.file_name = "rail.obj";
 		newObjectData.groupName = activeRailGroupName_;
-		newObjectData.transform = transformComp->transform;
+		newObjectData.transform = transformComp->GetTransform();
 		newObjectData.components = { "ModelRenderer", "RailPoint" };
 
 		level->GetLevelData()->objects.push_back(newObjectData);
@@ -3284,7 +3292,7 @@ void GamePlayScene::RebuildRailGroupFromSequence(const std::string& groupName) {
 		if (isFirstPreset) {
 			level->GetLevelData()->objects[groupPointIndices[0]].transform.rotate = sectionRotate;
 			if (auto* transformComp = levelObjects[groupPointIndices[0]]->GetComponent<TransformComponent>()) {
-				transformComp->transform.rotate = sectionRotate;
+				transformComp->SetRotate(sectionRotate);
 			}
 			isFirstPreset = false;
 		}
@@ -3312,7 +3320,7 @@ void GamePlayScene::RebuildRailGroupFromSequence(const std::string& groupName) {
 			const std::string objectName = "RailPoint_" + targetPreset->presetName + "_" + std::to_string(levelObjects.size() + 1);
 			auto newObject = std::make_unique<GameObject>(objectName);
 			auto transformComp = newObject->AddComponent<TransformComponent>();
-			transformComp->transform = newTrans;
+			transformComp->SetTransform(newTrans);
 
 			auto modelRenderer = newObject->AddComponent<ModelRendererComponent>();
 			modelRenderer->SetModel("rail.obj");
@@ -3375,9 +3383,9 @@ void GamePlayScene::CreateLevel() {
 
 			// 2. TransformComponent を追加してトランスフォーム情報をセット
 			auto transform = gameObject->AddComponent<TransformComponent>();
-			transform->transform.translate = objectData.transform.translate;
-			transform->transform.rotate = objectData.transform.rotate;
-			transform->transform.scale = objectData.transform.scale;
+			transform->SetTranslate(objectData.transform.translate);
+			transform->SetRotate(objectData.transform.rotate);
+			transform->SetScale(objectData.transform.scale);
 
 			// 3. ModelRendererComponent を追加して 3D モデルをセット
 			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
@@ -3424,9 +3432,9 @@ void GamePlayScene::CreateLevel() {
 			auto gameObject = std::make_unique<GameObject>(objectData.name);
 			auto transform = gameObject->AddComponent<TransformComponent>();
 
-			transform->transform.translate = objectData.transform.translate;
-			transform->transform.rotate = objectData.transform.rotate;
-			transform->transform.scale = objectData.transform.scale;
+			transform->SetTranslate(objectData.transform.translate);
+			transform->SetRotate(objectData.transform.rotate);
+			transform->SetScale(objectData.transform.scale);
 
 			// モデルのセット (JSONにファイル名がない場合は "rail.obj" をデフォルトにする)
 			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
@@ -3463,9 +3471,9 @@ void GamePlayScene::CreateLevel() {
 			auto gameObject = std::make_unique<GameObject>(objectData.name);
 
 			auto transform = gameObject->AddComponent<TransformComponent>();
-			transform->transform.translate = objectData.transform.translate;
-			transform->transform.rotate = objectData.transform.rotate;
-			transform->transform.scale = objectData.transform.scale;
+			transform->SetTranslate(objectData.transform.translate);
+			transform->SetRotate(objectData.transform.rotate);
+			transform->SetScale(objectData.transform.scale);
 
 			// エディタ表示用のモデルをアタッチ
 			auto modelRenderer = gameObject->AddComponent<ModelRendererComponent>();
@@ -3500,7 +3508,7 @@ void GamePlayScene::CreateLevel() {
 		} else if (objectData.type == "EMPTY" || objectData.type == "empty") {
 			// Empty は Transform だけを持つ、Hierarchy 用の GameObject。
 			auto gameObject = std::make_unique<GameObject>(objectData.name);
-			gameObject->GetTransform()->transform = objectData.transform;
+			gameObject->GetTransformComponent()->SetTransform(objectData.transform);
 
 			const auto hasComponent = [&objectData](const char* componentName) {
 				return std::find(objectData.components.begin(), objectData.components.end(), componentName) != objectData.components.end();
@@ -3525,14 +3533,14 @@ void GamePlayScene::CreateLevel() {
 			}
 			if (hasComponent("RectTransform")) {
 				auto* rectTransform = gameObject->AddComponent<RectTransformComponent>();
-				rectTransform->position = objectData.rectPosition;
-				rectTransform->rotation = objectData.rectRotation;
-				rectTransform->scale = objectData.rectScale;
+				rectTransform->SetPosition(objectData.rectPosition);
+				rectTransform->SetRotation(objectData.rectRotation);
+				rectTransform->SetScale(objectData.rectScale);
 			}
 			if (hasComponent("Collider")) {
 				auto* collider = gameObject->AddComponent<ColliderComponent>();
-				collider->size = objectData.colliderSize;
-				collider->centerOffset = objectData.colliderCenterOffset;
+				collider->SetSize(objectData.colliderSize);
+				collider->SetCenterOffset(objectData.colliderCenterOffset);
 			}
 			if (hasComponent("SpriteRenderer")) {
 				if (!gameObject->GetComponent<RectTransformComponent>()) {
@@ -3676,10 +3684,10 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 		for (auto& obj : levelObjects) {
 			auto transformComp = obj->GetComponent<TransformComponent>();
 			if (transformComp) {
-				Vector3 center = transformComp->transform.translate;
+				Vector3 center = transformComp->GetTranslate();
 				// スケールの最大値を半径の目安にする
 				float baseModelSize = 5.0f;
-				float radius = (std::max)({ transformComp->transform.scale.x, transformComp->transform.scale.y, transformComp->transform.scale.z }) * baseModelSize;
+				float radius = (std::max)({ transformComp->GetScale().x, transformComp->GetScale().y, transformComp->GetScale().z }) * baseModelSize;
 
 				// ★既存のRaySphereIntersectを使用
 				float hitDistance = RaySphereIntersect(ray.origin, ray.direction, center, radius);
@@ -3729,7 +3737,7 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 			Matrix4x4 viewMat = isSpriteObject ? MakeIdentity4x4() : camera->GetViewMatrix();
 			Matrix4x4 projMat = isSpriteObject ? MakeOrthographicMatrix(0.0f, 0.0f, 1920.0f, 1080.0f, 0.0f, 100.0f) : camera->GetProjectionMatrix();
 			Matrix4x4 worldMat = isSpriteObject
-				? MakeAffineMatrix(Vector3{ rectTransform->scale.x, rectTransform->scale.y, 1.0f }, Vector3{ 0.0f, 0.0f, rectTransform->rotation }, Vector3{ rectTransform->position.x, rectTransform->position.y, 0.0f })
+				? MakeAffineMatrix(Vector3{ rectTransform->GetScale().x, rectTransform->GetScale().y, 1.0f}, Vector3{0.0f, 0.0f, rectTransform->GetRotation()}, Vector3{rectTransform->GetPosition().x, rectTransform->GetPosition().y, 0.0f})
 				: transformComp->GetWorldMatrix();
 
 			// 動かした「差分」を受け取るための行列を用意
@@ -3772,31 +3780,33 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 					if (isSpriteObject) {
 						if (currentGizmoOperation == ImGuizmo::ROTATE) {
 							ImGuizmo::DecomposeMatrixToComponents(&deltaMat.m[0][0], translation, rotation, scale);
-							rectTransform->rotation += rotation[2] * (3.14159265f / 180.0f);
+							rectTransform->SetRotation(rectTransform->GetRotation() + rotation[2] * (3.14159265f / 180.0f));
 						} else {
 							ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
 							if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
-								rectTransform->position = { translation[0], translation[1] };
+								rectTransform->SetPosition({ translation[0], translation[1] });
 							} else if (currentGizmoOperation == ImGuizmo::SCALE) {
-								rectTransform->scale = { scale[0], scale[1] };
+								rectTransform->SetScale({ scale[0], scale[1] });
 							}
 						}
 					} else if (currentGizmoOperation == ImGuizmo::TRANSLATE) {
 						// 移動は今まで通り全体の行列から取り出す
 						ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
-						transformComp->transform.translate = { translation[0], translation[1], translation[2] };
+						transformComp->SetTranslate({ translation[0], translation[1], translation[2] });
 					} else if (currentGizmoOperation == ImGuizmo::ROTATE) {
 						// ★回転の時だけ、全体の行列ではなく「差分(deltaMat)」を分解する！
 						ImGuizmo::DecomposeMatrixToComponents(&deltaMat.m[0][0], translation, rotation, scale);
 
 						// 差分(このフレームで動かした量)を、現在の角度に「足し算(+=)」する
-						transformComp->transform.rotate.x += rotation[0] * (3.14159265f / 180.0f);
-						transformComp->transform.rotate.y += rotation[1] * (3.14159265f / 180.0f);
-						transformComp->transform.rotate.z += rotation[2] * (3.14159265f / 180.0f);
+						transformComp->SetRotate({ 
+							transformComp->GetRotate().x + rotation[0] * (3.14159265f / 180.0f),
+							transformComp->GetRotate().y + rotation[1] * (3.14159265f / 180.0f) ,
+							transformComp->GetRotate().z + rotation[2] * (3.14159265f / 180.0f) 
+							});
 					} else if (currentGizmoOperation == ImGuizmo::SCALE) {
 						// 拡縮も今まで通り全体の行列から取り出す
 						ImGuizmo::DecomposeMatrixToComponents(&worldMat.m[0][0], translation, rotation, scale);
-						transformComp->transform.scale = { scale[0], scale[1], scale[2] };
+						transformComp->SetScale({ scale[0], scale[1], scale[2] });
 					}
 				}
 			}
@@ -3845,13 +3855,15 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 					auto previewTransform = spawnerPreviewObjects[i]->GetComponent<TransformComponent>();
 
 					// スポナーのワールド座標に offset を加算
-					previewTransform->transform.translate.x = spawnerTransform->transform.translate.x + currentObjData.spawnDataList[i].offset.x;
-					previewTransform->transform.translate.y = spawnerTransform->transform.translate.y + currentObjData.spawnDataList[i].offset.y;
-					previewTransform->transform.translate.z = spawnerTransform->transform.translate.z + currentObjData.spawnDataList[i].offset.z;
+					previewTransform->SetTranslate({
+						spawnerTransform->GetTranslate().x + currentObjData.spawnDataList[i].offset.x,
+						spawnerTransform->GetTranslate().y + currentObjData.spawnDataList[i].offset.y,
+						spawnerTransform->GetTranslate().z + currentObjData.spawnDataList[i].offset.z
+						});
 
 					// 回転・スケールはスポナーに合わせる（または固定値）
-					previewTransform->transform.rotate = spawnerTransform->transform.rotate;
-					previewTransform->transform.scale = { 1.0f, 1.0f, 1.0f };
+					previewTransform->SetRotate(spawnerTransform->GetRotate());
+					previewTransform->SetScale({ 1.0f, 1.0f, 1.0f });
 
 					// (応用) 敵の type に応じて表示モデルを切り替えることも可能です			
 					auto renderer = spawnerPreviewObjects[i]->GetComponent<ModelRendererComponent>();
@@ -3893,8 +3905,8 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 
 							// 制御点のワールド座標を適用（サイズは半分に縮小）
 							auto pathTransform = pathPreviewObjects[totalPathPoints]->GetComponent<TransformComponent>();
-							pathTransform->transform.translate = sData.controlPoints[j];
-							pathTransform->transform.scale = { 0.5f, 0.5f, 0.5f };
+							pathTransform->SetTranslate(sData.controlPoints[j]);
+							pathTransform->SetScale({ 0.5f, 0.5f, 0.5f });
 
 							pathPreviewObjects[totalPathPoints]->Update();
 							totalPathPoints++;

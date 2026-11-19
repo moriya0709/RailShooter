@@ -1,4 +1,4 @@
-#include "CameraComponent.h"
+﻿#include "CameraComponent.h"
 
 #include "GameObject.h"
 #include "TransformComponent.h"
@@ -22,14 +22,14 @@ void CameraComponent::DebugCameraUpdate() {
 void CameraComponent::SetRotate(const Vector3& rotate) {
 	camera_.SetRotate(rotate);
 	if (owner_) {
-		owner_->GetTransform()->SetRotate(rotate);
+		owner_->GetTransformComponent()->SetRotate(rotate);
 	}
 }
 
 void CameraComponent::SetTranslate(const Vector3& translate) {
 	camera_.SetTranslate(translate);
 	if (owner_) {
-		owner_->GetTransform()->SetTranslate(translate);
+		owner_->GetTransformComponent()->SetTranslate(translate);
 	}
 }
 
@@ -38,7 +38,7 @@ void CameraComponent::SyncFromTransform() {
 		return;
 	}
 
-	const TransformComponent* transform = owner_->GetTransform();
+	const TransformComponent* transform = owner_->GetTransformComponent();
 	camera_.SetRotate(transform->GetRotate());
 	camera_.SetTranslate(transform->GetTranslate());
 }
@@ -48,7 +48,7 @@ void CameraComponent::SyncToTransform() {
 		return;
 	}
 
-	TransformComponent* transform = owner_->GetTransform();
+	TransformComponent* transform = owner_->GetTransformComponent();
 	transform->SetRotate(camera_.GetRotate());
 	transform->SetTranslate(camera_.GetTranslate());
 }

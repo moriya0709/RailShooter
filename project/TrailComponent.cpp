@@ -64,7 +64,7 @@ void TrailComponent::EnsureTrails() {
 	if (!needsRecreate_ || !owner_) return;
 	trails_.clear();
 	trails_.resize(settings_.size());
-	const Transform& transform = owner_->GetTransform()->transform;
+	const Transform transform = owner_->GetTransformComponent()->GetTransform();
 	for (size_t index = 0; index < settings_.size(); ++index) {
 		const TrailComponentData& settings = settings_[index];
 		const std::string texturePath = std::filesystem::exists(settings.texturePath)
@@ -91,7 +91,7 @@ void TrailComponent::EnsureTrails() {
 
 void TrailComponent::SyncAndAddPoints() {
 	if (!owner_) return;
-	const Transform& ownerTransform = owner_->GetTransform()->transform;
+	const Transform ownerTransform = owner_->GetTransformComponent()->GetTransform();
 	for (size_t index = 0; index < trails_.size(); ++index) {
 		if (!trails_[index] || !playing_[index]) continue;
 		Vector3 worldOffset = settings_[index].localOffset;

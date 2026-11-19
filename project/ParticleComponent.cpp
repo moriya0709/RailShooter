@@ -1,4 +1,4 @@
-#include "ParticleComponent.h"
+﻿#include "ParticleComponent.h"
 
 #include "GameObject.h"
 #include "ParticleEmitter.h"
@@ -62,7 +62,7 @@ void ParticleComponent::EnsureEmitter() {
 	baseEmissionCounts_.assign(settings_.size(), 1u);
 	baseEmissionFrequencies_.assign(settings_.size(), 0.0f);
 	hasBaseEmissionSettings_.assign(settings_.size(), false);
-	const Transform& transform = owner_->GetTransform()->transform;
+	const Transform& transform = owner_->GetTransformComponent()->GetTransform();
 	for (size_t index = 0; index < settings_.size(); ++index) {
 		const ParticleComponentData& settings = settings_[index];
 		// ParticleManager::Emit asserts for an unknown group. Keep a malformed or
@@ -118,7 +118,7 @@ void ParticleComponent::SyncEmitterPosition() {
 	if (!owner_) {
 		return;
 	}
-	const Transform& ownerTransform = owner_->GetTransform()->transform;
+	const Transform& ownerTransform = owner_->GetTransformComponent()->GetTransform();
 	for (size_t index = 0; index < emitters_.size(); ++index) {
 		ParticleEmitter* emitter = emitters_[index].get();
 		if (!emitter) continue;

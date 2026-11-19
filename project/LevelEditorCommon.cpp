@@ -185,12 +185,12 @@ void SaveLevel(Level& level, const std::vector<std::unique_ptr<GameObject>>& lev
 	// LevelData and levelObjects share their order. Stop at the shorter side defensively.
 	for (size_t index = 0; index < levelObjects.size() && index < levelData->objects.size(); ++index) {
 		if (auto* transform = levelObjects[index]->GetComponent<TransformComponent>()) {
-			levelData->objects[index].transform = transform->transform;
+			levelData->objects[index].transform = transform->GetTransform();
 		}
 		if (auto* rectTransform = levelObjects[index]->GetComponent<RectTransformComponent>()) {
-			levelData->objects[index].rectPosition = rectTransform->position;
-			levelData->objects[index].rectRotation = rectTransform->rotation;
-			levelData->objects[index].rectScale = rectTransform->scale;
+			levelData->objects[index].rectPosition = rectTransform->GetPosition();
+			levelData->objects[index].rectRotation = rectTransform->GetRotation();
+			levelData->objects[index].rectScale = rectTransform->GetScale();
 		}
 	}
 	level.SaveJson(fileName);
@@ -346,8 +346,8 @@ void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& l
 	// ★追加：建物同士の重なりを防ぐための、サイズごとの「当たり判定の半径（余白）」
 	ImGui::Text("Collision Bounds (Radius)");
 	static float radiusL = 25.0f; // Lサイズの建物の半径
-	static float radiusM = 12.5f; // Mサイズの建物の半径
-	static float radiusS = 5.0f;  // Sサイズの建物の半径
+	static float radiusM = 14.0f; // Mサイズの建物の半径
+	static float radiusS = 10.0f;  // Sサイズの建物の半径
 	ImGui::DragFloat("Radius L", &radiusL, 0.5f, 1.0f, 200.0f);
 	ImGui::DragFloat("Radius M", &radiusM, 0.5f, 1.0f, 200.0f);
 	ImGui::DragFloat("Radius S", &radiusS, 0.5f, 1.0f, 200.0f);
@@ -559,7 +559,7 @@ void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& l
 				transform.translate = { posX, posY_val, posZ };
 
 				auto building = std::make_unique<GameObject>(objectName);
-				building->GetTransform()->transform = transform;
+				building->GetTransformComponent()->SetTransform(transform);
 				auto renderer = building->AddComponent<ModelRendererComponent>();
 				renderer->SetModel(filePath);
 				renderer->SetMaxDrawDistance(settings.maxDrawDistance);
@@ -638,16 +638,20 @@ void DrawColliderInspector(ColliderComponent& collider, ObjectData& objectData) 
 		return;
 	}
 
+	auto size = collider.GetSize();
+	auto centerOffset = collider.GetCenterOffset();
 	bool enabled = collider.IsEnabled();
 	if (ImGui::Checkbox("Enabled##Collider", &enabled)) {
 		collider.SetEnabled(enabled);
 	}
-	if (ImGui::DragFloat3("Size##Collider", &collider.size.x, 0.05f, 0.01f, 1000.0f)) {
+	if (ImGui::DragFloat3("Size##Collider", &size.x, 0.05f, 0.01f, 1000.0f)) {
+		collider.SetSize(size);
 		// Save immediately so the next toolbar save persists the inspector edit.
-		objectData.colliderSize = collider.size;
+		objectData.colliderSize = size;
 	}
-	if (ImGui::DragFloat3("Center Offset##Collider", &collider.centerOffset.x, 0.05f, -1000.0f, 1000.0f)) {
-		objectData.colliderCenterOffset = collider.centerOffset;
+	if (ImGui::DragFloat3("Center Offset##Collider", &centerOffset.x, 0.05f, -1000.0f, 1000.0f)) {
+		collider.SetCenterOffset(centerOffset);
+		objectData.colliderCenterOffset = centerOffset;
 	}
 #else
 	(void)collider;

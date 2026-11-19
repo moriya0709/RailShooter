@@ -57,8 +57,8 @@ public:
 	void SetEnablePostEffect(bool enabled) { enablePostEffect_ = enabled; }
 	bool IsPostEffectEnabled() const { return enablePostEffect_; }
 
-	TransformComponent* GetTransform() { return transform_; }
-	const TransformComponent* GetTransform() const { return transform_; }
+	TransformComponent* GetTransformComponent() { return transform_; }
+	const TransformComponent* GetTransformComponent() const { return transform_; }
 
 	// 後方互換用。Start 前に何度呼んでも一度だけ開始する。
 	void Initialize() {

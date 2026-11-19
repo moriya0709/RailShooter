@@ -6,7 +6,7 @@ void EnemyNormalBullet::Initialize(Vector3 position, Vector3 playerPosition) {
 	// 弾の初期位置を設定
 	transform.translate = position;
 	if (GetGameObject()) {
-		GetGameObject()->GetTransform()->transform = transform;
+		GetGameObject()->GetTransformComponent()->SetTransform(transform);
 	}
 
     // --- プレイヤーに向かう速度を計算 ---
@@ -38,7 +38,7 @@ void EnemyNormalBullet::Update() {
 	transform.translate.y += velocity.y * frameScale;
 	transform.translate.z += velocity.z * frameScale;
 	if (GetGameObject()) {
-		GetGameObject()->GetTransform()->transform = transform;
+		GetGameObject()->GetTransformComponent()->SetTransform(transform);
 	}
 
     // 寿命の管理

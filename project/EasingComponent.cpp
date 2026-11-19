@@ -1,4 +1,4 @@
-#include "EasingComponent.h"
+﻿#include "EasingComponent.h"
 
 #include <algorithm>
 #include <cmath>
@@ -206,16 +206,17 @@ void EasingComponent::Apply(const EasingData& settings, float easedTime) {
 	if (auto* rectTransform = owner_->GetComponent<RectTransformComponent>()) {
 		if (settings.animatePosition) {
 			const Vector3 position = Lerp(settings.startPosition, settings.goalPosition, easedTime);
-			rectTransform->position = { position.x, position.y };
+			rectTransform->SetPosition(Vector2(position.x,position.y));
 		}
 		if (settings.animateRotation) {
-			rectTransform->rotation = Lerp(settings.startRotation, settings.goalRotation, easedTime).z;
+			const Vector3 rotation = Lerp(settings.startRotation, settings.goalRotation, easedTime);
+			rectTransform->SetRotation(rotation.z);
 		}
 		if (settings.animateScale) {
 			const Vector3 scale = Lerp(settings.startScale, settings.goalScale, easedTime);
-			rectTransform->scale = { scale.x, scale.y };
+			rectTransform->SetScale(Vector2(scale.x, scale.y));
 		}
-	} else if (auto* transform = owner_->GetTransform()) {
+	} else if (auto* transform = owner_->GetTransformComponent()) {
 		if (settings.animatePosition) transform->SetTranslate(Lerp(settings.startPosition, settings.goalPosition, easedTime));
 		if (settings.animateRotation) transform->SetRotate(Lerp(settings.startRotation, settings.goalRotation, easedTime));
 		if (settings.animateScale) transform->SetScale(Lerp(settings.startScale, settings.goalScale, easedTime));

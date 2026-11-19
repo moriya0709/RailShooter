@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Component.h"
 #include "CommonStructs.h"
@@ -30,7 +30,6 @@ public:
 	float GetProgress() const;
 	float GetProgress(size_t index) const;
 
-	std::vector<EasingData>& GetSettings() { return settings_; }
 	const std::vector<EasingData>& GetSettings() const { return settings_; }
 	void AddSettings(const EasingData& data);
 	bool RemoveSettings(size_t index);

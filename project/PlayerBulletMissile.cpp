@@ -51,15 +51,15 @@ void PlayerBulletMissile::Initialize(const Vector3 position, Enemy* target, cons
 }
 
 void PlayerBulletMissile::Update() {
-	const float frameScale = deltaTime_ * 60.0f;
+	const float frameScale = GetDeltaTime() * 60.0f;
 	if (frameScale <= 0.0f) {
 		return;
 	}
 	previousTranslate_ = transform.translate;
 	// 寿命タイマーを進める
-	deathTimer += deltaTime_;
+	deathTimer += GetDeltaTime();
 	if (deathTimer >= kLifeTime) {
-		isDead_ = true;
+		SetDead(true);
 	}
 
 	// ▼ 追加: 現在の螺旋半径（デフォルトは元のサイズ）
@@ -139,7 +139,7 @@ void PlayerBulletMissile::Update() {
 
 	// 4. 螺旋（トルネード）回転のオフセット計算
 	// ※前回の「spiralDirection」を反映しています
-	spiralAngle += spiralSpeed * spiralDirection * deltaTime_;
+	spiralAngle += spiralSpeed * spiralDirection * GetDeltaTime();
 	float cosA = std::cos(spiralAngle);
 	float sinA = std::sin(spiralAngle);
 

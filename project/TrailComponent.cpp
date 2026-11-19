@@ -1,4 +1,4 @@
-#include "TrailComponent.h"
+﻿#include "TrailComponent.h"
 
 #include "GameObject.h"
 #include "TrailEffect.h"
@@ -69,7 +69,7 @@ void TrailComponent::EnsureTrails() {
 		const TrailComponentData& settings = settings_[index];
 		const std::string texturePath = std::filesystem::exists(settings.texturePath)
 			? settings.texturePath : "Resource/trail/trail.png";
-		if (!TextureManager::GetInstance()->textureDatas.contains(texturePath)) {
+		if (!TextureManager::GetInstance()->GetTextureData().contains(texturePath)) {
 			TextureManager::GetInstance()->LoadTexture(texturePath);
 		}
 		auto trail = std::make_shared<TrailEffect>();

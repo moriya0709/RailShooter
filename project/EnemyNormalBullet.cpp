@@ -32,7 +32,7 @@ void EnemyNormalBullet::Initialize(Vector3 position, Vector3 playerPosition) {
 }
 
 void EnemyNormalBullet::Update() {
-	const float frameScale = deltaTime_ * 60.0f;
+	const float frameScale = GetDeltaTime() * 60.0f;
     // 弾の移動
 	transform.translate.x += velocity.x * frameScale;
 	transform.translate.y += velocity.y * frameScale;
@@ -42,9 +42,9 @@ void EnemyNormalBullet::Update() {
 	}
 
     // 寿命の管理
-	deathTimer += deltaTime_;
+	deathTimer += GetDeltaTime();
     if (deathTimer >= kLifeTime) {
-        isDead_ = true; 
+        SetDead(true);
     }
 
     trailEffect->AddPoint(transform.translate);

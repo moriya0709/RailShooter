@@ -23,9 +23,6 @@ public:
 		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource;
 	};
 
-	// テクスチャデータ
-	std::unordered_map<std::string,TextureData> textureDatas;
-
 	// 初期化
 	void Initialize(DirectXCommon* dxCommon_, SrvManager* srvManager);
 	// シングルトンインスタンスの取得
@@ -45,6 +42,9 @@ public:
 	const DirectX::TexMetadata& GetMetaData(const std::string& filePath);
 	// GPU が完了するまで保持していた、差し替え前テクスチャを解放する。
 	void ReleaseDeferredResources();
+
+	// テクスチャデータ
+	std::unordered_map<std::string, TextureData> GetTextureData() const { return textureDatas; }
 	
 	TextureManager() = default;
 	~TextureManager() = default;
@@ -52,6 +52,8 @@ public:
 	TextureManager& operator=(TextureManager&) = delete;
 
 private:
+	// テクスチャデータ
+	std::unordered_map<std::string, TextureData> textureDatas;
 
 	static std::unique_ptr <TextureManager> instance;
 	// SRVインデックスの開始番号

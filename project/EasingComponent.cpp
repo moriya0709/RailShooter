@@ -306,7 +306,7 @@ bool DrawEasingComponentInspector(EasingComponent& component) {
 
 	for (size_t index = 0; index < component.GetSettings().size(); ++index) {
 		ImGui::PushID(static_cast<int>(index));
-		EasingData& settings = component.GetSettings()[index];
+		EasingData settings = component.GetSettings()[index];
 		const std::string label = "Easing " + std::to_string(index + 1);
 		if (ImGui::CollapsingHeader(label.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
 			changed |= ImGui::Checkbox("Position", &settings.animatePosition);

@@ -54,13 +54,16 @@ inline Vector2 GetWorldPosition(const TextRendererComponent& textRenderer, const
 	float horizontalPosition, float verticalPosition) {
 	const Vector2 textSize = textRenderer.GetTextSize();
 	const Vector2 offset = SampleMeshOffset(textRenderer, horizontalPosition, verticalPosition);
+	const Vector2 position = rectTransform.GetPosition();
+	const Vector2 scale = rectTransform.GetScale();
+	const float rotation = rectTransform.GetRotation();
 	const float x = (horizontalPosition - 0.5f) * textSize.x + offset.x;
 	const float y = (verticalPosition - 0.5f) * textSize.y + offset.y;
-	const float cosine = std::cos(rectTransform.rotation);
-	const float sine = std::sin(rectTransform.rotation);
+	const float cosine = std::cos(rotation);
+	const float sine = std::sin(rotation);
 	return {
-		rectTransform.position.x + (x * rectTransform.scale.x) * cosine - (y * rectTransform.scale.y) * sine,
-		rectTransform.position.y + (x * rectTransform.scale.x) * sine + (y * rectTransform.scale.y) * cosine,
+		position.x + (x * scale.x) * cosine - (y * scale.y) * sine,
+		position.y + (x * scale.x) * sine + (y * scale.y) * cosine,
 	};
 }
 
@@ -141,8 +144,9 @@ inline bool DrawAndSelect(TextRendererComponent& textRenderer, const RectTransfo
 // Moves the selected point with a translate gizmo and writes the resulting local pixel offset.
 inline bool ManipulateSelected(TextRendererComponent& textRenderer, const RectTransformComponent& rectTransform,
 	const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix, int selectedVertex) {
+	const Vector2 rectScale = rectTransform.GetScale();
 	if (selectedVertex < 0 || selectedVertex >= static_cast<int>(TextRendererComponent::kMeshVertexCount) ||
-		std::abs(rectTransform.scale.x) < 0.0001f || std::abs(rectTransform.scale.y) < 0.0001f) {
+		std::abs(rectScale.x) < 0.0001f || std::abs(rectScale.y) < 0.0001f) {
 		return false;
 	}
 
@@ -161,11 +165,12 @@ inline bool ManipulateSelected(TextRendererComponent& textRenderer, const RectTr
 	ImGuizmo::DecomposeMatrixToComponents(&vertexMatrix.m[0][0], translation, rotation, scale);
 	const float worldDeltaX = translation[0] - originalWorldPosition.x;
 	const float worldDeltaY = translation[1] - originalWorldPosition.y;
-	const float cosine = std::cos(rectTransform.rotation);
-	const float sine = std::sin(rectTransform.rotation);
+	const float rotationRadians = rectTransform.GetRotation();
+	const float cosine = std::cos(rotationRadians);
+	const float sine = std::sin(rotationRadians);
 	const Vector2 localDelta = {
-		(worldDeltaX * cosine + worldDeltaY * sine) / rectTransform.scale.x,
-		(-worldDeltaX * sine + worldDeltaY * cosine) / rectTransform.scale.y,
+		(worldDeltaX * cosine + worldDeltaY * sine) / rectScale.x,
+		(-worldDeltaX * sine + worldDeltaY * cosine) / rectScale.y,
 	};
 	auto offsets = textRenderer.GetMeshOffsets();
 	offsets[static_cast<size_t>(selectedVertex)].x += localDelta.x;

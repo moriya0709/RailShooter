@@ -31,7 +31,7 @@ namespace {
 void EnemyBoss::Initialize() {
 	// 描画・Transform は同じ GameObject のコンポーネントに委譲する。
 	if (GetGameObject()) {
-		GetGameObject()->GetTransform()->transform = transform;
+		GetGameObject()->GetTransformComponent()->SetTransform(transform);
 		auto* renderer = GetGameObject()->GetComponent<ModelRendererComponent>();
 		if (!renderer) {
 			renderer = GetGameObject()->AddComponent<ModelRendererComponent>();
@@ -221,7 +221,7 @@ void EnemyBoss::Update(Vector3 playerPosition, float currentPlayerProgress) {
 
 	// 座標変更後に 3D オブジェクトへセットして更新
 	if (GetGameObject()) {
-		GetGameObject()->GetTransform()->transform = transform;
+		GetGameObject()->GetTransformComponent()->SetTransform(transform);
 	}
 
 	// =========================================================

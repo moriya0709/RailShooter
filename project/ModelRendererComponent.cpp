@@ -216,9 +216,9 @@ bool ModelRendererComponent::IsCulledByDistance() const {
 	}
 
 	const Vector3 cameraPosition = camera_->GetTranslate();
-	const float deltaX = transform->transform.translate.x - cameraPosition.x;
-	const float deltaY = transform->transform.translate.y - cameraPosition.y;
-	const float deltaZ = transform->transform.translate.z - cameraPosition.z;
+	const float deltaX = transform->GetTranslate().x - cameraPosition.x;
+	const float deltaY = transform->GetTranslate().y - cameraPosition.y;
+	const float deltaZ = transform->GetTranslate().z - cameraPosition.z;
 	const float distanceSquared = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
 	return distanceSquared > maxDrawDistance_ * maxDrawDistance_;
 }
@@ -283,9 +283,9 @@ void ModelRendererComponent::UpdateLodModel() {
 		return;
 	}
 	const Vector3 cameraPosition = camera_->GetTranslate();
-	const float deltaX = transform->transform.translate.x - cameraPosition.x;
-	const float deltaY = transform->transform.translate.y - cameraPosition.y;
-	const float deltaZ = transform->transform.translate.z - cameraPosition.z;
+	const float deltaX = transform->GetTranslate().x - cameraPosition.x;
+	const float deltaY = transform->GetTranslate().y - cameraPosition.y;
+	const float deltaZ = transform->GetTranslate().z - cameraPosition.z;
 	const float distanceSquared = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
 
 	Model* selectedModel = highLodModel_;

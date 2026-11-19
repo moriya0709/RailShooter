@@ -114,11 +114,11 @@ void TextRendererComponent::Update() {
 	Vector2 scale{};
 	float rotation = 0.0f;
 	if (const auto* rectTransform = GetGameObject()->GetComponent<RectTransformComponent>()) {
-		position = rectTransform->position;
-		rotation = rectTransform->rotation;
-		scale = rectTransform->scale;
+		position = rectTransform->GetPosition();
+		rotation = rectTransform->GetRotation();
+		scale = rectTransform->GetScale();
 	} else {
-		const Transform& transform = GetGameObject()->GetTransform()->transform;
+		const Transform transform = GetGameObject()->GetTransformComponent()->GetTransform();
 		position = { transform.translate.x, transform.translate.y };
 		rotation = transform.rotate.z;
 		scale = { transform.scale.x, transform.scale.y };

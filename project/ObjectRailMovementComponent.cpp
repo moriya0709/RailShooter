@@ -1,4 +1,4 @@
-#include "ObjectRailMovementComponent.h"
+﻿#include "ObjectRailMovementComponent.h"
 
 #include "GameObject.h"
 #include "TransformComponent.h"
@@ -50,7 +50,7 @@ void ObjectRailMovementComponent::Update() {
 		}
 	}
 
-	auto* transform = owner_->GetTransform();
+	auto* transform = owner_->GetTransformComponent();
 	transform->SetTranslate(Evaluate(progress_));
 	if (usePointRotations_ && pointRotations_.size() == points_.size()) {
 		transform->SetRotate(EvaluateRotation(progress_));

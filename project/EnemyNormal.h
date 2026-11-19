@@ -45,7 +45,7 @@ public:
 	// OBBを取得
 	OBB GetOBB() override;
 
-public:
+private:
 	enum State {
 		Idle,
 		Move,

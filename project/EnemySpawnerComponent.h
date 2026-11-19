@@ -22,7 +22,7 @@ public:
 			return {};
 		}
 		// エディタ上でスポナーを動かした場合も、出現直前に位置を同期する。
-		spawner_.SetTransform(GetGameObject()->GetTransform()->transform);
+		spawner_.SetTransform(GetGameObject()->GetTransformComponent()->GetTransform());
 		return spawner_.Update(deltaTime, playerPosition);
 	}
 
@@ -45,7 +45,7 @@ private:
 			return;
 		}
 		// Awake 前の Configure 呼び出しもあり得るため、オーナー取得後にだけ初期化する。
-		spawner_.Initialize(GetGameObject()->GetTransform()->transform, spawnList_, spawnDistance_);
+		spawner_.Initialize(GetGameObject()->GetTransformComponent()->GetTransform(), spawnList_, spawnDistance_);
 		spawner_.SetRailCamera(railCamera_);
 	}
 

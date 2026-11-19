@@ -81,8 +81,8 @@ void Player::ResetRailOffset() {
 	translate_ = basePos;
 	rotate_ = baseRot;
 	if (GetGameObject()) {
-		GetGameObject()->GetTransform()->transform.translate = translate_;
-		GetGameObject()->GetTransform()->transform.rotate = rotate_;
+		GetGameObject()->GetTransformComponent()->SetTranslate(translate_);
+		GetGameObject()->GetTransformComponent()->SetRotate(rotate_);
 	}
 }
 
@@ -146,12 +146,12 @@ void Player::UpdateReticle() {
 		reticleSprite[i]->SetColor(lockOnTimer >= requiredLockOnTime && lockedTarget != nullptr
 			? Vector4{ 1.0f, 0.0f, 0.0f, 1.0f }
 			: Vector4{ 0.5f, 0.5f, 1.0f, 1.0f });
-		reticleTransform[2]->position = { reticlePosition.x, reticlePosition.y };
-		reticleTransform[i]->rotation = reticleRotation[i].z;
-		reticleTransform[2]->scale = {
+		reticleTransform[2]->SetPosition({ reticlePosition.x, reticlePosition.y });
+		reticleTransform[i]->SetRotation(reticleRotation[i].z);
+		reticleTransform[2]->SetScale({
 			reticleSize.x / kReticleBaseSize[i].x,
 			reticleSize.y / kReticleBaseSize[i].y,
-		};
+		});
 		reticleSprite[i]->Update();
 	}
 
@@ -192,11 +192,11 @@ void Player::UpdateReticle() {
 			direction.x /= length;
 			direction.y /= length;
 
-			arrowTransform->position = {
+			arrowTransform->SetPosition({
 				center.x + direction.x * arrowRadius,
 				center.y + direction.y * arrowRadius,
-			};
-			arrowTransform->rotation = std::atan2(direction.y, direction.x);
+				});
+			arrowTransform->SetRotation(std::atan2(direction.y, direction.x));
 			arrowObject->SetActive(true);
 			arrowObject->Update();
 		}
@@ -626,9 +626,9 @@ void Player::UpdateNormal(float deltaTime) {
 		return bullet && bullet->IsDead();
 	});
 	if (GetGameObject()) {
-		GetGameObject()->GetTransform()->transform.translate = translate_;
-		GetGameObject()->GetTransform()->transform.rotate = rotate_;
-		GetGameObject()->GetTransform()->transform.scale = scale_;
+		GetGameObject()->GetTransformComponent()->SetTranslate(translate_);
+		GetGameObject()->GetTransformComponent()->SetRotate(rotate_);
+		GetGameObject()->GetTransformComponent()->SetScale(scale_);
 	}
 
 }
@@ -661,8 +661,8 @@ void Player::UpdateDeath(float deltaTime) {
 
 	// Transformへ適用
 	if (GetGameObject()) {
-		GetGameObject()->GetTransform()->transform.translate = translate_;
-		GetGameObject()->GetTransform()->transform.rotate = rotate_;
-		GetGameObject()->GetTransform()->transform.scale = scale_;
+		GetGameObject()->GetTransformComponent()->SetTranslate(translate_);
+		GetGameObject()->GetTransformComponent()->SetRotate(rotate_);
+		GetGameObject()->GetTransformComponent()->SetScale(scale_);
 	}
 }

@@ -16,7 +16,7 @@ std::unique_ptr<GameObject> CreateEnemyObjectFromTemplate(const SpawnData& data,
 		return nullptr;
 	}
 
-	const Transform& templateTransform = templateObject->GetTransform()->transform;
+	const Transform& templateTransform = templateObject->GetTransformComponent()->GetTransform();
 	// この Transform は後段の Enemy::SetTransform にも使われるため、
 	// テンプレートのサイズをここで反映して最後まで保持する。
 	spawnTransform.scale = templateTransform.scale;
@@ -25,7 +25,7 @@ std::unique_ptr<GameObject> CreateEnemyObjectFromTemplate(const SpawnData& data,
 	spawnTransform.rotate.z += templateTransform.rotate.z;
 
 	auto enemyObject = std::make_unique<GameObject>(data.enemyTemplate + "_Spawned");
-	enemyObject->GetTransform()->transform = spawnTransform;
+	enemyObject->GetTransformComponent()->SetTransform(spawnTransform);
 	enemyObject->SetEnablePostEffect(templateObject->IsPostEffectEnabled());
 
 	if (const auto* sourceRenderer = templateObject->GetComponent<ModelRendererComponent>()) {

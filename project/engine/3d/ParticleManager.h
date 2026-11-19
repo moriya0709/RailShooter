@@ -18,10 +18,6 @@ class DirectXCommon;
 class SrvManager;
 class Camera;
 
-// 乱数生成器
-extern std::random_device seedGenerator;
-extern std::mt19937 randomEngine;
-
 // パーティクル
 struct Particle {
 	Transform transform;
@@ -173,7 +169,6 @@ public:
 		Microsoft::WRL::ComPtr<ID3D12Resource> freeListUploadResource;
 
 	};
-	std::unordered_map<std::string, ParticleGroup> particleGroups;
 
 
 	// 初期化
@@ -241,6 +236,9 @@ public:
 	// 球メッシュ生成
 	std::vector<VertexData> Sphere();
 
+	// パーティクルグループ
+	std::unordered_map<std::string, ParticleGroup> GetParticleGroup() const {return particleGroups;}
+
 	// シングルトンインスタンスの取得
 	static ParticleManager* GetInstance();
 
@@ -250,6 +248,13 @@ public:
 	ParticleManager& operator=(ParticleManager&) = delete;
 
 private:
+	// パーティクルグループ
+	std::unordered_map<std::string, ParticleGroup> particleGroups;
+
+	// 乱数生成器
+	std::random_device seedGenerator;
+	std::mt19937 randomEngine;
+
 	// シングルトンインスタンス
 	static std::unique_ptr <ParticleManager> instance;
 

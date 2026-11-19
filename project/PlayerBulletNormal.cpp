@@ -52,15 +52,15 @@ void PlayerBulletNormal::Initialize(const Vector3 position, Enemy* target, const
 }
 
 void PlayerBulletNormal::Update() {
-	const float frameScale = deltaTime_ * 60.0f;
+	const float frameScale = GetDeltaTime() * 60.0f;
 	if (frameScale <= 0.0f) {
 		return;
 	}
 	previousTranslate_ = transform.translate;
 	// 寿命タイマーを進める
-	deathTimer += deltaTime_;
+	deathTimer += GetDeltaTime();
 	if (deathTimer >= kLifeTime) {
-		isDead_ = true; // 寿命が来たら消滅フラグを立てる
+		SetDead(true); // 寿命が来たら消滅フラグを立てる
 	}
 
 	// 発射直後から毎フレーム、ロックオン対象へ進行方向を補正する。

@@ -1683,8 +1683,8 @@ void SelectScene::Update(float deltaTime, float unscaledDeltaTime) {
 						railMovement->SetUsePointRotations(usePointRotations);
 						if (selectedIndex != -1) level->GetLevelData()->objects[selectedIndex].objectRailUsePointRotations = usePointRotations;
 					}
-					auto& points = railMovement->GetPoints();
-					auto& rotations = railMovement->GetPointRotations();
+					auto points = railMovement->GetPoints();
+					auto rotations = railMovement->GetPointRotations();
 					ImGui::Text("Control Points: %d", static_cast<int>(points.size()));
 					for (size_t pointIndex = 0; pointIndex < points.size(); ++pointIndex) {
 						ImGui::PushID(static_cast<int>(pointIndex));

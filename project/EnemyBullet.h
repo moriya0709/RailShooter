@@ -7,10 +7,14 @@ class EnemyBullet : public Component {
 public:
 	virtual void Initialize(Vector3 position, Vector3 playerPosition) = 0;
 	virtual void Update() override = 0;
+	
+	float GetDeltaTime() const { return deltaTime_; }
 	void SetDeltaTime(float deltaTime) { deltaTime_ = (std::max)(0.0f, deltaTime); }
+
 
 	// 消滅しているか
 	bool IsDead() const { return isDead_; }
+	void SetDead(bool isDead) {isDead_ = isDead; }
 
 	// ダメージ量を取得
 	virtual int GetDamage() const = 0;
@@ -19,7 +23,7 @@ public:
 	// OBBを取得
 	virtual OBB GetOBB() = 0;
 
-protected:
+private:
 	bool isDead_ = false; // 消滅フラグ
 	float deltaTime_ = 1.0f / 60.0f;
 };

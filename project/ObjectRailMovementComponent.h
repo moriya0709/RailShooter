@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <vector>
 
@@ -18,9 +18,7 @@ public:
 	void Restart();
 
 	const std::vector<Vector3>& GetPoints() const { return points_; }
-	std::vector<Vector3>& GetPoints() { return points_; }
 	const std::vector<Vector3>& GetPointRotations() const { return pointRotations_; }
-	std::vector<Vector3>& GetPointRotations() { return pointRotations_; }
 	float GetSpeed() const { return speed_; }
 	void SetSpeed(float speed);
 	bool IsLooping() const { return loop_; }

@@ -42,7 +42,7 @@ bool ParticleComponent::HasEmitter() const {
 }
 
 bool ParticleComponent::HasValidParticleGroup(size_t index) const {
-	return index < settings_.size() && ParticleManager::GetInstance()->particleGroups.contains(settings_[index].particleGroup);
+	return index < settings_.size() && ParticleManager::GetInstance()->GetParticleGroup().contains(settings_[index].particleGroup);
 }
 
 void ParticleComponent::SetPlaying(bool playing) {

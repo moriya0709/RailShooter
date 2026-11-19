@@ -63,20 +63,20 @@ public:
 	void SetDirectionalLightColor(const Vector4& color) { directionalLightData_->color = color; }
 	void SetDirectionalLightDirection(const Vector3& dir) { directionalLightData_->direction = dir; }
 	void SetDirectionalLightIntensity(float intensity) { directionalLightData_->intensity = intensity; }
-	DirectionalLight* GetDirectionalLightData() { return directionalLightData_; }
+	DirectionalLight* GetDirectionalLightData() const { return directionalLightData_; }
 
 	// Ambient Light
 	void SetAmbientLightActive(bool active) { ambientLightData_->isDisplay = active; }
 	void SetAmbientLightColor(const Vector4& color) { ambientLightData_->color = color; }
 	void SetAmbientLightIntensity(float intensity) { ambientLightData_->intensity = intensity; }
-	AmbientLight* GetAmbientLightData() { return ambientLightData_; }
+	AmbientLight* GetAmbientLightData() const { return ambientLightData_; }
 
 	// Point Light
 	void SetPointLightActive(bool active) { pointLightData_->isDisplay = active; }
 	void SetPointLightColor(const Vector4& color) { pointLightData_->color = color; }
 	void SetPointLightPosition(const Vector3& pos) { pointLightData_->position = pos; }
 	void SetPointLightIntensity(float intensity) { pointLightData_->intensity = intensity; }
-	PointLight* GetPointLightData() { return pointLightData_; }
+	PointLight* GetPointLightData() const { return pointLightData_; }
 
 	// Spot Light
 	void SetSpotLightActive(bool active) { spotLightData_->isDisplay = active; }
@@ -85,7 +85,7 @@ public:
 	void SetSpotLightDirection(const Vector3& dir) { spotLightData_->direction = dir; }
 	void SetSpotLightRange(float range) { spotLightData_->range = range; }
 	void SetSpotLightIntensity(float intensity) { spotLightData_->intensity = intensity; }
-	SpotLight* GetSpotLightData() { return spotLightData_; }
+	SpotLight* GetSpotLightData() const { return spotLightData_; }
 
 	// RayMarching の太陽方向から、時間帯に応じた平行光・環境光の色を自動計算する。
 	void SetUseSunLight(bool use) { isSunLight_ = use; }

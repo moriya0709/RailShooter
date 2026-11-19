@@ -346,8 +346,8 @@ void DrawCityGenerator(Level& level, std::vector<std::unique_ptr<GameObject>>& l
 	// ★追加：建物同士の重なりを防ぐための、サイズごとの「当たり判定の半径（余白）」
 	ImGui::Text("Collision Bounds (Radius)");
 	static float radiusL = 25.0f; // Lサイズの建物の半径
-	static float radiusM = 14.0f; // Mサイズの建物の半径
-	static float radiusS = 10.0f;  // Sサイズの建物の半径
+	static float radiusM = 12.5f; // Mサイズの建物の半径
+	static float radiusS = 5.0f;  // Sサイズの建物の半径
 	ImGui::DragFloat("Radius L", &radiusL, 0.5f, 1.0f, 200.0f);
 	ImGui::DragFloat("Radius M", &radiusM, 0.5f, 1.0f, 200.0f);
 	ImGui::DragFloat("Radius S", &radiusS, 0.5f, 1.0f, 200.0f);

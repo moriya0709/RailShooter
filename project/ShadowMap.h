@@ -27,6 +27,7 @@ public:
     D3D12_CPU_DESCRIPTOR_HANDLE GetDSV() const { return dsvHandle_; }
     D3D12_GPU_DESCRIPTOR_HANDLE GetSRV() const { return srvHandleGPU_; }
     Matrix4x4 GetLightVP() const { return lightViewProj_; }
+    uint32_t GetSrvIndex() const { return srvIndex_; }
 
     // シングルトンインスタンスの取得
     static ShadowMap* GetInstance();

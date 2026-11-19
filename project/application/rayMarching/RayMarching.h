@@ -17,6 +17,7 @@ class WindowAPI;
 struct CloudParam {
 	Matrix4x4 invViewProj;
 	Matrix4x4 prevViewProj;
+	Matrix4x4 lightViewProj;
 
 	Vector3 cameraPos;
 	float time;						// 時間

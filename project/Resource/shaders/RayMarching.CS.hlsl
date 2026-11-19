@@ -3,7 +3,10 @@
 // テクスチャおよびサンプラー定義
 Texture3D<float4> CloudNoiseTex : register(t0); // 3Dノイズテクスチャ
 Texture2D<float> DepthTex : register(t1); // 深度バッファ
+Texture2D<float> ShadowTex : register(t2); // シャドウマップ
+
 SamplerState LinearRepeatSampler : register(s0); // リピート（繰り返し）設定のサンプラー
+SamplerState PointClampSampler : register(s1);
 
 // CS出力用 UAV (Unordered Access View)
 RWTexture2D<float4> OutColor : register(u0); // カラー出力先
@@ -13,6 +16,7 @@ cbuffer CloudParam : register(b0)
 {
     float4x4 invViewProj;
     float4x4 prevViewProj;
+    float4x4 lightViewProj;
 
     float3 cameraPos;
     float time; // 時間
@@ -350,6 +354,29 @@ float GetSunVisibility(float3 p, float3 sunDir)
     return exp(-totalCloudDensity * 0.8);
 }
 
+// シャドウマップによる遮蔽判定関数
+float GetObjectShadowVisibility(float3 worldPos)
+{
+    float4 lightClip = mul(lightViewProj, float4(worldPos, 1.0));
+    float3 lightNdc = lightClip.xyz / lightClip.w;
+
+    // クリップ空間 XY (-1 ~ 1) を UV (0 ~ 1) に変換（Y軸反転）
+    float2 shadowUV = lightNdc.xy * float2(0.5, -0.5) + 0.5;
+
+    // シャドウマップの投影範囲（±70m、奥行き0.1~250m）の外側は遮蔽なしとする
+    if (shadowUV.x < 0.0 || shadowUV.x > 1.0 ||
+        shadowUV.y < 0.0 || shadowUV.y > 1.0 ||
+        lightNdc.z < 0.0 || lightNdc.z > 1.0)
+    {
+        return 1.0;
+    }
+
+    float shadowDepth = ShadowTex.SampleLevel(PointClampSampler, shadowUV, 0).r;
+
+    // バイアスを引いて比較（手前に遮蔽物があれば 0.0 = 影）
+    return (shadowDepth < lightNdc.z - 0.002) ? 0.0 : 1.0;
+}
+
 // コンピュートシェーダー エントリーポイント (8x8のスレッドグループ)
 [numthreads(8, 8, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
@@ -588,7 +615,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
             if (d > 0.001)
             {
                 float opticalDepth = d * fogStepLen;
-                float sunVis = GetSunVisibility(p, normalizedSunDir);
+                float cloudVis = GetSunVisibility(p, normalizedSunDir);
+                float objVis = GetObjectShadowVisibility(p);
+                float sunVis = cloudVis * objVis;
         
                 float cosTheta = dot(rayDir, normalizedSunDir);
                 float g = 0.6;

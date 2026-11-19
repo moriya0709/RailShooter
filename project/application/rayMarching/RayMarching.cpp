@@ -2,6 +2,7 @@
 #include "DirectXCommon.h"
 #include "SrvManager.h"
 #include "Camera.h"
+#include "ShadowMap.h"
 
 #include <algorithm>
 
@@ -136,8 +137,13 @@ void RayMarching::Update(Camera* camera) {
 	resultInvVP = DirectX::XMMatrixTranspose(resultInvVP);
 	Matrix4x4 finalMat;
 	DirectX::XMStoreFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(&finalMat), resultInvVP);
-
 	SetInvViewProj(finalMat);
+
+	// ShadowMapのライト行列を取得し、HLSL用に転置してセット
+	Matrix4x4 lightVP = ShadowMap::GetInstance()->GetLightVP();
+	DirectX::XMMATRIX mLightVP = DirectX::XMLoadFloat4x4(reinterpret_cast<const DirectX::XMFLOAT4X4*>(&lightVP));
+	mLightVP = DirectX::XMMatrixTranspose(mLightVP);
+	DirectX::XMStoreFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(&cloudParam->lightViewProj), mLightVP);
 
 
 	// 現在のカメラのワールド座標を取得
@@ -224,7 +230,8 @@ void RayMarching::ComputeCloud(uint32_t depthSrvIndex) {
 	commandList->SetComputeRootConstantBufferView(0, cloudParamResource->GetGPUVirtualAddress());
 	commandList->SetComputeRootDescriptorTable(1, handleAt(noiseSrvIndex_));   // t0: ノイズ
 	commandList->SetComputeRootDescriptorTable(2, handleAt(depthSrvIndex));    // t1: 深度
-	commandList->SetComputeRootDescriptorTable(3, handleAt(outputUavIndex_));  // u0,u1
+	commandList->SetComputeRootDescriptorTable(3, handleAt(ShadowMap::GetInstance()->GetSrvIndex())); // t2: シャドウマップ
+	commandList->SetComputeRootDescriptorTable(4, handleAt(outputUavIndex_));  // u0,u1
 
 	// 雲・空のレイマーチングは半解像度で実行し、合成時の線形補間で
 	// フル解像度へ拡大する。最も高コストな計算量を約 1/4 に抑える。
@@ -458,7 +465,14 @@ void RayMarching::CreateComputeRootSignature() {
 	uavRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 	uavRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
+	// SRV: t2 (シャドウマップ)
+	D3D12_DESCRIPTOR_RANGE shadowRange[1] = {};
+	shadowRange[0].BaseShaderRegister = 2;
+	shadowRange[0].NumDescriptors = 1;
+	shadowRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	shadowRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	D3D12_ROOT_PARAMETER rootParameters[5] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;               // b0
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
@@ -471,28 +485,44 @@ void RayMarching::CreateComputeRootSignature() {
 	rootParameters[2].DescriptorTable = { _countof(depthRange), depthRange };
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;  // u0,u1
-	rootParameters[3].DescriptorTable = { _countof(uavRange), uavRange };
+	// [3] t2: シャドウマップ
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[3].DescriptorTable = { _countof(shadowRange), shadowRange };
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	// 静的サンプラー (s0)
-	D3D12_STATIC_SAMPLER_DESC staticSampler{};
-	staticSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	staticSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-	staticSampler.MaxLOD = D3D12_FLOAT32_MAX;
-	staticSampler.ShaderRegister = 0;
-	staticSampler.RegisterSpace = 0;
-	staticSampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	// [4] u0, u1: 出力UAV（インデックスを 3 -> 4 に変更）
+	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[4].DescriptorTable = { _countof(uavRange), uavRange };
+	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	// 静的サンプラーを2つに増やす (s0: リピート, s1: クランプ)
+	D3D12_STATIC_SAMPLER_DESC staticSamplers[2] = {};
+	// [0] 既存の LinearRepeatSampler (s0)
+	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+	staticSamplers[0].ShaderRegister = 0;
+	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	// [1] シャドウマップ用 Clamp サンプラー (s1)
+	staticSamplers[1].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT; // 深度比較はPoint補間が安全
+	staticSamplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	staticSamplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	staticSamplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	staticSamplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+	staticSamplers[1].MaxLOD = D3D12_FLOAT32_MAX;
+	staticSamplers[1].ShaderRegister = 1;
+	staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	// RootSignatureの設定
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.pParameters = rootParameters;
 	descriptionRootSignature.NumParameters = _countof(rootParameters);
-	descriptionRootSignature.pStaticSamplers = &staticSampler;
-	descriptionRootSignature.NumStaticSamplers = 1;
+	descriptionRootSignature.pStaticSamplers = staticSamplers;
+	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
 
 	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob = nullptr;

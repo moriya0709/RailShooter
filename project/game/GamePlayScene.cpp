@@ -12,7 +12,7 @@
 #include "EasingComponent.h"
 #include "ParticleComponent.h"
 #include "TrailComponent.h"
-#include "EnemyNormal.h"
+#include "FighterJet.h"
 #include "SpriteRendererComponent.h"
 #include "TextRendererComponent.h"
 #include "TextMeshEditorGizmo.h"
@@ -35,7 +35,7 @@ namespace {
 
 	constexpr int kPathDebugSegmentsPerSection = 16;
 
-	// EnemyNormal::Update の PATH 補間と同じ端点処理で、曲線上の座標を取得する。
+	// FighterJet::Update の PATH 補間と同じ端点処理で、曲線上の座標を取得する。
 	Vector3 EvaluateEnemyPath(const std::vector<Vector3>& controlPoints, float progress) {
 		const float maxProgress = static_cast<float>(controlPoints.size() - 1);
 		progress = std::clamp(progress, 0.0f, maxProgress);
@@ -78,7 +78,7 @@ namespace {
 
 			for (const SpawnData& spawnData : spawner->GetSpawnList()) {
 				if (spawnData.movePattern == "PATH" && !spawnData.controlPoints.empty()) {
-					// EnemyNormal と同様、スポーン地点が最初の制御点と違う場合は
+					// FighterJet と同様、スポーン地点が最初の制御点と違う場合は
 					// その間も経路として可視化する。
 					std::vector<Vector3> pathRoutePoints = spawnData.controlPoints;
 					Vector3 spawnPosition = object->GetTransformComponent()->GetTranslate();
@@ -765,7 +765,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 		for (const auto& enemyObject : enemies) {
 			auto* emeny = enemyObject->GetComponent<Enemy>();
 			if (emeny && emeny->IsDefeated()) {
-				if (auto* debris = GameObject::FindByName("EnemyNormal_Death")) {
+				if (auto* debris = GameObject::FindByName("FighterJet_Death")) {
 					debris->SetActive(true);
 					if (auto* debrisTransform = debris->GetComponent<TransformComponent>()) {
 						debrisTransform->SetTranslate(emeny->GetTransform().translate);
@@ -778,7 +778,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			}
 		}
 	} else {
-		if (auto* debris = GameObject::FindByName("EnemyNormal_Death")) {
+		if (auto* debris = GameObject::FindByName("FighterJet_Death")) {
 			if (auto* debrisTransform = debris->GetComponent<TransformComponent>()) {
 				Vector3 rotation = debrisTransform->GetRotate();
 				rotation.z = std::remainder(
@@ -1895,7 +1895,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				spawner->Configure(copyData.spawnDataList, copyData.spawnDistance, railCamera.get());
 			}
 			if (sourceObject->GetComponent<Enemy>()) {
-				auto* enemy = copyObject->AddComponent<EnemyNormal>();
+				auto* enemy = copyObject->AddComponent<FighterJet>();
 				enemy->SetTransform(copyData.transform);
 			}
 			copyObject->SetActive(copyData.active);
@@ -2695,13 +2695,13 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 
 						if (ImGui::Button("Add Enemy to Spawner")) {
 							// 初期値として追加
-							currentObjData.spawnDataList.push_back({ 0.0f,{ 0.0f, 0.0f, 0.0f }, "NORMAL" });
+							currentObjData.spawnDataList.push_back({ 0.0f,{ 0.0f, 0.0f, 0.0f }, "FighterJet" });
 						}
 
 						ImGui::Spacing();
 
 						// プルダウン（Combo）に表示する敵の種類のリスト
-						const char* enemyTypes[] = { "NORMAL", "BOSS" };
+						const char* enemyTypes[] = { "FighterJet","MachineGun", "BOSS"};
 						// プルダウン（Combo）に表示する移動パターンのリスト
 						const char* movePatterns[] = { "IDRE", "STRAIGHT", "WAVE", "HOMING", "PATH", "RAIL_FORWARD" };
 
@@ -2716,12 +2716,54 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 							ImGui::DragFloat("Spawn Time(s)", &sData.spawnTime, 0.1f, 0.0f, 100.0f);
 							// 2. 座標オフセット
 							ImGui::DragFloat3("Offset XYZ", &sData.offset.x, 0.1f);
-							// EnemyNormal を持つ EMPTY 名を指定すると、下の旧 Type より優先して
+							// FighterJet を持つ EMPTY 名を指定すると、下の旧 Type より優先して
 							// その EMPTY のモデル・見た目を複製してスポーンする。
 							char enemyTemplateName[128]{};
 							strncpy_s(enemyTemplateName, sData.enemyTemplate.c_str(), _TRUNCATE);
 							if (ImGui::InputText("Enemy Template (EMPTY)", enemyTemplateName, IM_ARRAYSIZE(enemyTemplateName))) {
 								sData.enemyTemplate = enemyTemplateName;
+							}
+
+							// 複数オブジェクトの敵用。先頭を本体、以降を本体へ追従する
+							// 見た目部品としてスポーンする。MachineGun の銃身は "Barrel"
+							// という部品名にすると、照準に合わせて個別回転する。
+							if (ImGui::TreeNode("Template Parts (Multi Object)")) {
+								ImGui::TextDisabled("When set, this list overrides Enemy Template (EMPTY).");
+								if (ImGui::Button("+ Add Template Part")) {
+									EnemyTemplatePart part;
+									part.name = sData.enemyTemplateParts.empty() ? "Body" : "Barrel";
+									sData.enemyTemplateParts.push_back(std::move(part));
+								}
+
+								for (size_t partIndex = 0; partIndex < sData.enemyTemplateParts.size(); ++partIndex) {
+									ImGui::PushID(static_cast<int>(partIndex));
+									auto& part = sData.enemyTemplateParts[partIndex];
+									ImGui::Separator();
+									ImGui::Text("Part [%zu]", partIndex);
+
+									char partName[128]{};
+									strncpy_s(partName, part.name.c_str(), _TRUNCATE);
+									if (ImGui::InputText("Part Name", partName, IM_ARRAYSIZE(partName))) {
+										part.name = partName;
+									}
+
+									char templateName[128]{};
+									strncpy_s(templateName, part.templateName.c_str(), _TRUNCATE);
+									if (ImGui::InputText("Source EMPTY", templateName, IM_ARRAYSIZE(templateName))) {
+										part.templateName = templateName;
+									}
+
+									ImGui::DragFloat3("Local Position", &part.localTransform.translate.x, 0.1f);
+									ImGui::DragFloat3("Local Rotation Offset", &part.localTransform.rotate.x, 0.05f);
+									ImGui::DragFloat3("Local Scale Multiplier", &part.localTransform.scale.x, 0.1f);
+									if (ImGui::Button("Delete Template Part")) {
+										sData.enemyTemplateParts.erase(sData.enemyTemplateParts.begin() + partIndex);
+										ImGui::PopID();
+										break;
+									}
+									ImGui::PopID();
+								}
+								ImGui::TreePop();
 							}
 
 							// 3. 敵のタイプ（Comboボックス）
@@ -2947,10 +2989,10 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					player = playerComponent;
 					addSerializedComponent("Player");
 				}
-				if (!selectedObject->GetComponent<Enemy>() && ImGui::Button("Enemy Normal")) {
-					auto* enemy = selectedObject->AddComponent<EnemyNormal>();
+				if (!selectedObject->GetComponent<Enemy>() && ImGui::Button("FighterJet")) {
+					auto* enemy = selectedObject->AddComponent<FighterJet>();
 					enemy->SetTransform(selectedObject->GetTransformComponent()->GetTransform());
-					addSerializedComponent("EnemyNormal");
+					addSerializedComponent("FighterJet");
 				}
 			}
 
@@ -3600,10 +3642,11 @@ void GamePlayScene::CreateLevel() {
 				defaultPlayerObject.reset();
 				playerObject = gameObject.get();
 			}
-			if (hasComponent("EnemyNormal")) {
-				auto* enemy = gameObject->AddComponent<EnemyNormal>();
+			if (hasComponent("FighterJet")) {
+				auto* enemy = gameObject->AddComponent<FighterJet>();
 				enemy->SetTransform(objectData.transform);
 			}
+
 			configureEasing(*gameObject, objectData);
 			configureParticle(*gameObject, objectData);
 		configureTrail(*gameObject, objectData);
@@ -3868,12 +3911,12 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 					// (応用) 敵の type に応じて表示モデルを切り替えることも可能です			
 					auto renderer = spawnerPreviewObjects[i]->GetComponent<ModelRendererComponent>();
 
-					if (currentObjData.spawnDataList[i].type == "NORMAL")
-						renderer->SetModel("cube.gltf");
-					if (currentObjData.spawnDataList[i].type == "FAST")
+					if (currentObjData.spawnDataList[i].type == "FighterJet")
+						renderer->SetModel("F-16A_FightingFalcon.dat.obj");
+					if (currentObjData.spawnDataList[i].type == "MachineGun")
 						renderer->SetModel("cube.gltf");
 					if (currentObjData.spawnDataList[i].type == "BOSS")
-						renderer->SetModel("cube.gltf");
+						renderer->SetModel("F-16A_FightingFalcon.dat.obj");
 
 
 					spawnerPreviewObjects[i]->Update();

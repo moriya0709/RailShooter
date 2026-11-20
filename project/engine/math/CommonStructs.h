@@ -224,16 +224,33 @@ struct MotionBlur {
     float pad[3];
 };
 
+// 追加の見た目部品。templateName はレベル上の EMPTY の名前で、
+// localTransform は敵本体から見た部品ごとの相対 Transform。
+struct EnemyTemplatePart {
+	std::string name;
+	std::string templateName;
+	Transform localTransform{
+		{ 1.0f, 1.0f, 1.0f },
+		{ 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f },
+	};
+};
+
 // 出現情報をまとめた構造体
 struct SpawnData {
     float spawnTime;   // スポナー起動からの経過時間（秒）
     Vector3 offset;    // スポナーの中心座標からのズレ（X, Y, Z）
 	// 旧レベル互換用。enemyTemplate が空の場合だけ使用する。
     std::string type;
-	// EnemyNormal を持つ EMPTY オブジェクトの名前。指定時はこのテンプレートを複製してスポーンする。
+	// 見た目を複製する EMPTY オブジェクトの名前。指定時はこのテンプレートを複製してスポーンする。
 	std::string enemyTemplate;
+	// 複数部品の敵用。先頭は本体、2 個目以降は本体に追従する見た目部品。
+	// 各 localTransform は、本体からの部品ごとの調整量。テンプレートを
+	// エディタ上で退避させた位置はスポーン位置に使用しない。
+	// 空なら従来どおり enemyTemplate だけを使用する。
+	std::vector<EnemyTemplatePart> enemyTemplateParts;
 	std::string movePattern; // 敵の移動パターン
-	float pathSpeed = 0.125f; // PATH移動の速度倍率（EnemyNormal の speed=8 と合わせて1区間/秒）
+	float pathSpeed = 0.125f; // PATH移動の速度倍率（FighterJet の speed=8 と合わせて1区間/秒）
     std::vector<Vector3> controlPoints;   // パス移動用の制御点リスト
 };
 

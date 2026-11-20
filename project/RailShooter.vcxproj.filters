@@ -274,9 +274,9 @@
     <ClCompile Include="ParticleComponent.cpp" />
     <ClCompile Include="TrailComponent.cpp" />
     <ClCompile Include="ParticlePreviewEditor.cpp" />
-    <ClCompile Include="EnemyNormal.cpp" />
+    <ClCompile Include="FighterJet.cpp" />
     <ClCompile Include="EnemySpawner.cpp" />
-    <ClCompile Include="EnemyNormalBullet.cpp" />
+    <ClCompile Include="FighterJetBullet.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="PlayerBulletMissile.cpp" />
     <ClCompile Include="engine\base\ImGuiManager.cpp">
@@ -291,6 +291,7 @@
     <ClCompile Include="ResultsScene.cpp" />
     <ClCompile Include="EnemyBoss.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="MachineGun.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -483,11 +484,11 @@
     <ClInclude Include="ParticlePreviewEditor.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Enemy.h" />
-    <ClInclude Include="EnemyNormal.h" />
+    <ClInclude Include="FighterJet.h" />
     <ClInclude Include="EnemySpawner.h" />
     <ClInclude Include="EnemySpawnerComponent.h" />
     <ClInclude Include="EnemyBullet.h" />
-    <ClInclude Include="EnemyNormalBullet.h" />
+    <ClInclude Include="FighterJetBullet.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="PlayerBulletMissile.h" />
     <ClInclude Include="engine\base\ImGuiManager.h">
@@ -502,6 +503,7 @@
     <ClInclude Include="ResultsScene.h" />
     <ClInclude Include="EnemyBoss.h" />
     <ClInclude Include="ShadowMap.h" />
+    <ClInclude Include="MachineGun.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

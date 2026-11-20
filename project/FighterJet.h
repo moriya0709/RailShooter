@@ -12,7 +12,7 @@
 #include "CollisionManager.h"
 #include "GameObject.h"
 
-class EnemyNormal : public Enemy {
+class FighterJet : public Enemy {
 public:
 	void Initialize() override;
 	void Update(Vector3 playerPosition, float currentPlayerProgress) override;

@@ -1,8 +1,8 @@
-﻿#include "EnemyNormalBullet.h"
+﻿#include "FighterJetBullet.h"
 #include "TrailEffectManager.h"
 #include "GameObject.h"
 
-void EnemyNormalBullet::Initialize(Vector3 position, Vector3 playerPosition) {
+void FighterJetBullet::Initialize(Vector3 position, Vector3 playerPosition) {
 	// 弾の初期位置を設定
 	transform.translate = position;
 	if (GetGameObject()) {
@@ -31,7 +31,7 @@ void EnemyNormalBullet::Initialize(Vector3 position, Vector3 playerPosition) {
 
 }
 
-void EnemyNormalBullet::Update() {
+void FighterJetBullet::Update() {
 	const float frameScale = GetDeltaTime() * 60.0f;
     // 弾の移動
 	transform.translate.x += velocity.x * frameScale;
@@ -51,7 +51,7 @@ void EnemyNormalBullet::Update() {
     trailEffect->SetTranslate(transform.translate);
 }
 
-OBB EnemyNormalBullet::GetOBB() {
+OBB FighterJetBullet::GetOBB() {
     OBB obb;
     // 1. 中心座標[cite: 3]
     obb.center = transform.translate;

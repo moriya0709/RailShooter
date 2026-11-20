@@ -18,6 +18,7 @@
     <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="EnemyBoss.cpp" />
+    <ClCompile Include="MachineGun.cpp" />
     <ClCompile Include="ObjectRailMovementComponent.cpp" />
     <ClCompile Include="application\bookUi\Book.cpp" />
     <ClCompile Include="application\bookUi\BookUi.cpp" />
@@ -27,8 +28,8 @@
     <ClCompile Include="application\radarChart\RadarChartCommon.cpp" />
     <ClCompile Include="ColliderComponent.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
-    <ClCompile Include="EnemyNormal.cpp" />
-    <ClCompile Include="EnemyNormalBullet.cpp" />
+    <ClCompile Include="FighterJet.cpp" />
+    <ClCompile Include="FighterJetBullet.cpp" />
     <ClCompile Include="EnemySpawner.cpp" />
     <ClCompile Include="EasingComponent.cpp" />
     <ClCompile Include="engine\3d\AnimationManager.cpp" />
@@ -345,8 +346,8 @@
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="EnemyBoss.h" />
     <ClInclude Include="EnemyBullet.h" />
-    <ClInclude Include="EnemyNormal.h" />
-    <ClInclude Include="EnemyNormalBullet.h" />
+    <ClInclude Include="FighterJet.h" />
+    <ClInclude Include="FighterJetBullet.h" />
     <ClInclude Include="EnemySpawner.h" />
     <ClInclude Include="EnemySpawnerComponent.h" />
     <ClInclude Include="EasingComponent.h" />
@@ -393,6 +394,7 @@
     <ClInclude Include="ImGuiFunction.h" />
     <ClInclude Include="LevelEditorCommon.h" />
     <ClInclude Include="LevelObjectFactory.h" />
+    <ClInclude Include="MachineGun.h" />
     <ClInclude Include="ResultsScene.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="SelectScene.h" />

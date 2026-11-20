@@ -15,7 +15,7 @@
 #include "ParticleComponent.h"
 #include "TrailComponent.h"
 #include "EnemySpawnerComponent.h"
-#include "EnemyNormal.h"
+#include "FighterJet.h"
 #include "SceneManager.h"
 #include "CollisionManager.h"
 
@@ -106,9 +106,9 @@ void DrawComponentRemovalInspector(GameObject& object, ObjectData& objectData) {
 		object.RemoveComponent<ColliderComponent>();
 		removeSerializedComponent("Collider");
 	}
-	if (object.GetComponent<EnemyNormal>() && ImGui::Button("Remove Enemy Normal")) {
-		object.RemoveComponent<EnemyNormal>();
-		removeSerializedComponent("EnemyNormal");
+	if (object.GetComponent<FighterJet>() && ImGui::Button("Remove FighterJet")) {
+		object.RemoveComponent<FighterJet>();
+		removeSerializedComponent("FighterJet");
 	}
 	ImGui::TextDisabled("Transform, Camera, and Player Controller are required while this scene is active.");
 #else

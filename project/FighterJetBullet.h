@@ -5,7 +5,7 @@
 #include "Calc.h"
 #include "TrailEffect.h"
 
-class EnemyNormalBullet : public EnemyBullet {
+class FighterJetBullet : public EnemyBullet {
 public:
 	void Initialize(Vector3 position,Vector3 playerPosition) override;
 	void Update() override;

@@ -44,7 +44,7 @@ void Player::Initialize() {
 	// 初期状態を Normal に設定
 	currentState = Normal;
 	// 体力
-	hp_ = 3;
+	hp_ = kHpMax_;
 }
 
 void Player::Update() {
@@ -388,22 +388,44 @@ void Player::Move() {
 			cameraWorld.m[0][2]
 		};
 
-		float offsetRight = 1.5f; // 肩幅（どれくらい左右に離すか）
+		// ★追加：カメラの「上方向(Y軸)」ベクトルを抽出
+		Vector3 up = {
+			cameraWorld.m[1][0],
+			cameraWorld.m[1][1],
+			cameraWorld.m[1][2]
+		};
+		// ★追加：カメラの「前方向(Z軸)」ベクトルを抽出
+		Vector3 forward = {
+			cameraWorld.m[2][0],
+			cameraWorld.m[2][1],
+			cameraWorld.m[2][2]
+		};
 
-		// --- 右肩の座標を計算 ---
+		float offsetRight = 1.5f;   // 左右の広がり（肩幅）
+		float offsetDown = 0.8f;    // 下方向へのズレ量（大きいほど下になる）
+		float offsetBack = 1.0f;    // 手前（後ろ）方向へのズレ量（大きいほど手前になる）
+
+		// 共通の「下＋手前」オフセットを算出
+		Vector3 baseOffset = {
+			-up.x * offsetDown - forward.x * offsetBack,
+			-up.y * offsetDown - forward.y * offsetBack,
+			-up.z * offsetDown - forward.z * offsetBack
+		};
+
+		// --- 右側の発射座標を計算 ---
 		Vector3 rightPos;
-		rightPos.x = translate_.x + right.x * offsetRight;
-		rightPos.y = translate_.y + right.y * offsetRight;
-		rightPos.z = translate_.z + right.z * offsetRight;
+		rightPos.x = translate_.x + baseOffset.x + right.x * offsetRight;
+		rightPos.y = translate_.y + baseOffset.y + right.y * offsetRight;
+		rightPos.z = translate_.z + baseOffset.z + right.z * offsetRight;
 
-		// --- 左肩の座標を計算 ---
+		// --- 左側の発射座標を計算 ---
 		Vector3 leftPos;
-		leftPos.x = translate_.x - right.x * offsetRight;
-		leftPos.y = translate_.y - right.y * offsetRight;
-		leftPos.z = translate_.z - right.z * offsetRight;
+		leftPos.x = translate_.x + baseOffset.x - right.x * offsetRight;
+		leftPos.y = translate_.y + baseOffset.y - right.y * offsetRight;
+		leftPos.z = translate_.z + baseOffset.z - right.z * offsetRight;
 
 
-		// ★ 左右フラグに応じて片方だけ発射する
+		// 左右フラグに応じて片方だけ発射する
 		if (isNextNormalRight) {
 			auto bulletRightObject = std::make_unique<GameObject>("PlayerBullet");
 			auto* bulletRight = bulletRightObject->AddComponent<PlayerBulletNormal>();

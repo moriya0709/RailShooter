@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include <memory>
+#include <random>
+#include <cmath>
 
 #include "PlayerBullet.h"
 #include "TrailEffect.h"
@@ -15,6 +17,8 @@ public:
 	Vector3 GetTranslate() const override { return transform.translate; }
 	void SetInheritedVelocity(const Vector3& inheritedVelocity) override { inheritedVelocity_ = inheritedVelocity; }
 	Vector3 GetPreviousTranslate() const override { return previousTranslate_; }
+	// 拡散角度の設定
+	void SetSpreadAngle(float angleDeg) { spreadAngleDeg_ = angleDeg; }
 
 	// PATH移動の速度倍率
 	void SetPathSpeed(float speed) { pathSpeed = speed; }
@@ -46,6 +50,7 @@ private:
 	int damage = 1; // 弾のダメージ量
 	float homingPower = 0.01f; // 誘導の強さ（0.01f ～ 0.1f 程度がおすすめ。高すぎると往復します）
 	float pathSpeed = 0.2f; // PATH進行速度の倍率
+	float spreadAngleDeg_ = 1.0f; // 拡散角度
 
 	std::shared_ptr<TrailEffect> trailEffect;
 };

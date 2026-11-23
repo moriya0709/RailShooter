@@ -1,9 +1,9 @@
-﻿#include "EnemyNormalBullet.h"
+﻿#include "MachineGunBullet.h"
 #include "TrailEffectManager.h"
 #include "GameObject.h"
 
-void EnemyNormalBullet::Initialize(Vector3 position, Vector3 playerPosition) {
-	// 弾の初期位置を設定
+void MachineGunBullet::Initialize(Vector3 position, Vector3 playerPosition) {
+    // 弾の初期位置を設定
 	transform.translate = position;
 	if (GetGameObject()) {
 		GetGameObject()->GetTransformComponent()->SetTransform(transform);
@@ -23,7 +23,7 @@ void EnemyNormalBullet::Initialize(Vector3 position, Vector3 playerPosition) {
     velocity.y = direction.y * speed;
     velocity.z = direction.z * speed;
 
-	// トレイルエフェクトの初期化
+    // トレイルエフェクトの初期化
 	trailEffect = std::make_shared<TrailEffect>();
 	trailEffect->Initialize("Resource/trail/trail.png", transform, width, trailMaxLifeTime);
 	trailEffect->LoadCsv("Resource/trail/shot.csv");
@@ -31,7 +31,7 @@ void EnemyNormalBullet::Initialize(Vector3 position, Vector3 playerPosition) {
 
 }
 
-void EnemyNormalBullet::Update() {
+void MachineGunBullet::Update() {
 	const float frameScale = GetDeltaTime() * 60.0f;
     // 弾の移動
 	transform.translate.x += velocity.x * frameScale;
@@ -51,7 +51,7 @@ void EnemyNormalBullet::Update() {
     trailEffect->SetTranslate(transform.translate);
 }
 
-OBB EnemyNormalBullet::GetOBB() {
+OBB MachineGunBullet::GetOBB() {
     OBB obb;
     // 1. 中心座標[cite: 3]
     obb.center = transform.translate;

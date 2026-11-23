@@ -25,9 +25,9 @@
             "name": "MainCamera",
             "transform": {
                 "rotation": [
-                    0.13820429146289825,
-                    -0.209342360496521,
-                    -1.3614505529403687
+                    0.2088853269815445,
+                    -0.27949121594429016,
+                    -1.256304383277893
                 ],
                 "scaling": [
                     1.0,
@@ -35,9 +35,9 @@
                     1.0
                 ],
                 "translation": [
-                    -559.7066040039063,
-                    -278.36376953125,
-                    167.45965576171875
+                    -124.319580078125,
+                    -278.3997497558594,
+                    179.77769470214844
                 ]
             },
             "type": "EMPTY"
@@ -459,7 +459,7 @@
                     960.0,
                     540.0
                 ],
-                "rotation": 0.3314676880836487,
+                "rotation": 0.6653566360473633,
                 "scale": [
                     1.0,
                     1.0
@@ -588,7 +588,7 @@
                     960.0,
                     540.0
                 ],
-                "rotation": 0.06629353761672974,
+                "rotation": 0.13307133316993713,
                 "scale": [
                     0.8000000715255737,
                     0.8000000715255737
@@ -714,13 +714,13 @@
             "name": "reticle_3",
             "rect_transform": {
                 "position": [
-                    395.1873779296875,
-                    324.73052978515625
+                    960.0,
+                    540.0
                 ],
-                "rotation": 0.1988806128501892,
+                "rotation": 0.3992139995098114,
                 "scale": [
-                    0.2142857164144516,
-                    0.2142857164144516
+                    1.0,
+                    1.0
                 ]
             },
             "sprite_file_name": "Resource/reticle/reticle3.png",
@@ -801,9 +801,9 @@
             "name": "cockpit",
             "transform": {
                 "rotation": [
-                    -0.10814891010522842,
-                    0.06629353761672974,
-                    -1.6370865106582642
+                    -0.08488858491182327,
+                    0.13307133316993713,
+                    -1.7038668394088745
                 ],
                 "scaling": [
                     1.0,
@@ -811,9 +811,9 @@
                     1.0
                 ],
                 "translation": [
-                    -559.7066040039063,
-                    -278.38037109375,
-                    167.44944763183594
+                    -124.31904602050781,
+                    -278.3544616699219,
+                    179.7707061767578
                 ]
             },
             "type": "EMPTY"
@@ -2669,7 +2669,7 @@
             "components": [
                 "ModelRenderer",
                 "Particle",
-                "EnemyNormal",
+                "FighterJet",
                 "Trail"
             ],
             "file_name": "F-16A_FightingFalcon.dat.obj",
@@ -2695,7 +2695,7 @@
                 "outline_thickness": 0.009999999776482582,
                 "toon_shading": true
             },
-            "name": "EnemyNormal",
+            "name": "FighterJet",
             "particles": [
                 {
                     "count": 8,
@@ -2836,86 +2836,84 @@
             "name": "Spawner_1",
             "spawnDataList": [
                 {
-                    "controlPoints": [
-                        [
-                            0.10000000149011612,
-                            167.4550018310547,
-                            -216.3000030517578
-                        ],
-                        [
-                            -1.899999976158142,
-                            168.05499267578125,
-                            -166.10000610351563
-                        ],
-                        [
-                            -1.899999976158142,
-                            168.05499267578125,
-                            -112.0
-                        ],
-                        [
-                            0.6000000238418579,
-                            168.05499267578125,
-                            -66.80000305175781
-                        ],
-                        [
-                            -0.10000000149011612,
-                            168.05499267578125,
-                            -12.699999809265137
-                        ],
-                        [
-                            3.200000047683716,
-                            168.05499267578125,
-                            43.29999923706055
-                        ],
-                        [
-                            18.899999618530273,
-                            168.05499267578125,
-                            89.5999984741211
-                        ],
-                        [
-                            50.099998474121094,
-                            168.05499267578125,
-                            126.19999694824219
-                        ],
-                        [
-                            100.30000305175781,
-                            165.35499572753906,
-                            138.10000610351563
-                        ],
-                        [
-                            155.1999969482422,
-                            160.15499877929688,
-                            137.60000610351563
-                        ],
-                        [
-                            205.39999389648438,
-                            155.65499877929688,
-                            137.60000610351563
-                        ],
-                        [
-                            240.60000610351563,
-                            155.9550018310547,
-                            119.9000015258789
-                        ],
-                        [
-                            261.3999938964844,
-                            156.4550018310547,
-                            103.0
-                        ]
+                    "controlPoints": [],
+                    "enemyTemplateParts": [
+                        {
+                            "localTransform": {
+                                "rotate": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ],
+                                "scale": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ],
+                                "translate": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            "name": "Body",
+                            "templateName": "MachineGun_Body"
+                        },
+                        {
+                            "localTransform": {
+                                "rotate": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ],
+                                "scale": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ],
+                                "translate": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            "name": "Rack",
+                            "templateName": "MachineGun_Rack"
+                        },
+                        {
+                            "localTransform": {
+                                "rotate": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ],
+                                "scale": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ],
+                                "translate": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            "name": "Barrel",
+                            "templateName": "MachineGun_Barrel"
+                        }
                     ],
-                    "enemyTemplate": "EnemyNormal",
-                    "movePattern": "RAIL_FORWARD",
+                    "movePattern": "",
                     "offset": [
-                        13.800000190734863,
-                        0.0,
-                        0.0
+                        -200.89999389648438,
+                        -4.900000095367432,
+                        22.200000762939453
                     ],
                     "pathSpeed": 0.125,
                     "spawnTime": 0.0,
-                    "type": "BOSS"
+                    "type": "MachineGun"
                 }
             ],
-            "spawnDistance": 5.0,
+            "spawnDistance": 0.0,
             "transform": {
                 "rotation": [
                     0.0,
@@ -8503,13 +8501,13 @@
             "name": "arrow",
             "rect_transform": {
                 "position": [
-                    603.544921875,
-                    721.4932861328125
+                    560.0084838867188,
+                    537.394775390625
                 ],
-                "rotation": 2.670642614364624,
+                "rotation": -3.1350796222686768,
                 "scale": [
-                    0.7024794816970825,
-                    0.7024794816970825
+                    0.7889273166656494,
+                    0.7889273166656494
                 ]
             },
             "sprite_file_name": "Resource/arrow/arrow.png",
@@ -95529,7 +95527,7 @@
                 "translation": [
                     -395.0,
                     -205.0,
-                    100.0
+                    109.80158996582031
                 ]
             },
             "type": "MESH"
@@ -155587,22 +155585,22 @@
                 "outline_thickness": 0.009999999776482582,
                 "toon_shading": true
             },
-            "name": "EnemyNormal_Death",
+            "name": "FighterJet_Death",
             "transform": {
                 "rotation": [
-                    0.041764333844184875,
-                    0.9203200340270996,
-                    0.269142210483551
+                    -0.0,
+                    0.21419446170330048,
+                    3.1415927410125732
                 ],
                 "scaling": [
-                    0.30000001192092896,
-                    0.30000001192092896,
-                    0.30000001192092896
+                    3.0,
+                    3.0,
+                    3.0
                 ],
                 "translation": [
-                    413.0974426269531,
-                    423.8484191894531,
-                    172.539306640625
+                    -133.3000030517578,
+                    -281.6000061035156,
+                    162.5550079345703
                 ]
             },
             "type": "EMPTY"
@@ -155700,7 +155698,7 @@
                 "translation": [
                     -100.0,
                     -278.3998107910156,
-                    167.4550018310547
+                    179.79534912109375
                 ]
             },
             "type": "RAIL"
@@ -155749,7 +155747,7 @@
                 "translation": [
                     -150.0,
                     -278.3996887207031,
-                    167.4550018310547
+                    176.92813110351563
                 ]
             },
             "type": "RAIL"
@@ -156782,6 +156780,255 @@
                 ]
             },
             "type": "RAIL"
+        },
+        {
+            "active": false,
+            "components": [
+                "ModelRenderer",
+                "FighterJet",
+                "Particle"
+            ],
+            "file_name": "ciws_body.obj",
+            "group": "Enemy",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "MachineGun_Body",
+            "particles": [
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/hit2.csv"
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/deathGun.csv"
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/deathGun2.csv"
+                }
+            ],
+            "transform": {
+                "rotation": [
+                    -0.0,
+                    0.0,
+                    3.1415927410125732
+                ],
+                "scaling": [
+                    3.0,
+                    3.0,
+                    3.0
+                ],
+                "translation": [
+                    1.0,
+                    -140240.46875,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "ModelRenderer",
+                "FighterJet"
+            ],
+            "file_name": "ciws_rack.obj",
+            "group": "Enemy",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "MachineGun_Rack",
+            "transform": {
+                "rotation": [
+                    -0.0,
+                    0.0,
+                    3.1415927410125732
+                ],
+                "scaling": [
+                    3.0,
+                    3.0,
+                    3.0
+                ],
+                "translation": [
+                    2.0,
+                    -140240.46875,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "ModelRenderer",
+                "FighterJet"
+            ],
+            "file_name": "ciws_barrel.obj",
+            "group": "Enemy",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "MachineGun_Barrel",
+            "transform": {
+                "rotation": [
+                    -0.0,
+                    0.0,
+                    3.1415927410125732
+                ],
+                "scaling": [
+                    3.0,
+                    3.0,
+                    3.0
+                ],
+                "translation": [
+                    3.0,
+                    -140240.46875,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "ModelRenderer"
+            ],
+            "file_name": "ciws/ciws_death.obj",
+            "group": "Enemy",
+            "model_renderer": {
+                "color_override": [
+                    0.03921568766236305,
+                    0.03921568766236305,
+                    0.03921568766236305,
+                    1.0
+                ],
+                "color_override_enabled": true,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "MachineGun_Death",
+            "transform": {
+                "rotation": [
+                    -0.0,
+                    0.21419446170330048,
+                    3.1415927410125732
+                ],
+                "scaling": [
+                    3.0,
+                    3.0,
+                    3.0
+                ],
+                "translation": [
+                    -132.3000030517578,
+                    -281.6000061035156,
+                    162.5550079345703
+                ]
+            },
+            "type": "EMPTY"
         }
     ],
     "rail_camera_groups": [

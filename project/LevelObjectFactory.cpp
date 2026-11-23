@@ -4,7 +4,7 @@
 
 #include "CameraComponent.h"
 #include "ColliderComponent.h"
-#include "EnemyNormal.h"
+#include "FighterJet.h"
 #include "EnemySpawnerComponent.h"
 #include "EasingComponent.h"
 #include "LevelEditorCommon.h"
@@ -188,8 +188,8 @@ void LevelObjectFactory::CreateObjects(std::vector<ObjectData>& objectDataList,
 				auto* spawner = gameObject->AddComponent<EnemySpawnerComponent>();
 				spawner->Configure(objectData.spawnDataList, objectData.spawnDistance, &railCamera);
 			}
-			if (HasComponent(objectData, "EnemyNormal")) {
-				auto* enemy = gameObject->AddComponent<EnemyNormal>();
+			if (HasComponent(objectData, "FighterJet")) {
+				auto* enemy = gameObject->AddComponent<FighterJet>();
 				enemy->SetTransform(objectData.transform);
 			}
 		}

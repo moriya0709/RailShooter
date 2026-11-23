@@ -389,6 +389,29 @@ void Level::LoadJson(const std::string fileName) {
 
 					data.type = spawnItem.value("type", std::string{"NORMAL"});
 					data.enemyTemplate = spawnItem.value("enemyTemplate", std::string{});
+					if (spawnItem.contains("enemyTemplateParts")) {
+						for (const auto& partItem : spawnItem["enemyTemplateParts"]) {
+							EnemyTemplatePart part;
+							part.name = partItem.value("name", std::string{});
+							part.templateName = partItem.value("templateName", std::string{});
+							if (partItem.contains("localTransform")) {
+								const auto& transform = partItem["localTransform"];
+								if (transform.contains("scale")) {
+									part.localTransform.scale = {
+										(float)transform["scale"][0], (float)transform["scale"][1], (float)transform["scale"][2] };
+								}
+								if (transform.contains("rotate")) {
+									part.localTransform.rotate = {
+										(float)transform["rotate"][0], (float)transform["rotate"][1], (float)transform["rotate"][2] };
+								}
+								if (transform.contains("translate")) {
+									part.localTransform.translate = {
+										(float)transform["translate"][0], (float)transform["translate"][1], (float)transform["translate"][2] };
+								}
+							}
+							data.enemyTemplateParts.push_back(std::move(part));
+						}
+					}
 
 					// movePattern があれば読み込む（なければ STRAIGHT）
 					if (spawnItem.contains("movePattern")) {
@@ -665,6 +688,21 @@ void Level::SaveJson(const std::string fileName) {
 				spawnItem["type"] = spawn.type;
 				if (!spawn.enemyTemplate.empty()) {
 					spawnItem["enemyTemplate"] = spawn.enemyTemplate;
+				}
+				if (!spawn.enemyTemplateParts.empty()) {
+					nlohmann::json parts = nlohmann::json::array();
+					for (const EnemyTemplatePart& part : spawn.enemyTemplateParts) {
+						parts.push_back({
+							{ "name", part.name },
+							{ "templateName", part.templateName },
+							{ "localTransform", {
+								{ "scale", { part.localTransform.scale.x, part.localTransform.scale.y, part.localTransform.scale.z } },
+								{ "rotate", { part.localTransform.rotate.x, part.localTransform.rotate.y, part.localTransform.rotate.z } },
+								{ "translate", { part.localTransform.translate.x, part.localTransform.translate.y, part.localTransform.translate.z } },
+							} },
+						});
+					}
+					spawnItem["enemyTemplateParts"] = std::move(parts);
 				}
 				// movePattern の保存
 				spawnItem["movePattern"] = spawn.movePattern;

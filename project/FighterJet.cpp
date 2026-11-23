@@ -1,6 +1,6 @@
-﻿#include "EnemyNormal.h"
+﻿#include "FighterJet.h"
 #include "CameraManager.h"
-#include "EnemyNormalBullet.h"
+#include "FighterJetBullet.h"
 #include "GameObject.h"
 #include "ModelRendererComponent.h"
 #include "ScoreManager.h"
@@ -29,7 +29,7 @@ Vector3 EvaluateRailPath(const std::vector<Vector3>& points, float railT) {
 
 } // namespace
 
-void EnemyNormal::Initialize() {
+void FighterJet::Initialize() {
 	// 描画・Transform は同じ GameObject のコンポーネントに委譲する。
 	if (GetGameObject()) {
 		GetGameObject()->GetTransformComponent()->SetTransform(transform);
@@ -46,7 +46,7 @@ void EnemyNormal::Initialize() {
 	BuildPathRoute();
 }
 
-void EnemyNormal::SetControlPoints(const std::vector<Vector3>& points) {
+void FighterJet::SetControlPoints(const std::vector<Vector3>& points) {
 	controlPoints = points;
 	pathProgress = 0.0f;
 	pathReachedEnd_ = false;
@@ -54,7 +54,7 @@ void EnemyNormal::SetControlPoints(const std::vector<Vector3>& points) {
 	BuildPathRoute();
 }
 
-void EnemyNormal::BuildPathRoute() {
+void FighterJet::BuildPathRoute() {
 	pathRoutePoints = controlPoints;
 	if (pathRoutePoints.empty()) {
 		return;
@@ -69,7 +69,7 @@ void EnemyNormal::BuildPathRoute() {
 	}
 }
 
-void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
+void FighterJet::Update(Vector3 playerPosition, float currentPlayerProgress) {
 	const float deltaTime = deltaTime_;
 	aliveTime += deltaTime;
 
@@ -236,7 +236,7 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 	// 弾の生成
 	if (isShot) {
 		auto bulletObject = std::make_unique<GameObject>("EnemyBullet");
-		auto bullet = bulletObject->AddComponent<EnemyNormalBullet>();
+		auto bullet = bulletObject->AddComponent<FighterJetBullet>();
 		bullet->Initialize(transform.translate, playerPosition);
 		bulletObject->Initialize();
 		bullets_.push_back(bullet);
@@ -260,11 +260,11 @@ void EnemyNormal::Update(Vector3 playerPosition, float currentPlayerProgress) {
 	});
 }
 
-void EnemyNormal::Draw() {
+void FighterJet::Draw() {
 	// ModelRendererComponent が GameObject::Draw() で描画する。
 }
 
-Vector3 EnemyNormal::GetSplinePosition(const std::vector<Vector3>& points, float progress) {
+Vector3 FighterJet::GetSplinePosition(const std::vector<Vector3>& points, float progress) {
 	if (points.empty()) return { 0.0f, 0.0f, 0.0f };
 	if (points.size() == 1) return points[0];
 
@@ -284,7 +284,7 @@ Vector3 EnemyNormal::GetSplinePosition(const std::vector<Vector3>& points, float
 	return CatmullRomSpline(points[p0_idx], points[p1_idx], points[p2_idx], points[p3_idx], t);
 }
 
-void EnemyNormal::OnCollisionBullet(int damage) {
+void FighterJet::OnCollisionBullet(int damage) {
 	hitTimer_ = 0.2f; // 衝突時に0.2秒間（60FPSで約12フレーム）タイマーをセット
 
 	hp -= damage;
@@ -350,7 +350,7 @@ void EnemyNormal::OnCollisionBullet(int damage) {
 	}
 }
 
-OBB EnemyNormal::GetOBB() {
+OBB FighterJet::GetOBB() {
 	OBB obb;
 	// 1. 中心座標
 	obb.center = transform.translate;

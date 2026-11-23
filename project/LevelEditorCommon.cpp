@@ -15,7 +15,9 @@
 #include "ParticleComponent.h"
 #include "TrailComponent.h"
 #include "EnemySpawnerComponent.h"
-#include "EnemyNormal.h"
+#include "FighterJet.h"
+#include "MachineGun.h"
+#include "PlayerBulletMissile.h"
 #include "SceneManager.h"
 #include "CollisionManager.h"
 
@@ -106,9 +108,9 @@ void DrawComponentRemovalInspector(GameObject& object, ObjectData& objectData) {
 		object.RemoveComponent<ColliderComponent>();
 		removeSerializedComponent("Collider");
 	}
-	if (object.GetComponent<EnemyNormal>() && ImGui::Button("Remove Enemy Normal")) {
-		object.RemoveComponent<EnemyNormal>();
-		removeSerializedComponent("EnemyNormal");
+	if (object.GetComponent<FighterJet>() && ImGui::Button("Remove FighterJet")) {
+		object.RemoveComponent<FighterJet>();
+		removeSerializedComponent("FighterJet");
 	}
 	ImGui::TextDisabled("Transform, Camera, and Player Controller are required while this scene is active.");
 #else
@@ -173,6 +175,31 @@ bool DidPlayerBulletHitEnemy(const OBB& enemyObb, PlayerBullet& bullet) {
 		CheckSweptOBBToOBB(bullet.GetPreviousTranslate(), bulletObb, enemyObb);
 }
 
+void ResolveMachineGunBulletMissileCollisions(const std::list<EnemyBullet*>& enemyBullets,
+	const std::list<PlayerBullet*>& playerBullets) {
+	for (EnemyBullet* enemyBullet : enemyBullets) {
+		if (!enemyBullet || enemyBullet->IsDead()) {
+			continue;
+		}
+
+		const OBB enemyBulletObb = enemyBullet->GetOBB();
+		for (PlayerBullet* playerBullet : playerBullets) {
+			if (!playerBullet || playerBullet->IsDead() ||
+				!dynamic_cast<PlayerBulletMissile*>(playerBullet)) {
+				continue;
+			}
+
+			const OBB missileObb = playerBullet->GetOBB();
+			if (CheckOBBToOBB(enemyBulletObb, missileObb) ||
+				CheckSweptOBBToOBB(playerBullet->GetPreviousTranslate(), missileObb, enemyBulletObb)) {
+				enemyBullet->OnCollision();
+				playerBullet->OnCollision();
+				break;
+			}
+		}
+	}
+}
+
 }
 
 void SaveLevel(Level& level, const std::vector<std::unique_ptr<GameObject>>& levelObjects,
@@ -225,7 +252,11 @@ void UpdateEnemyCollisions(Player& player,
 			}
 		}
 		const auto& enemyBullets = enemy->GetBullets();
+		if (dynamic_cast<MachineGun*>(enemy)) {
+			ResolveMachineGunBulletMissileCollisions(enemyBullets, playerBullets);
+		}
 		for (const auto& bullet : enemyBullets) {
+			if (bullet->IsDead()) continue;
 			if (CheckOBBToOBB(playerObb, bullet->GetOBB())) {
 				player.OnCollision(bullet->GetDamage());
 				bullet->OnCollision();
@@ -245,7 +276,11 @@ void UpdateEnemyCollisions(Player& player,
 			}
 		}
 		const auto& enemyBullets = enemy->GetBullets();
+		if (dynamic_cast<MachineGun*>(enemy)) {
+			ResolveMachineGunBulletMissileCollisions(enemyBullets, playerBullets);
+		}
 		for (const auto& bullet : enemyBullets) {
+			if (bullet->IsDead()) continue;
 			if (CheckOBBToOBB(playerObb, bullet->GetOBB())) {
 				player.OnCollision(bullet->GetDamage());
 				bullet->OnCollision();

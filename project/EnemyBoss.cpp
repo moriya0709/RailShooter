@@ -1,6 +1,6 @@
 ﻿#include "EnemyBoss.h"
 #include "CameraManager.h"
-#include "EnemyNormalBullet.h"
+#include "FighterJetBullet.h"
 #include "GameObject.h"
 #include "ModelRendererComponent.h"
 #include "ScoreManager.h"
@@ -234,8 +234,8 @@ void EnemyBoss::Update(Vector3 playerPosition, float currentPlayerProgress) {
 
 	// 弾の生成
 	if (isShot) {
-		auto bulletObject = std::make_unique<GameObject>("EnemyBullet");
-		auto bullet = bulletObject->AddComponent<EnemyNormalBullet>();
+		auto bulletObject = std::make_unique<GameObject>("FighterJet");
+		auto bullet = bulletObject->AddComponent<FighterJetBullet>();
 		bullet->Initialize(transform.translate, playerPosition);
 		bulletObject->Initialize();
 		bullets_.push_back(bullet);

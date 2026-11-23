@@ -1,35 +1,20 @@
 ﻿#include "EnemySpawner.h"
-#include "EnemyNormal.h"
+#include "FighterJet.h"
+#include "MachineGun.h"
 #include "EnemyBoss.h"
 #include "ModelRendererComponent.h"
 #include "ParticleComponent.h"
 #include "TrailComponent.h"
 #include "RailCamera.h"
+#include "SpawnedVisualPartsComponent.h"
 
 namespace {
 
-// The template provides the spawned object's visual components only.  The
-// SpawnData type determines which Enemy behavior component is attached later.
-std::unique_ptr<GameObject> CreateEnemyObjectFromTemplate(const SpawnData& data, Transform& spawnTransform) {
-	GameObject* const templateObject = GameObject::FindByName(data.enemyTemplate);
-	if (!templateObject) {
-		return nullptr;
-	}
+void CopyVisualComponents(const GameObject& source, GameObject& destination) {
+	destination.SetEnablePostEffect(source.IsPostEffectEnabled());
 
-	const Transform& templateTransform = templateObject->GetTransformComponent()->GetTransform();
-	// この Transform は後段の Enemy::SetTransform にも使われるため、
-	// テンプレートのサイズをここで反映して最後まで保持する。
-	spawnTransform.scale = templateTransform.scale;
-	spawnTransform.rotate.x += templateTransform.rotate.x;
-	spawnTransform.rotate.y += templateTransform.rotate.y;
-	spawnTransform.rotate.z += templateTransform.rotate.z;
-
-	auto enemyObject = std::make_unique<GameObject>(data.enemyTemplate + "_Spawned");
-	enemyObject->GetTransformComponent()->SetTransform(spawnTransform);
-	enemyObject->SetEnablePostEffect(templateObject->IsPostEffectEnabled());
-
-	if (const auto* sourceRenderer = templateObject->GetComponent<ModelRendererComponent>()) {
-		auto* renderer = enemyObject->AddComponent<ModelRendererComponent>();
+	if (const auto* sourceRenderer = source.GetComponent<ModelRendererComponent>()) {
+		auto* renderer = destination.AddComponent<ModelRendererComponent>();
 		if (sourceRenderer->HasLod()) {
 			renderer->SetLodModels(sourceRenderer->GetLodHighModelPath(), sourceRenderer->GetLodMediumModelPath(), sourceRenderer->GetLodLowModelPath());
 			renderer->SetLodDistances(sourceRenderer->GetLodMediumDistance(), sourceRenderer->GetLodLowDistance());
@@ -48,17 +33,156 @@ std::unique_ptr<GameObject> CreateEnemyObjectFromTemplate(const SpawnData& data,
 		renderer->SetMotionBlurEnabled(sourceRenderer->IsMotionBlurEnabled());
 	}
 
-	if (const auto* sourceParticle = templateObject->GetComponent<ParticleComponent>()) {
-		enemyObject->AddComponent<ParticleComponent>()->Configure(sourceParticle->GetSettings());
+	if (const auto* sourceParticle = source.GetComponent<ParticleComponent>()) {
+		destination.AddComponent<ParticleComponent>()->Configure(sourceParticle->GetSettings());
 	}
-	if (const auto* sourceTrail = templateObject->GetComponent<TrailComponent>()) {
-		enemyObject->AddComponent<TrailComponent>()->Configure(sourceTrail->GetSettings());
+	if (const auto* sourceTrail = source.GetComponent<TrailComponent>()) {
+		destination.AddComponent<TrailComponent>()->Configure(sourceTrail->GetSettings());
+	}
+}
+
+Transform CombineTransform(const Transform& parent, const Transform& local) {
+	const Matrix4x4 combined = Multiply(
+		MakeAffineMatrix(local.scale, local.rotate, local.translate),
+		MakeAffineMatrix(parent.scale, parent.rotate, parent.translate));
+
+	Transform result{};
+	result.translate = GetTranslate(combined);
+	result.rotate = GetRotate(combined);
+	result.scale = {
+		parent.scale.x * local.scale.x,
+		parent.scale.y * local.scale.y,
+		parent.scale.z * local.scale.z,
+	};
+	return result;
+}
+
+void ApplyTemplateVisualTransform(const GameObject& templateObject, Transform& transform) {
+	const Transform& templateTransform = templateObject.GetTransformComponent()->GetTransform();
+	transform.scale.x *= templateTransform.scale.x;
+	transform.scale.y *= templateTransform.scale.y;
+	transform.scale.z *= templateTransform.scale.z;
+	transform.rotate.x += templateTransform.rotate.x;
+	transform.rotate.y += templateTransform.rotate.y;
+	transform.rotate.z += templateTransform.rotate.z;
+}
+
+// Model meshes may already be aligned around one shared Blender origin. The
+// templates' editor positions are therefore ignored: only their relative
+// rotation and scale are inherited. SpawnData supplies the actual local
+// position offset for a part.
+Transform GetPartVisualLocalTransform(const Transform& bodyTemplateTransform,
+	const Transform& partTemplateTransform, const Transform& adjustment) {
+	Transform result{};
+	result.translate = adjustment.translate;
+
+	// The templates use the same authored coordinate system. Keeping this as
+	// component-wise subtraction also preserves an exact zero when both parts
+	// have the same rotation, which is important for zero-offset Blender parts.
+	result.rotate = {
+		partTemplateTransform.rotate.x - bodyTemplateTransform.rotate.x,
+		partTemplateTransform.rotate.y - bodyTemplateTransform.rotate.y,
+		partTemplateTransform.rotate.z - bodyTemplateTransform.rotate.z,
+	};
+	result.rotate.x += adjustment.rotate.x;
+	result.rotate.y += adjustment.rotate.y;
+	result.rotate.z += adjustment.rotate.z;
+	result.scale = {
+		bodyTemplateTransform.scale.x != 0.0f
+			? (partTemplateTransform.scale.x / bodyTemplateTransform.scale.x) * adjustment.scale.x
+			: partTemplateTransform.scale.x * adjustment.scale.x,
+		bodyTemplateTransform.scale.y != 0.0f
+			? (partTemplateTransform.scale.y / bodyTemplateTransform.scale.y) * adjustment.scale.y
+			: partTemplateTransform.scale.y * adjustment.scale.y,
+		bodyTemplateTransform.scale.z != 0.0f
+			? (partTemplateTransform.scale.z / bodyTemplateTransform.scale.z) * adjustment.scale.z
+			: partTemplateTransform.scale.z * adjustment.scale.z,
+	};
+	return result;
+}
+
+std::unique_ptr<GameObject> CreateVisualPartObject(const GameObject& templateObject, const std::string& name) {
+	auto partObject = std::make_unique<GameObject>(name);
+	CopyVisualComponents(templateObject, *partObject);
+	return partObject;
+}
+
+// The template provides the spawned object's visual components only. The
+// SpawnData type determines which Enemy behavior component is attached later.
+std::unique_ptr<GameObject> CreateEnemyObjectFromTemplate(const SpawnData& data, Transform& spawnTransform) {
+	GameObject* const templateObject = GameObject::FindByName(data.enemyTemplate);
+	if (!templateObject) {
+		return nullptr;
+	}
+
+	// Preserve the existing single-template behaviour: its scale replaces the
+	// spawner scale and its rotation is added to the spawn rotation.
+	const Transform& templateTransform = templateObject->GetTransformComponent()->GetTransform();
+	spawnTransform.scale = templateTransform.scale;
+	spawnTransform.rotate.x += templateTransform.rotate.x;
+	spawnTransform.rotate.y += templateTransform.rotate.y;
+	spawnTransform.rotate.z += templateTransform.rotate.z;
+
+	auto enemyObject = std::make_unique<GameObject>(data.enemyTemplate + "_Spawned");
+	enemyObject->GetTransformComponent()->SetTransform(spawnTransform);
+	CopyVisualComponents(*templateObject, *enemyObject);
+
+	return enemyObject;
+}
+
+std::unique_ptr<GameObject> CreateEnemyObjectFromTemplateParts(const SpawnData& data, Transform& spawnTransform) {
+	if (data.enemyTemplateParts.empty() || data.enemyTemplateParts.front().templateName.empty()) {
+		return nullptr;
+	}
+
+	std::vector<GameObject*> templateObjects;
+	templateObjects.reserve(data.enemyTemplateParts.size());
+	for (const EnemyTemplatePart& part : data.enemyTemplateParts) {
+		GameObject* const templateObject = GameObject::FindByName(part.templateName);
+		if (!templateObject) {
+			return nullptr;
+		}
+		templateObjects.push_back(templateObject);
+	}
+
+	// The first part is the enemy's root/body. Its local Transform changes the
+	// actual enemy spawn Transform; later parts are visual children of this root.
+	spawnTransform = CombineTransform(spawnTransform, data.enemyTemplateParts.front().localTransform);
+	ApplyTemplateVisualTransform(*templateObjects.front(), spawnTransform);
+
+	auto enemyObject = std::make_unique<GameObject>(
+		data.enemyTemplateParts.front().templateName + "_Spawned");
+	enemyObject->GetTransformComponent()->SetTransform(spawnTransform);
+	CopyVisualComponents(*templateObjects.front(), *enemyObject);
+
+	if (data.enemyTemplateParts.size() == 1) {
+		return enemyObject;
+	}
+
+	auto* visualParts = enemyObject->AddComponent<SpawnedVisualPartsComponent>();
+	for (size_t index = 1; index < data.enemyTemplateParts.size(); ++index) {
+		const EnemyTemplatePart& part = data.enemyTemplateParts[index];
+		const GameObject& templateObject = *templateObjects[index];
+
+		const Transform& bodyTemplateTransform =
+			templateObjects.front()->GetTransformComponent()->GetTransform();
+		const Transform& partTemplateTransform =
+			templateObject.GetTransformComponent()->GetTransform();
+		Transform localTransform = GetPartVisualLocalTransform(
+			bodyTemplateTransform, partTemplateTransform, part.localTransform);
+
+		const std::string partName = part.name.empty() ? part.templateName : part.name;
+		visualParts->AddPart(partName, localTransform,
+			CreateVisualPartObject(templateObject, partName + "_SpawnedPart"));
 	}
 
 	return enemyObject;
 }
 
 std::unique_ptr<GameObject> CreateEnemyObject(const SpawnData& data, Transform& spawnTransform) {
+	if (!data.enemyTemplateParts.empty()) {
+		return CreateEnemyObjectFromTemplateParts(data, spawnTransform);
+	}
 	if (!data.enemyTemplate.empty()) {
 		return CreateEnemyObjectFromTemplate(data, spawnTransform);
 	}
@@ -71,10 +195,11 @@ Enemy* AddEnemyComponent(GameObject& enemyObject, const std::string& type) {
 		return enemyObject.AddComponent<EnemyBoss>();
 	}
 
-	// FAST does not have a dedicated behavior component yet.  Keep the
-	// existing selectable type spawnable by using the normal behavior.
-	if (type == "NORMAL" || type.empty()) {
-		return enemyObject.AddComponent<EnemyNormal>();
+	if (type == "FighterJet" || type.empty()) {
+		return enemyObject.AddComponent<FighterJet>();
+	}
+	if (type == "MachineGun") {
+		return enemyObject.AddComponent<MachineGun>();
 	}
 
 	return nullptr;

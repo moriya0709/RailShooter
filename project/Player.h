@@ -70,7 +70,8 @@ private:
 	Vector3 baseRot = { 0.0f, 0.0f, 0.0f };
 
     // 体力
-	int hp_ = 3;
+    int kHpMax_ = 30000;
+	int hp_ = kHpMax_;
 
 
     // --- パラメーター設定 ---
@@ -113,7 +114,7 @@ private:
     // 弾
 	std::list<std::unique_ptr<GameObject>> bulletObjects_;
 	std::list<PlayerBullet*> bullets_;
-    const float kBulletCoolTime = 0.1f; // 弾の発射間隔
+    const float kBulletCoolTime = 0.01f; // 弾の発射間隔
 	float bulletCoolTime = kBulletCoolTime;
     bool isNextNormalRight = true; // 通常弾の左右切り替えフラグ
 

@@ -12,7 +12,7 @@
 #include "EasingComponent.h"
 #include "ParticleComponent.h"
 #include "TrailComponent.h"
-#include "EnemyNormal.h"
+#include "FighterJet.h"
 #include "SpriteRendererComponent.h"
 #include "TextRendererComponent.h"
 #include "TextMeshEditorGizmo.h"
@@ -1123,7 +1123,7 @@ void ResultsScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaT
 				spawner->Configure(copyData.spawnDataList, copyData.spawnDistance, railCamera.get());
 			}
 			if (sourceObject->GetComponent<Enemy>()) {
-				auto* enemy = copyObject->AddComponent<EnemyNormal>();
+				auto* enemy = copyObject->AddComponent<FighterJet>();
 				enemy->SetTransform(copyData.transform);
 			}
 			copyObject->SetActive(copyData.active);
@@ -1924,7 +1924,8 @@ void ResultsScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaT
 							ImGui::DragFloat("Spawn Time(s)", &sData.spawnTime, 0.1f, 0.0f, 100.0f);
 							// 2. 座標オフセット
 							ImGui::DragFloat3("Offset XYZ", &sData.offset.x, 0.1f);
-							// EnemyNormal を持つ EMPTY 名を指定すると、下の旧 Type より優先して
+							// 
+							// を持つ EMPTY 名を指定すると、下の旧 Type より優先して
 							// その EMPTY のモデル・見た目を複製してスポーンする。
 							char enemyTemplateName[128]{};
 							strncpy_s(enemyTemplateName, sData.enemyTemplate.c_str(), _TRUNCATE);
@@ -2141,10 +2142,10 @@ void ResultsScene::Update(float deltaTime, [[maybe_unused]] float unscaledDeltaT
 					objectData.colliderCenterOffset = collider->GetCenterOffset();
 					addSerializedComponent("Collider");
 				}
-				if (!selectedObject->GetComponent<Enemy>() && ImGui::Button("Enemy Normal")) {
-					auto* enemy = selectedObject->AddComponent<EnemyNormal>();
+				if (!selectedObject->GetComponent<Enemy>() && ImGui::Button("FighterJet")) {
+					auto* enemy = selectedObject->AddComponent<FighterJet>();
 					enemy->SetTransform(selectedObject->GetTransformComponent()->GetTransform());
-					addSerializedComponent("EnemyNormal");
+					addSerializedComponent("FighterJet");
 				}
 			}
 

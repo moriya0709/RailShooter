@@ -19,6 +19,7 @@
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="EnemyBoss.cpp" />
     <ClCompile Include="MachineGun.cpp" />
+    <ClCompile Include="MachineGunBullet.cpp" />
     <ClCompile Include="ObjectRailMovementComponent.cpp" />
     <ClCompile Include="application\bookUi\Book.cpp" />
     <ClCompile Include="application\bookUi\BookUi.cpp" />
@@ -395,6 +396,7 @@
     <ClInclude Include="LevelEditorCommon.h" />
     <ClInclude Include="LevelObjectFactory.h" />
     <ClInclude Include="MachineGun.h" />
+    <ClInclude Include="MachineGunBullet.h" />
     <ClInclude Include="ResultsScene.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="SelectScene.h" />

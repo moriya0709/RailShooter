@@ -13,6 +13,7 @@
 #include "ParticleComponent.h"
 #include "TrailComponent.h"
 #include "FighterJet.h"
+#include "MachineGun.h"
 #include "SpriteRendererComponent.h"
 #include "TextRendererComponent.h"
 #include "TextMeshEditorGizmo.h"
@@ -449,6 +450,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	for (auto& enemyObject : enemies) {
 		if (auto* enemy = enemyObject->GetComponent<Enemy>()) {
 			enemy->SetUpdateContext(player->GetTranslate(), cameraProgress);
+			enemy->SetPlayerMissileTargets(player->GetBullets());
 			enemy->SetDeltaTime(deltaTime);
 			enemyObject->Update();
 		}
@@ -470,6 +472,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 		}
 		if (auto* enemy = object->GetComponent<Enemy>()) {
 			enemy->SetUpdateContext(player->GetTranslate(), cameraProgress);
+			enemy->SetPlayerMissileTargets(player->GetBullets());
 			enemy->SetDeltaTime(deltaTime);
 		}
 		object->Update();
@@ -763,14 +766,28 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 	// 残骸
 	if (!isDebrisActive) {
 		for (const auto& enemyObject : enemies) {
-			auto* emeny = enemyObject->GetComponent<Enemy>();
-			if (emeny && emeny->IsDefeated()) {
+			auto* fighterJet = enemyObject->GetComponent<FighterJet>();
+			if (fighterJet && fighterJet->IsDefeated()) {
 				if (auto* debris = GameObject::FindByName("FighterJet_Death")) {
 					debris->SetActive(true);
 					if (auto* debrisTransform = debris->GetComponent<TransformComponent>()) {
-						debrisTransform->SetTranslate(emeny->GetTransform().translate);
-						debrisTransform->SetRotate(emeny->GetTransform().rotate);
-						debrisTransform->SetScale(emeny->GetTransform().scale);
+						debrisTransform->SetTranslate(fighterJet->GetTransform().translate);
+						debrisTransform->SetRotate(fighterJet->GetTransform().rotate);
+						debrisTransform->SetScale(fighterJet->GetTransform().scale);
+					}
+					debrisActiveTime = 1.0f;
+					isDebrisActive = true;
+				}
+			}
+
+			auto* machineGun = enemyObject->GetComponent<MachineGun>();
+			if (machineGun && machineGun->IsDefeated()) {
+				if (auto* debris = GameObject::FindByName("MachineGun_Death")) {
+					debris->SetActive(true);
+					if (auto* debrisTransform = debris->GetComponent<TransformComponent>()) {
+						debrisTransform->SetTranslate(machineGun->GetTransform().translate);
+						debrisTransform->SetRotate(machineGun->GetTransform().rotate);
+						debrisTransform->SetScale(machineGun->GetTransform().scale);
 					}
 					debrisActiveTime = 1.0f;
 					isDebrisActive = true;
@@ -778,6 +795,13 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			}
 		}
 	} else {
+		// 持続時間
+		if (debrisActiveTime > 0.0f) {
+			debrisActiveTime -= deltaTime;
+		} else {
+			isDebrisActive = false;
+		}
+
 		if (auto* debris = GameObject::FindByName("FighterJet_Death")) {
 			if (auto* debrisTransform = debris->GetComponent<TransformComponent>()) {
 				Vector3 rotation = debrisTransform->GetRotate();
@@ -788,10 +812,14 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 			}
 
 			// 持続時間
-			if (debrisActiveTime > 0.0f) {
-				debrisActiveTime -= deltaTime;
-			} else {
-				isDebrisActive = false;
+			if (debrisActiveTime <= 0.0f) {
+				debris->SetActive(false);
+			}
+		}
+
+		if (auto* debris = GameObject::FindByName("MachineGun_Death")) {
+			// 持続時間
+			if (debrisActiveTime <= 0.0f) {
 				debris->SetActive(false);
 			}
 		}

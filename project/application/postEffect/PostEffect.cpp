@@ -291,15 +291,15 @@ void PostEffect::DamageEffectUpdate() {
 				damageEffectRatio_ = 0.0f;
 				// 完全に終わったら両方のフラグをOFFにして軽くする
 				SetGlitch(false);
-				//SetVignette(false);
+				SetVignette(false);
 			} else {
 				// エフェクト再生中ならフラグをON
 				SetGlitch(true);
-				//SetVignette(true);
+				SetVignette(true);
 
 				// 進行度
 				SetGlitchIntensity(damageEffectRatio_);
-				//SetVignetteIntensity(damageEffectRatio_ * 0.8f);
+				SetVignetteIntensity(damageEffectRatio_ * 0.8f);
 			}
 		}
 	}

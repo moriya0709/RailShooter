@@ -25,9 +25,9 @@
             "name": "MainCamera",
             "transform": {
                 "rotation": [
-                    0.18271251022815704,
-                    -0.17053073644638062,
-                    -3.0352604389190674
+                    0.2088853269815445,
+                    -0.27949121594429016,
+                    -1.256304383277893
                 ],
                 "scaling": [
                     1.0,
@@ -35,9 +35,9 @@
                     1.0
                 ],
                 "translation": [
-                    -124.6793441772461,
-                    -204.78265380859375,
-                    176.2629852294922
+                    -124.319580078125,
+                    -278.3997497558594,
+                    179.77769470214844
                 ]
             },
             "type": "EMPTY"
@@ -459,7 +459,7 @@
                     960.0,
                     540.0
                 ],
-                "rotation": 0.984239935874939,
+                "rotation": 0.6653566360473633,
                 "scale": [
                     1.0,
                     1.0
@@ -588,7 +588,7 @@
                     960.0,
                     540.0
                 ],
-                "rotation": 0.19684799015522003,
+                "rotation": 0.13307133316993713,
                 "scale": [
                     0.8000000715255737,
                     0.8000000715255737
@@ -714,13 +714,13 @@
             "name": "reticle_3",
             "rect_transform": {
                 "position": [
-                    969.5337524414063,
-                    521.1241455078125
+                    960.0,
+                    540.0
                 ],
-                "rotation": 0.5905439853668213,
+                "rotation": 0.3992139995098114,
                 "scale": [
-                    0.2142857164144516,
-                    0.2142857164144516
+                    1.0,
+                    1.0
                 ]
             },
             "sprite_file_name": "Resource/reticle/reticle3.png",
@@ -801,9 +801,9 @@
             "name": "cockpit",
             "transform": {
                 "rotation": [
-                    -0.435349702835083,
-                    0.19684799015522003,
-                    -1.7676392793655396
+                    -0.08488858491182327,
+                    0.13307133316993713,
+                    -1.7038668394088745
                 ],
                 "scaling": [
                     1.0,
@@ -811,9 +811,9 @@
                     1.0
                 ],
                 "translation": [
-                    -69.8732681274414,
-                    -278.3995666503906,
-                    172.1919403076172
+                    -124.31904602050781,
+                    -278.3544616699219,
+                    179.7707061767578
                 ]
             },
             "type": "EMPTY"
@@ -2904,9 +2904,9 @@
                     ],
                     "movePattern": "",
                     "offset": [
-                        -133.3000030517578,
+                        -200.89999389648438,
                         -4.900000095367432,
-                        -3.200000047683716
+                        22.200000762939453
                     ],
                     "pathSpeed": 0.125,
                     "spawnTime": 0.0,
@@ -8501,13 +8501,13 @@
             "name": "arrow",
             "rect_transform": {
                 "position": [
-                    895.6646728515625,
-                    934.7922973632813
+                    560.0084838867188,
+                    537.394775390625
                 ],
-                "rotation": 1.732336401939392,
+                "rotation": -3.1350796222686768,
                 "scale": [
-                    0.6654857397079468,
-                    0.6654857397079468
+                    0.7889273166656494,
+                    0.7889273166656494
                 ]
             },
             "sprite_file_name": "Resource/arrow/arrow.png",
@@ -95527,7 +95527,7 @@
                 "translation": [
                     -395.0,
                     -205.0,
-                    100.0
+                    109.80158996582031
                 ]
             },
             "type": "MESH"
@@ -155589,13 +155589,13 @@
             "transform": {
                 "rotation": [
                     -0.0,
-                    0.1852053552865982,
+                    0.21419446170330048,
                     3.1415927410125732
                 ],
                 "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
+                    3.0,
+                    3.0,
+                    3.0
                 ],
                 "translation": [
                     -133.3000030517578,
@@ -156785,7 +156785,8 @@
             "active": false,
             "components": [
                 "ModelRenderer",
-                "FighterJet"
+                "FighterJet",
+                "Particle"
             ],
             "file_name": "ciws_body.obj",
             "group": "Enemy",
@@ -156811,6 +156812,59 @@
                 "toon_shading": true
             },
             "name": "MachineGun_Body",
+            "particles": [
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/hit2.csv"
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/deathGun.csv"
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/deathGun2.csv"
+                }
+            ],
             "transform": {
                 "rotation": [
                     -0.0,
@@ -156924,6 +156978,54 @@
                     3.0,
                     -140240.46875,
                     0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "ModelRenderer"
+            ],
+            "file_name": "ciws/ciws_death.obj",
+            "group": "Enemy",
+            "model_renderer": {
+                "color_override": [
+                    0.03921568766236305,
+                    0.03921568766236305,
+                    0.03921568766236305,
+                    1.0
+                ],
+                "color_override_enabled": true,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "MachineGun_Death",
+            "transform": {
+                "rotation": [
+                    -0.0,
+                    0.21419446170330048,
+                    3.1415927410125732
+                ],
+                "scaling": [
+                    3.0,
+                    3.0,
+                    3.0
+                ],
+                "translation": [
+                    -132.3000030517578,
+                    -281.6000061035156,
+                    162.5550079345703
                 ]
             },
             "type": "EMPTY"

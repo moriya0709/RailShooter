@@ -3,6 +3,7 @@
 #include <utility>
 #include <list>
 #include <string>
+#include <random>
 
 #include "Enemy.h"
 #include "Calc.h"
@@ -17,6 +18,7 @@ public:
 	void Initialize() override;
 	void Update(Vector3 playerPosition, float currentPlayerProgress) override;
 	void SetDeltaTime(float deltaTime) override { deltaTime_ = (std::max)(0.0f, deltaTime); }
+	void SetPlayerMissileTargets(const std::list<PlayerBullet*>& playerBullets) override;
 	void Draw() override;
 
 	// 指定した制御点リスト上の座標を算出する関数
@@ -107,14 +109,24 @@ private:
 	// 弾
 	std::list<std::unique_ptr<GameObject>> bulletObjects_;
 	std::list<EnemyBullet*> bullets_;
-	float shotCoolTime = 2.0f; // 射撃のクールタイム
+	const float kShotCoolTime = 0.01f; // 射撃のクールタイム
+	float shotCoolTime = kShotCoolTime;
 	bool isShot = false;
+	// 拡散設定
+	float spreadAngleDeg_ = 1.0f; // 拡散角度（度）。大きいほどバラける
+	std::mt19937 randomEngine_{ std::random_device{}() }; // 乱数生成器
+
+	// プレイヤーの進行先読み
+	Vector3 previousPlayerPosition_{};
+	bool hasPreviousPlayerPosition_ = false;
+	float leadTime_ = 0.5f; // 秒数先をターゲットに
+	PlayerBullet* missileTarget_ = nullptr;
 
 	// 当たったか
 	bool isHit = false;
 	float hitTimer_ = 0.0f;
 	float deltaTime_ = 1.0f / 60.0f;
-	Vector3 hitRadius = { 0.5f, 0.5f, 0.5f }; // 当たり判定の半径
+	Vector3 hitRadius = { 1.5f, 1.5f, 1.5f }; // 当たり判定の半径
 
 	// キル速度の評価変化時間
 	std::vector<float> kRatingChangeTime = { 5.0f, 10.0f, 15.0f };

@@ -18,6 +18,8 @@ public:
 		playerProgress_ = playerProgress;
 	}
 	virtual void SetDeltaTime(float) {}
+	// ミサイル迎撃を行う敵だけがオーバーライドして利用する。
+	virtual void SetPlayerMissileTargets(const std::list<class PlayerBullet*>&) {}
 
 	virtual void Initialize() = 0;
 	virtual void Update(Vector3 playerPosition, float currentPlayerProgress) = 0;

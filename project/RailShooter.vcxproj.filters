@@ -292,6 +292,7 @@
     <ClCompile Include="EnemyBoss.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="MachineGun.cpp" />
+    <ClCompile Include="MachineGunBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -504,6 +505,7 @@
     <ClInclude Include="EnemyBoss.h" />
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="MachineGun.h" />
+    <ClInclude Include="MachineGunBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

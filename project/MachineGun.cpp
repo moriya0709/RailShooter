@@ -1,6 +1,7 @@
 ﻿#include "MachineGun.h"
 #include "CameraManager.h"
-#include "FighterJetBullet.h"
+#include "MachineGunBullet.h"
+#include "PlayerBulletMissile.h"
 #include "GameObject.h"
 #include "ModelRendererComponent.h"
 #include "ScoreManager.h"
@@ -8,6 +9,8 @@
 #include "SceneManager.h"
 #include "HitStopManager.h"
 #include "SpawnedVisualPartsComponent.h"
+
+#include <limits>
 
 namespace {
 
@@ -44,6 +47,24 @@ void MachineGun::Initialize() {
 	initialPosition = transform.translate;
 	hasPreviousPathYaw_ = false;
 	BuildPathRoute();
+}
+
+void MachineGun::SetPlayerMissileTargets(const std::list<PlayerBullet*>& playerBullets) {
+	missileTarget_ = nullptr;
+	float closestDistanceSquared = (std::numeric_limits<float>::max)();
+
+	for (PlayerBullet* bullet : playerBullets) {
+		if (!bullet || bullet->IsDead() || !dynamic_cast<PlayerBulletMissile*>(bullet)) {
+			continue;
+		}
+
+		const Vector3 offset = bullet->GetTranslate() - transform.translate;
+		const float distanceSquared = offset.x * offset.x + offset.y * offset.y + offset.z * offset.z;
+		if (distanceSquared < closestDistanceSquared) {
+			closestDistanceSquared = distanceSquared;
+			missileTarget_ = bullet;
+		}
+	}
 }
 
 void MachineGun::SetControlPoints(const std::vector<Vector3>& points) {
@@ -169,43 +190,57 @@ void MachineGun::Update(Vector3 playerPosition, float currentPlayerProgress) {
 	// 向き・傾きの計算
 	// =========================================================
 
-	// プレイヤーへの方向ベクトルを計算
+	// 進行方向の先読み
+	Vector3 playerVelocity{};
+	if (hasPreviousPlayerPosition_ && deltaTime > 0.0001f) {
+		playerVelocity = {
+			(playerPosition.x - previousPlayerPosition_.x) / deltaTime,
+			(playerPosition.y - previousPlayerPosition_.y) / deltaTime,
+			(playerPosition.z - previousPlayerPosition_.z) / deltaTime
+		};
+	}
+
+	const Vector3 aimTarget = {
+		playerPosition.x + playerVelocity.x * leadTime_,
+		playerPosition.y + playerVelocity.y * leadTime_,
+		playerPosition.z + playerVelocity.z * leadTime_
+	};
+	const Vector3 fireTarget = missileTarget_ && !missileTarget_->IsDead()
+		? missileTarget_->GetTranslate()
+		: aimTarget;
+
+	// 砲台の向き
 	Vector3 dirToPlayer = {
-		playerPosition.x - transform.translate.x,
-		playerPosition.y - transform.translate.y,
-		playerPosition.z - transform.translate.z
+		fireTarget.x - transform.translate.x,
+		fireTarget.y - transform.translate.y,
+		fireTarget.z - transform.translate.z
 	};
 
-	// ベクトルの長さを計算
-	float distance = std::sqrt(dirToPlayer.x * dirToPlayer.x +
+	const float distance = std::sqrt(
+		dirToPlayer.x * dirToPlayer.x +
 		dirToPlayer.y * dirToPlayer.y +
 		dirToPlayer.z * dirToPlayer.z);
 
 	if (distance > 0.001f) {
-		// 正規化
 		dirToPlayer.x /= distance;
 		dirToPlayer.y /= distance;
 		dirToPlayer.z /= distance;
 
-		// 銃架の回転 (Y軸回転: Yaw)
+		// 銃架の回転
 		rackTransform.rotate.y = std::atan2(dirToPlayer.x, dirToPlayer.z);
 
-		// 銃身の回転 (X軸回転: Pitch)
-		float horizontalDist = std::sqrt(dirToPlayer.x * dirToPlayer.x + dirToPlayer.z * dirToPlayer.z);
-		// 仰角・俯角の計算（Yアップ環境を想定。見上げる時にマイナス回転になる場合は符号を調整してください）
-		float pitchAngle = std::atan2(-dirToPlayer.y, horizontalDist);
-		barrelTransform.rotate.x = -pitchAngle;
-
-
-		// 座標更新
+		// 銃身の回転
+		const float horizontalDistance = std::sqrt(dirToPlayer.x * dirToPlayer.x + dirToPlayer.z * dirToPlayer.z);
+		barrelTransform.rotate.x = std::atan2(dirToPlayer.y, horizontalDistance);
 		barrelTransform.rotate.y = rackTransform.rotate.y;
 
+		// 座標更新
 		if (GetGameObject()) {
 			if (auto* visualParts = GetGameObject()->GetComponent<SpawnedVisualPartsComponent>()) {
-				if (isBarrelPart_) {
+				if (isBodyPart_) {
 					visualParts->SetPartLocalTransform("Body", transform);
 				}
-				if (isBarrelPart_) {
+				if (isRackPart_) {
 					visualParts->SetPartLocalTransform("Rack", rackTransform);
 				}
 				if (isBarrelPart_) {
@@ -224,15 +259,44 @@ void MachineGun::Update(Vector3 playerPosition, float currentPlayerProgress) {
 	}
 
 	// 弾の生成
-	if (isShot) {
+	if (shotCoolTime <= 0.0f) {
+		// ターゲットまでの距離を計算
+		Vector3 toTarget = {
+			fireTarget.x - transform.translate.x,
+			fireTarget.y - transform.translate.y,
+			fireTarget.z - transform.translate.z
+		};
+		float targetDist = std::sqrt(
+			toTarget.x * toTarget.x +
+			toTarget.y * toTarget.y +
+			toTarget.z * toTarget.z
+		);
+
+		// ターゲット地点でのブレ幅（半径）を算出
+		const float spreadRad = spreadAngleDeg_ * (3.14159265f / 180.0f);
+		const float spreadRadius = targetDist * std::tan(spreadRad);
+
+		// ランダムなオフセットを生成
+		std::uniform_real_distribution<float> distAngle(0.0f, 2.0f * 3.14159265f);
+		std::uniform_real_distribution<float> distRadius(0.0f, 1.0f);
+
+		float theta = distAngle(randomEngine_);
+		float r = spreadRadius * std::sqrt(distRadius(randomEngine_)); // sqrtで中心への偏りを防止
+
+		// ターゲット位置にブレを加算
+		Vector3 spreadTarget = fireTarget;
+		spreadTarget.x += std::cos(theta) * r;
+		spreadTarget.y += std::sin(theta) * r;
+
+		// 弾の生成
 		auto bulletObject = std::make_unique<GameObject>("EnemyBullet");
-		auto bullet = bulletObject->AddComponent<FighterJetBullet>();
-		bullet->Initialize(transform.translate, playerPosition);
+		auto bullet = bulletObject->AddComponent<MachineGunBullet>();
+		bullet->Initialize(transform.translate, spreadTarget);
 		bulletObject->Initialize();
 		bullets_.push_back(bullet);
 		bulletObjects_.push_back(std::move(bulletObject));
 
-		shotCoolTime = 2.0f; // クールタイムをリセット
+		shotCoolTime = kShotCoolTime; // クールタイムをリセット
 	}
 
 	// 全ての弾を更新
@@ -247,7 +311,11 @@ void MachineGun::Update(Vector3 playerPosition, float currentPlayerProgress) {
 	bulletObjects_.remove_if([](const std::unique_ptr<GameObject>& bulletObject) {
 		auto bullet = bulletObject->GetComponent<EnemyBullet>();
 		return bullet && bullet->IsDead();
-		});
+	});
+
+
+	previousPlayerPosition_ = playerPosition;
+	hasPreviousPlayerPosition_ = true;
 }
 
 void MachineGun::Draw() {

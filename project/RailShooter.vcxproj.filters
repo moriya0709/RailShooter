@@ -293,6 +293,8 @@
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="MachineGun.cpp" />
     <ClCompile Include="MachineGunBullet.cpp" />
+    <ClCompile Include="Tank.cpp" />
+    <ClCompile Include="TankBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -506,6 +508,8 @@
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="MachineGun.h" />
     <ClInclude Include="MachineGunBullet.h" />
+    <ClInclude Include="Tank.h" />
+    <ClInclude Include="TankBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

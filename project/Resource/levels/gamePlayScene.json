@@ -25,9 +25,9 @@
             "name": "MainCamera",
             "transform": {
                 "rotation": [
-                    0.2088853269815445,
-                    -0.27949121594429016,
-                    -1.256304383277893
+                    0.22788448631763458,
+                    -0.001167439273558557,
+                    -1.6946287155151367
                 ],
                 "scaling": [
                     1.0,
@@ -35,9 +35,9 @@
                     1.0
                 ],
                 "translation": [
-                    -124.319580078125,
-                    -278.3997497558594,
-                    179.77769470214844
+                    -173.43130493164063,
+                    -249.98931884765625,
+                    172.63681030273438
                 ]
             },
             "type": "EMPTY"
@@ -459,7 +459,7 @@
                     960.0,
                     540.0
                 ],
-                "rotation": 0.6653566360473633,
+                "rotation": 1.584252119064331,
                 "scale": [
                     1.0,
                     1.0
@@ -588,7 +588,7 @@
                     960.0,
                     540.0
                 ],
-                "rotation": 0.13307133316993713,
+                "rotation": 0.3168504238128662,
                 "scale": [
                     0.8000000715255737,
                     0.8000000715255737
@@ -714,13 +714,13 @@
             "name": "reticle_3",
             "rect_transform": {
                 "position": [
-                    960.0,
-                    540.0
+                    739.3516845703125,
+                    818.6170654296875
                 ],
-                "rotation": 0.3992139995098114,
+                "rotation": 0.9505512714385986,
                 "scale": [
-                    1.0,
-                    1.0
+                    0.2142857164144516,
+                    0.2142857164144516
                 ]
             },
             "sprite_file_name": "Resource/reticle/reticle3.png",
@@ -801,9 +801,9 @@
             "name": "cockpit",
             "transform": {
                 "rotation": [
-                    -0.08488858491182327,
-                    0.13307133316993713,
-                    -1.7038668394088745
+                    -0.08020588010549545,
+                    0.3168504238128662,
+                    -1.8876466751098633
                 ],
                 "scaling": [
                     1.0,
@@ -811,9 +811,9 @@
                     1.0
                 ],
                 "translation": [
-                    -124.31904602050781,
-                    -278.3544616699219,
-                    179.7707061767578
+                    -123.74983978271484,
+                    -278.2845458984375,
+                    179.81822204589844
                 ]
             },
             "type": "EMPTY"
@@ -2857,7 +2857,7 @@
                                 ]
                             },
                             "name": "Body",
-                            "templateName": "MachineGun_Body"
+                            "templateName": "Tank_Body"
                         },
                         {
                             "localTransform": {
@@ -2878,7 +2878,7 @@
                                 ]
                             },
                             "name": "Rack",
-                            "templateName": "MachineGun_Rack"
+                            "templateName": "Tank_Rack"
                         },
                         {
                             "localTransform": {
@@ -2899,7 +2899,7 @@
                                 ]
                             },
                             "name": "Barrel",
-                            "templateName": "MachineGun_Barrel"
+                            "templateName": "Tank_Barrel"
                         }
                     ],
                     "movePattern": "",
@@ -2910,7 +2910,7 @@
                     ],
                     "pathSpeed": 0.125,
                     "spawnTime": 0.0,
-                    "type": "MachineGun"
+                    "type": "Tank"
                 }
             ],
             "spawnDistance": 0.0,
@@ -8501,13 +8501,13 @@
             "name": "arrow",
             "rect_transform": {
                 "position": [
-                    560.0084838867188,
-                    537.394775390625
+                    1052.5010986328125,
+                    929.157470703125
                 ],
-                "rotation": -3.1350796222686768,
+                "rotation": 1.3374311923980713,
                 "scale": [
-                    0.7889273166656494,
-                    0.7889273166656494
+                    0.9610618352890015,
+                    0.9610618352890015
                 ]
             },
             "sprite_file_name": "Resource/arrow/arrow.png",
@@ -157026,6 +157026,207 @@
                     -132.3000030517578,
                     -281.6000061035156,
                     162.5550079345703
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "ModelRenderer",
+                "FighterJet",
+                "Particle"
+            ],
+            "file_name": "Tank_Body.obj",
+            "group": "Enemy",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "Tank_Body",
+            "particles": [
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/hit2.csv"
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/deathGun.csv"
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/deathGun2.csv"
+                }
+            ],
+            "transform": {
+                "rotation": [
+                    -0.0,
+                    0.0,
+                    3.1415927410125732
+                ],
+                "scaling": [
+                    3.0,
+                    3.0,
+                    3.0
+                ],
+                "translation": [
+                    2.0,
+                    -140240.46875,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "ModelRenderer",
+                "FighterJet"
+            ],
+            "file_name": "Tank_Rack.obj",
+            "group": "Enemy",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "Tank_Rack",
+            "transform": {
+                "rotation": [
+                    -0.0,
+                    0.0,
+                    3.1415927410125732
+                ],
+                "scaling": [
+                    3.0,
+                    3.0,
+                    3.0
+                ],
+                "translation": [
+                    3.0,
+                    -140240.46875,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "ModelRenderer",
+                "FighterJet"
+            ],
+            "file_name": "Tank/Tank_Barrel.obj",
+            "group": "Enemy",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "Tank_Barrel",
+            "transform": {
+                "rotation": [
+                    -0.0,
+                    0.0,
+                    3.1415927410125732
+                ],
+                "scaling": [
+                    3.0,
+                    3.0,
+                    3.0
+                ],
+                "translation": [
+                    4.0,
+                    -140240.46875,
+                    0.0
                 ]
             },
             "type": "EMPTY"

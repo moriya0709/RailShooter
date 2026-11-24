@@ -1,6 +1,7 @@
 ﻿#include "EnemySpawner.h"
 #include "FighterJet.h"
 #include "MachineGun.h"
+#include "Tank.h"
 #include "EnemyBoss.h"
 #include "ModelRendererComponent.h"
 #include "ParticleComponent.h"
@@ -200,6 +201,9 @@ Enemy* AddEnemyComponent(GameObject& enemyObject, const std::string& type) {
 	}
 	if (type == "MachineGun") {
 		return enemyObject.AddComponent<MachineGun>();
+	}
+	if (type == "Tank") {
+		return enemyObject.AddComponent<Tank>();
 	}
 
 	return nullptr;

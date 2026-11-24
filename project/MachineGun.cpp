@@ -234,18 +234,19 @@ void MachineGun::Update(Vector3 playerPosition, float currentPlayerProgress) {
 		barrelTransform.rotate.x = std::atan2(dirToPlayer.y, horizontalDistance);
 		barrelTransform.rotate.y = rackTransform.rotate.y;
 
-		// 座標更新
-		if (GetGameObject()) {
-			if (auto* visualParts = GetGameObject()->GetComponent<SpawnedVisualPartsComponent>()) {
-				if (isBodyPart_) {
-					visualParts->SetPartLocalTransform("Body", transform);
-				}
-				if (isRackPart_) {
-					visualParts->SetPartLocalTransform("Rack", rackTransform);
-				}
-				if (isBarrelPart_) {
-					visualParts->SetPartLocalTransform("Barrel", barrelTransform);
-				}
+	}
+
+	// 座標更新
+	if (GetGameObject()) {
+		if (auto* visualParts = GetGameObject()->GetComponent<SpawnedVisualPartsComponent>()) {
+			if (isBodyPart_) {
+				visualParts->SetPartLocalTransform("Body", transform);
+			}
+			if (isRackPart_) {
+				visualParts->SetPartLocalTransform("Rack", rackTransform);
+			}
+			if (isBarrelPart_) {
+				visualParts->SetPartLocalTransform("Barrel", barrelTransform);
 			}
 		}
 	}

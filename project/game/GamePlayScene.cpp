@@ -14,6 +14,7 @@
 #include "TrailComponent.h"
 #include "FighterJet.h"
 #include "MachineGun.h"
+#include "Tank.h"
 #include "SpriteRendererComponent.h"
 #include "TextRendererComponent.h"
 #include "TextMeshEditorGizmo.h"
@@ -2729,7 +2730,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 						ImGui::Spacing();
 
 						// プルダウン（Combo）に表示する敵の種類のリスト
-						const char* enemyTypes[] = { "FighterJet","MachineGun", "BOSS"};
+						const char* enemyTypes[] = { "FighterJet","MachineGun", "Tank" , "BOSS"};
 						// プルダウン（Combo）に表示する移動パターンのリスト
 						const char* movePatterns[] = { "IDRE", "STRAIGHT", "WAVE", "HOMING", "PATH", "RAIL_FORWARD" };
 
@@ -3942,6 +3943,8 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 					if (currentObjData.spawnDataList[i].type == "FighterJet")
 						renderer->SetModel("F-16A_FightingFalcon.dat.obj");
 					if (currentObjData.spawnDataList[i].type == "MachineGun")
+						renderer->SetModel("cube.gltf");
+					if (currentObjData.spawnDataList[i].type == "Tank")
 						renderer->SetModel("cube.gltf");
 					if (currentObjData.spawnDataList[i].type == "BOSS")
 						renderer->SetModel("F-16A_FightingFalcon.dat.obj");

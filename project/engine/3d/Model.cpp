@@ -587,7 +587,10 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 	// Assimp読み込みフラグの決定
 	// 描画パイプラインは三角形リストを前提とする。OBJ には四角形／多角形の面も
 	// 含まれ得るため、インデックスを読む前に Assimp 側で必ず三角形化する。
-	unsigned int pFlags = aiProcess_FlipWindingOrder | aiProcess_CalcTangentSpace | aiProcess_Triangulate;
+	// 法線を持たない OBJ も存在する。後段で mNormals を参照するため、Assimp に
+	// 不足する法線の生成を依頼する（既存の法線はそのまま利用される）。
+	unsigned int pFlags = aiProcess_FlipWindingOrder | aiProcess_CalcTangentSpace |
+		aiProcess_Triangulate | aiProcess_GenSmoothNormals;
 	if (isOBJ) {
 		pFlags |= aiProcess_FlipUVs; // OBJの時だけUVを上下反転
 	}
@@ -686,9 +689,15 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 
 	// メッシュを解析する
 	for (const StaticMeshInstance& instance : meshInstances) {
+		if (instance.meshIndex >= scene->mNumMeshes || scene->mMeshes[instance.meshIndex] == nullptr) {
+			Logger::Log("[Model] Skipped invalid mesh reference in " + filePath + "\n");
+			continue;
+		}
 		aiMesh* mesh = scene->mMeshes[instance.meshIndex];
-		assert(mesh->HasNormals());
-		assert(mesh->HasTextureCoords(0));
+		if (mesh->mVertices == nullptr || mesh->mNumVertices == 0) {
+			Logger::Log("[Model] Skipped mesh without vertices in " + filePath + "\n");
+			continue;
+		}
 		const aiMatrix3x3 linearTransform(instance.transform);
 		aiMatrix3x3 normalTransform(linearTransform);
 		if (std::abs(normalTransform.Determinant()) > 1.0e-8f) {
@@ -700,8 +709,14 @@ ModelData Model::LoadModelFile(const std::string& directoryPath, const std::stri
 
 		for (uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex) {
 			const aiVector3D& position = mesh->mVertices[vertexIndex];
-			const aiVector3D& normal = mesh->mNormals[vertexIndex];
-			aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+			// GenSmoothNormals が処理できない線/点メッシュも安全に読み込めるよう、
+			// 欠損した頂点属性には描画可能な既定値を使用する。
+			const aiVector3D normal = mesh->HasNormals()
+				? mesh->mNormals[vertexIndex]
+				: aiVector3D(0.0f, 1.0f, 0.0f);
+			const aiVector3D texcoord = mesh->HasTextureCoords(0)
+				? mesh->mTextureCoords[0][vertexIndex]
+				: aiVector3D(0.0f, 0.0f, 0.0f);
 			auto& v = modelData.vertices[baseVertex + vertexIndex];
 			const aiVector3D transformedPosition = instance.transform * position;
 			const aiVector3D transformedNormal = normalTransform * normal;

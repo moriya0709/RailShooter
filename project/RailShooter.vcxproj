@@ -97,6 +97,8 @@
     <ClCompile Include="SelectScene.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="SpriteRendererComponent.cpp" />
+    <ClCompile Include="Tank.cpp" />
+    <ClCompile Include="TankBullet.cpp" />
     <ClCompile Include="TextRendererComponent.cpp" />
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
     <ClCompile Include="engine\base\SrvManager.cpp" />
@@ -402,6 +404,8 @@
     <ClInclude Include="SelectScene.h" />
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="SpriteRendererComponent.h" />
+    <ClInclude Include="Tank.h" />
+    <ClInclude Include="TankBullet.h" />
     <ClInclude Include="TextRendererComponent.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\base\SrvManager.h" />

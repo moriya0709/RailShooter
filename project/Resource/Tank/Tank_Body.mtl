@@ -1,0 +1,26 @@
+# Blender 5.1.0 MTL File: 'AbramsLow.blend'
+# www.blender.org
+
+newmtl Abrams
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Users/k024g/Downloads/Abrams_Blend/Blend/Textures/lowabramstexture_Abrams_BaseColor.png
+map_Ns C:/Users/k024g/Downloads/Abrams_Blend/Blend/Textures/lowabramstexture_Abrams_Roughness.png
+map_refl C:/Users/k024g/Downloads/Abrams_Blend/Blend/Textures/lowabramstexture_Abrams_Metallic.png
+map_Bump -bm 1.000000 C:/Users/k024g/Downloads/Abrams_Blend/Blend/Textures/lowabramstexture_Abrams_Normal.png
+
+newmtl Bredley_Caterpillar
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Users/k024g/Downloads/Abrams_Blend/Blend/Textures/Caterpilar_Bredley_Caterpillar_BaseColor.png
+map_Ns C:/Users/k024g/Downloads/Abrams_Blend/Blend/Textures/Caterpilar_Bredley_Caterpillar_Roughness.png
+map_refl C:/Users/k024g/Downloads/Abrams_Blend/Blend/Textures/Caterpilar_Bredley_Caterpillar_Metallic.png
+map_Bump -bm 1.000000 C:/Users/k024g/Downloads/Abrams_Blend/Blend/Textures/Caterpilar_Bredley_Caterpillar_Normal.png

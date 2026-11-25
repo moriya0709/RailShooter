@@ -12,7 +12,8 @@
         "Enemy",
         "Score",
         "カーブ",
-        "Clear"
+        "Clear",
+        "直進"
     ],
     "name": "scene",
     "objects": [
@@ -25,9 +26,9 @@
             "name": "MainCamera",
             "transform": {
                 "rotation": [
-                    0.2088853269815445,
-                    -0.27949121594429016,
-                    -1.256304383277893
+                    -0.0014540591510012746,
+                    -0.01808604784309864,
+                    -1.552541732788086
                 ],
                 "scaling": [
                     1.0,
@@ -35,9 +36,9 @@
                     1.0
                 ],
                 "translation": [
-                    -124.319580078125,
-                    -278.3997497558594,
-                    179.77769470214844
+                    389.44244384765625,
+                    -239.0125274658203,
+                    112.42061614990234
                 ]
             },
             "type": "EMPTY"
@@ -123,7 +124,7 @@
                 "rotation": [
                     0.0,
                     0.0,
-                    23.561946868896484
+                    -1.5707963705062866
                 ],
                 "scaling": [
                     1.0,
@@ -131,9 +132,9 @@
                     1.0
                 ],
                 "translation": [
-                    0.0,
-                    -278.3999938964844,
-                    167.4550018310547
+                    443.6391906738281,
+                    -239.0100860595703,
+                    112.42106628417969
                 ]
             },
             "type": "EMPTY"
@@ -459,7 +460,7 @@
                     960.0,
                     540.0
                 ],
-                "rotation": 0.6653566360473633,
+                "rotation": 1.010230541229248,
                 "scale": [
                     1.0,
                     1.0
@@ -588,7 +589,7 @@
                     960.0,
                     540.0
                 ],
-                "rotation": 0.13307133316993713,
+                "rotation": 0.20204611122608185,
                 "scale": [
                     0.8000000715255737,
                     0.8000000715255737
@@ -714,13 +715,13 @@
             "name": "reticle_3",
             "rect_transform": {
                 "position": [
-                    960.0,
-                    540.0
+                    919.0745849609375,
+                    645.3082275390625
                 ],
-                "rotation": 0.3992139995098114,
+                "rotation": 0.6061383485794067,
                 "scale": [
-                    1.0,
-                    1.0
+                    0.2142857164144516,
+                    0.2142857164144516
                 ]
             },
             "sprite_file_name": "Resource/reticle/reticle3.png",
@@ -801,9 +802,9 @@
             "name": "cockpit",
             "transform": {
                 "rotation": [
-                    -0.08488858491182327,
-                    0.13307133316993713,
-                    -1.7038668394088745
+                    -0.13398084044456482,
+                    0.20204611122608185,
+                    -1.7726738452911377
                 ],
                 "scaling": [
                     1.0,
@@ -811,9 +812,9 @@
                     1.0
                 ],
                 "translation": [
-                    -124.31904602050781,
-                    -278.3544616699219,
-                    179.7707061767578
+                    389.44244384765625,
+                    -238.8716278076172,
+                    112.4091567993164
                 ]
             },
             "type": "EMPTY"
@@ -2836,6 +2837,94 @@
             "name": "Spawner_1",
             "spawnDataList": [
                 {
+                    "controlPoints": [
+                        [
+                            378.6390075683594,
+                            112.4209976196289,
+                            -239.00999450683594
+                        ],
+                        [
+                            321.239013671875,
+                            112.4209976196289,
+                            -239.00999450683594
+                        ],
+                        [
+                            271.9389953613281,
+                            112.4209976196289,
+                            -239.00999450683594
+                        ],
+                        [
+                            219.43899536132813,
+                            112.4209976196289,
+                            -239.00999450683594
+                        ]
+                    ],
+                    "enemyTemplate": "FighterJet",
+                    "movePattern": "PATH",
+                    "offset": [
+                        0.0,
+                        8.199999809265137,
+                        9.300000190734863
+                    ],
+                    "pathSpeed": 0.125,
+                    "spawnTime": 0.0,
+                    "type": "FighterJet"
+                },
+                {
+                    "controlPoints": [
+                        [
+                            376.9389953613281,
+                            115.62100219726563,
+                            -242.50999450683594
+                        ],
+                        [
+                            321.239013671875,
+                            115.62100219726563,
+                            -242.50999450683594
+                        ],
+                        [
+                            271.9389953613281,
+                            115.62100219726563,
+                            -242.50999450683594
+                        ],
+                        [
+                            219.43899536132813,
+                            115.62100219726563,
+                            -242.50999450683594
+                        ],
+                        [
+                            168.53900146484375,
+                            115.62100219726563,
+                            -242.50999450683594
+                        ],
+                        [
+                            124.83899688720703,
+                            115.62100219726563,
+                            -242.50999450683594
+                        ],
+                        [
+                            72.53900146484375,
+                            115.62100219726563,
+                            -242.50999450683594
+                        ],
+                        [
+                            24.73900032043457,
+                            115.62100219726563,
+                            -242.50999450683594
+                        ]
+                    ],
+                    "enemyTemplate": "FighterJet",
+                    "movePattern": "PATH",
+                    "offset": [
+                        0.0,
+                        8.800000190734863,
+                        -15.0
+                    ],
+                    "pathSpeed": 0.125,
+                    "spawnTime": 0.0,
+                    "type": "BOSS"
+                },
+                {
                     "controlPoints": [],
                     "enemyTemplateParts": [
                         {
@@ -2904,9 +2993,9 @@
                     ],
                     "movePattern": "",
                     "offset": [
-                        -200.89999389648438,
-                        -4.900000095367432,
-                        22.200000762939453
+                        -277.5,
+                        -9.600000381469727,
+                        0.0
                     ],
                     "pathSpeed": 0.125,
                     "spawnTime": 0.0,
@@ -2926,9 +3015,9 @@
                     1.0
                 ],
                 "translation": [
-                    0.0,
-                    -278.3999938964844,
-                    167.4550018310547
+                    443.6390075683594,
+                    -239.00999450683594,
+                    112.4209976196289
                 ]
             },
             "type": "EMPTY"
@@ -4057,159 +4146,12 @@
                     1.0
                 ],
                 "translation": [
-                    2014.0018310546875,
-                    -90.2176742553711,
-                    113.21131134033203
+                    0.0,
+                    0.0,
+                    0.0
                 ]
             },
             "type": "EMPTY"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "カーブ",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_37",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    2021.487060546875,
-                    -40.217674255371094,
-                    113.21131134033203
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "カーブ",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_38",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    2049.822265625,
-                    9.782325744628906,
-                    113.21131134033203
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "カーブ",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_39",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    2093.905517578125,
-                    25.615997314453125,
-                    113.21131134033203
-                ]
-            },
-            "type": "RAIL"
         },
         {
             "active": true,
@@ -8501,13 +8443,13 @@
             "name": "arrow",
             "rect_transform": {
                 "position": [
-                    560.0084838867188,
-                    537.394775390625
+                    1136.713623046875,
+                    181.15145874023438
                 ],
-                "rotation": -3.1350796222686768,
+                "rotation": -1.113209843635559,
                 "scale": [
-                    0.7889273166656494,
-                    0.7889273166656494
+                    0.9385497570037842,
+                    0.9385497570037842
                 ]
             },
             "sprite_file_name": "Resource/arrow/arrow.png",
@@ -75191,7 +75133,7 @@
                 ],
                 "translation": [
                     275.0,
-                    -225.0,
+                    -225.7490234375,
                     100.0
                 ]
             },
@@ -95576,7 +95518,7 @@
                 "translation": [
                     -435.0,
                     -195.0,
-                    100.0
+                    98.68806457519531
                 ]
             },
             "type": "MESH"
@@ -155588,1198 +155530,22 @@
             "name": "FighterJet_Death",
             "transform": {
                 "rotation": [
-                    -0.0,
-                    0.21419446170330048,
-                    3.1415927410125732
+                    -0.021617794409394264,
+                    0.1572653353214264,
+                    -1.546260952949524
                 ],
                 "scaling": [
-                    3.0,
-                    3.0,
-                    3.0
+                    0.30000001192092896,
+                    0.30000001192092896,
+                    0.30000001192092896
                 ],
                 "translation": [
-                    -133.3000030517578,
-                    -281.6000061035156,
-                    162.5550079345703
+                    332.26019287109375,
+                    -239.16310119628906,
+                    112.28600311279297
                 ]
             },
             "type": "EMPTY"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3067",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -50.0,
-                    -278.39990234375,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3068",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -100.0,
-                    -278.3998107910156,
-                    179.79534912109375
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3069",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -150.0,
-                    -278.3996887207031,
-                    176.92813110351563
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3070",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -200.0,
-                    -278.39959716796875,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3071",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -250.0,
-                    -278.39947509765625,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3072",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -300.0,
-                    -278.3993835449219,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3073",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -350.0,
-                    -278.3992919921875,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3074",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -400.0,
-                    -278.399169921875,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3075",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -450.0,
-                    -278.3990783691406,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3076",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -500.0,
-                    -278.39898681640625,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3077",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -550.0,
-                    -278.39886474609375,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3078",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -600.0,
-                    -278.3987731933594,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3079",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -650.0,
-                    -278.398681640625,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3080",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -700.0,
-                    -278.3985595703125,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3081",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -750.0,
-                    -278.3984680175781,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3082",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -800.0,
-                    -278.39837646484375,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3083",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -850.0,
-                    -278.39825439453125,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3084",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -900.0,
-                    -278.3981628417969,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3085",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -950.0,
-                    -278.3980712890625,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3086",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -1000.0,
-                    -278.39794921875,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3087",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -1050.0,
-                    -278.3978576660156,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3088",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -1100.0,
-                    -278.39776611328125,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3089",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -1150.0,
-                    -278.39764404296875,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
-        },
-        {
-            "active": true,
-            "components": [
-                "ModelRenderer",
-                "RailPoint"
-            ],
-            "file_name": "rail.obj",
-            "group": "StageRailCamera",
-            "model_renderer": {
-                "color_override": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "color_override_enabled": false,
-                "color_override_unlit": false,
-                "enable_post_effect": true,
-                "motion_blur_enabled": false,
-                "outline_color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ],
-                "outline_enabled": false,
-                "outline_thickness": 0.009999999776482582,
-                "toon_shading": true
-            },
-            "name": "RailPoint_直進_3090",
-            "transform": {
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -1.5707942247390747
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "translation": [
-                    -1200.0,
-                    -278.3975524902344,
-                    167.4550018310547
-                ]
-            },
-            "type": "RAIL"
         },
         {
             "active": false,
@@ -157014,7 +155780,7 @@
             "transform": {
                 "rotation": [
                     -0.0,
-                    0.21419446170330048,
+                    0.0,
                     3.1415927410125732
                 ],
                 "scaling": [
@@ -157023,12 +155789,997 @@
                     3.0
                 ],
                 "translation": [
-                    -132.3000030517578,
-                    -281.6000061035156,
-                    162.5550079345703
+                    166.13900756835938,
+                    -239.00999450683594,
+                    102.82099914550781
                 ]
             },
             "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "ModelRenderer",
+                "FighterJet",
+                "Particle"
+            ],
+            "file_name": "Tank_Body.obj",
+            "group": "Enemy",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "Tank_Body",
+            "particles": [
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/hit2.csv"
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/deathGun.csv"
+                },
+                {
+                    "count": 8,
+                    "frequency": 0.10000000149011612,
+                    "group": "obj",
+                    "local_offset": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "override_emission_settings": false,
+                    "play_on_start": false,
+                    "preset": "Resource/particle/deathGun2.csv"
+                }
+            ],
+            "transform": {
+                "rotation": [
+                    -0.0,
+                    0.0,
+                    3.1415927410125732
+                ],
+                "scaling": [
+                    3.0,
+                    3.0,
+                    3.0
+                ],
+                "translation": [
+                    2.0,
+                    -140240.46875,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "ModelRenderer",
+                "FighterJet"
+            ],
+            "file_name": "Tank_Rack.obj",
+            "group": "Enemy",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "Tank_Rack",
+            "transform": {
+                "rotation": [
+                    -0.0,
+                    0.0,
+                    3.1415927410125732
+                ],
+                "scaling": [
+                    3.0,
+                    3.0,
+                    3.0
+                ],
+                "translation": [
+                    3.0,
+                    -140240.46875,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": false,
+            "components": [
+                "ModelRenderer",
+                "FighterJet"
+            ],
+            "file_name": "Tank/Tank_Barrel.obj",
+            "group": "Enemy",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "Tank_Barrel",
+            "transform": {
+                "rotation": [
+                    -0.0,
+                    0.0,
+                    3.1415927410125732
+                ],
+                "scaling": [
+                    3.0,
+                    3.0,
+                    3.0
+                ],
+                "translation": [
+                    4.0,
+                    -140240.46875,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "cube.gltf",
+            "group": "直進",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "StartRailCamera",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": "EMPTY"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "直進",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_40",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    7.2210693359375,
+                    200.0,
+                    0.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "直進",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_41",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    1.0,
+                    400.0,
+                    0.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "直進",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_42",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    2.0,
+                    600.0,
+                    0.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "カーブ",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_3078",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    200.0,
+                    0.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "カーブ",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_3079",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    400.0,
+                    0.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "カーブ",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_3080",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    600.0,
+                    0.0
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "StageRailCamera",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_3078",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.5707963705062866
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    393.6391906738281,
+                    -239.0100860595703,
+                    112.42106628417969
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "StageRailCamera",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_3079",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.5707963705062866
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    343.6391906738281,
+                    -239.0100860595703,
+                    112.42106628417969
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "StageRailCamera",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_3080",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.5707963705062866
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    293.6391906738281,
+                    -239.0100860595703,
+                    112.42106628417969
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "StageRailCamera",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_3081",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.5707963705062866
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    243.63919067382813,
+                    -239.0100860595703,
+                    112.42106628417969
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "StageRailCamera",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_3082",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.5707963705062866
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    193.63919067382813,
+                    -239.0100860595703,
+                    112.42106628417969
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "StageRailCamera",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_3083",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.5707963705062866
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    143.63919067382813,
+                    -239.0100860595703,
+                    112.42106628417969
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "StageRailCamera",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_3084",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.5707963705062866
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    93.63919067382813,
+                    -239.0100860595703,
+                    112.42106628417969
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "StageRailCamera",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_3085",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.5707963705062866
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    43.639190673828125,
+                    -239.0100860595703,
+                    112.42106628417969
+                ]
+            },
+            "type": "RAIL"
+        },
+        {
+            "active": true,
+            "components": [
+                "ModelRenderer",
+                "RailPoint"
+            ],
+            "file_name": "rail.obj",
+            "group": "StageRailCamera",
+            "model_renderer": {
+                "color_override": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "color_override_enabled": false,
+                "color_override_unlit": false,
+                "enable_post_effect": true,
+                "motion_blur_enabled": false,
+                "outline_color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "outline_enabled": false,
+                "outline_thickness": 0.009999999776482582,
+                "toon_shading": true
+            },
+            "name": "RailPoint_直進_3086",
+            "transform": {
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -1.5707963705062866
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -6.360809326171875,
+                    -239.0100860595703,
+                    112.42106628417969
+                ]
+            },
+            "type": "RAIL"
         }
     ],
     "rail_camera_groups": [
@@ -157050,46 +156801,6 @@
             "enable_enemy_spawning": true,
             "name": "StageRailCamera",
             "preset_sequence": [
-                {
-                    "name": "直進",
-                    "rotate": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
-                {
-                    "name": "直進",
-                    "rotate": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
-                {
-                    "name": "直進",
-                    "rotate": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
-                {
-                    "name": "直進",
-                    "rotate": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
-                {
-                    "name": "直進",
-                    "rotate": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
                 {
                     "name": "直進",
                     "rotate": [
@@ -157251,6 +156962,19 @@
             ],
             "rail_speed": 1.0,
             "target_object_name": "ClearPlayer",
+            "target_position": [
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "direction_mode": 0,
+            "enable_enemy_spawning": true,
+            "name": "Enemies",
+            "preset_sequence": [],
+            "rail_speed": 1.0,
+            "target_object_name": "",
             "target_position": [
                 0.0,
                 0.0,

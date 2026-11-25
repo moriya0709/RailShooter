@@ -234,18 +234,19 @@ void MachineGun::Update(Vector3 playerPosition, float currentPlayerProgress) {
 		barrelTransform.rotate.x = std::atan2(dirToPlayer.y, horizontalDistance);
 		barrelTransform.rotate.y = rackTransform.rotate.y;
 
-		// 座標更新
-		if (GetGameObject()) {
-			if (auto* visualParts = GetGameObject()->GetComponent<SpawnedVisualPartsComponent>()) {
-				if (isBodyPart_) {
-					visualParts->SetPartLocalTransform("Body", transform);
-				}
-				if (isRackPart_) {
-					visualParts->SetPartLocalTransform("Rack", rackTransform);
-				}
-				if (isBarrelPart_) {
-					visualParts->SetPartLocalTransform("Barrel", barrelTransform);
-				}
+	}
+
+	// 座標更新
+	if (GetGameObject()) {
+		if (auto* visualParts = GetGameObject()->GetComponent<SpawnedVisualPartsComponent>()) {
+			if (isBodyPart_) {
+				visualParts->SetPartLocalTransform("Body", transform);
+			}
+			if (isRackPart_) {
+				visualParts->SetPartLocalTransform("Rack", rackTransform);
+			}
+			if (isBarrelPart_) {
+				visualParts->SetPartLocalTransform("Barrel", barrelTransform);
 			}
 		}
 	}
@@ -283,10 +284,20 @@ void MachineGun::Update(Vector3 playerPosition, float currentPlayerProgress) {
 		float theta = distAngle(randomEngine_);
 		float r = spreadRadius * std::sqrt(distRadius(randomEngine_)); // sqrtで中心への偏りを防止
 
-		// ターゲット位置にブレを加算
-		Vector3 spreadTarget = fireTarget;
-		spreadTarget.x += std::cos(theta) * r;
-		spreadTarget.y += std::sin(theta) * r;
+		// 射撃方向に垂直な2軸で円形に拡散する。射撃方向が変わっても
+		// ワールド座標の特定の平面に偏らないようにする。
+		const Vector3 forward = targetDist > 0.0001f
+			? Normalize(toTarget) : Vector3{ 0.0f, 0.0f, 1.0f };
+		const Vector3 reference = std::abs(forward.y) < 0.99f
+			? Vector3{ 0.0f, 1.0f, 0.0f } : Vector3{ 1.0f, 0.0f, 0.0f };
+		const Vector3 right = Normalize(Cross(reference, forward));
+		const Vector3 up = Cross(forward, right);
+		const float horizontal = std::cos(theta) * r;
+		const float vertical = std::sin(theta) * r;
+		Vector3 spreadTarget = targetDist > 0.0001f ? fireTarget : transform.translate + forward;
+		spreadTarget.x += right.x * horizontal + up.x * vertical;
+		spreadTarget.y += right.y * horizontal + up.y * vertical;
+		spreadTarget.z += right.z * horizontal + up.z * vertical;
 
 		// 弾の生成
 		auto bulletObject = std::make_unique<GameObject>("EnemyBullet");

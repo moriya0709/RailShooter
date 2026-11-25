@@ -14,6 +14,7 @@
 #include "TrailComponent.h"
 #include "FighterJet.h"
 #include "MachineGun.h"
+#include "Tank.h"
 #include "SpriteRendererComponent.h"
 #include "TextRendererComponent.h"
 #include "TextMeshEditorGizmo.h"
@@ -30,6 +31,41 @@
 #include <cctype>
 #include <filesystem>
 #include <iterator>
+#include <cmath>
+
+#ifdef USE_IMGUI
+namespace {
+	// MakeRotateMatrix uses Z * X * Y; ImGuizmo decomposes in a different order.
+	Vector3 RailRotationFromMatrix(const Matrix4x4& matrix, const Vector3& reference) {
+		constexpr float pi = 3.14159265358979323846f;
+		auto nearAngle = [pi](float value, float target) {
+			return target + std::remainder(value - target, 2.0f * pi);
+		};
+		const float sinX = std::clamp(-matrix.m[2][1], -1.0f, 1.0f);
+		const float cosX = std::hypot(matrix.m[2][0], matrix.m[2][2]);
+		Vector3 result{};
+		if (cosX < 0.00001f) {
+			result.x = std::atan2(sinX, cosX);
+			result.z = reference.z;
+			result.y = sinX >= 0.0f
+				? result.z - std::atan2(matrix.m[0][2], matrix.m[0][0])
+				: std::atan2(-matrix.m[0][2], matrix.m[0][0]) - result.z;
+		} else {
+			result = { std::atan2(sinX, cosX), std::atan2(matrix.m[2][0], matrix.m[2][2]),
+				std::atan2(matrix.m[0][1], matrix.m[1][1]) };
+			Vector3 alternate = { pi - result.x, result.y + pi, result.z + pi };
+			auto distance = [&](const Vector3& value) {
+				const float x = std::remainder(value.x - reference.x, 2.0f * pi);
+				const float y = std::remainder(value.y - reference.y, 2.0f * pi);
+				const float z = std::remainder(value.z - reference.z, 2.0f * pi);
+				return x * x + y * y + z * z;
+			};
+			if (distance(alternate) < distance(result)) result = alternate;
+		}
+		return { nearAngle(result.x, reference.x), nearAngle(result.y, reference.y), nearAngle(result.z, reference.z) };
+	}
+}
+#endif
 
 #if defined(ENABLE_PATH_DEBUG_VISUALS)
 namespace {
@@ -940,7 +976,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					ScoreManager::GetInstance()->AddHighScore("PLAYER", ScoreManager::GetInstance()->GetScore());
 					ScoreManager::GetInstance()->SaveJSON("score");
 
-					// セレクト画面へ遷移
+					// リザルト画面へ遷移
 					SceneManager::GetInstance()->ChangeScene("RESULTS");
 				}
 			}
@@ -1473,6 +1509,13 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 
 			// プリセットごとの開始ポイントのインデックスを追跡する変数
 			int currentPointIndex = 0;
+			std::vector<size_t> railPointIndices;
+			for (size_t index = 0; index < levelObjects.size() && index < level->GetLevelData()->objects.size(); ++index) {
+				if (level->GetLevelData()->objects[index].groupName == activeRailGroupName_ &&
+					levelObjects[index]->GetComponent<RailPointComponent>()) {
+					railPointIndices.push_back(index);
+				}
+			}
 
 			// 配置済みプリセットのリスト表示・置き換え・並び替え
 			for (size_t i = 0; i < activeGroupSettings.presetSequence.size(); ++i) {
@@ -1494,17 +1537,40 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 					ImGui::EndCombo();
 				}
 
-				// X軸回転（Pitch: 上下）の調整
+				constexpr float rad2deg = 180.0f / 3.14159265f;
+				constexpr float deg2rad = 3.14159265f / 180.0f;
+				const bool hasStartPoint = currentPointIndex < static_cast<int>(railPointIndices.size());
+				Vector3 startRotation = hasStartPoint
+					? levelObjects[railPointIndices[currentPointIndex]]->GetTransformComponent()->GetRotate()
+					: Vector3{};
+				Vector3 rotationDegrees = { startRotation.x * rad2deg, startRotation.y * rad2deg, startRotation.z * rad2deg };
+				bool rotationChanged = false;
+				ImGui::BeginDisabled(!hasStartPoint);
 				ImGui::SameLine();
 				ImGui::SetNextItemWidth(80.0f);
-				if (ImGui::DragFloat("Pitch", &item.localRotate.x, 1.0f, -360.0f, 360.0f, "%.0f deg")) {
-					sequenceChanged = true;
-				}
+				rotationChanged |= ImGui::DragFloat("X", &rotationDegrees.x, 1.0f, -360.0f, 360.0f, "%.0f deg");
 
 				// Y軸回転（Yaw: 左右）の調整
 				ImGui::SameLine();
 				ImGui::SetNextItemWidth(80.0f);
-				if (ImGui::DragFloat("Yaw", &item.localRotate.y, 1.0f, -360.0f, 360.0f, "%.0f deg")) {
+				rotationChanged |= ImGui::DragFloat("Y", &rotationDegrees.y, 1.0f, -360.0f, 360.0f, "%.0f deg");
+
+				// Z軸回転（Roll: 傾き）の調整
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(80.0f);
+				rotationChanged |= ImGui::DragFloat("Z", &rotationDegrees.z, 1.0f, -360.0f, 360.0f, "%.0f deg");
+				ImGui::EndDisabled();
+				if (rotationChanged) {
+					if (i == 0) {
+						const Vector3 rotation = { rotationDegrees.x * deg2rad, rotationDegrees.y * deg2rad, rotationDegrees.z * deg2rad };
+						levelObjects[railPointIndices[0]]->GetTransformComponent()->SetRotate(rotation);
+						level->GetLevelData()->objects[railPointIndices[0]].transform.rotate = rotation;
+						item.localRotate = { 0.0f, 0.0f, 0.0f };
+					} else {
+						item.localRotate.x += rotationDegrees.x - startRotation.x * rad2deg;
+						item.localRotate.y += rotationDegrees.y - startRotation.y * rad2deg;
+						item.localRotate.z += rotationDegrees.z - startRotation.z * rad2deg;
+					}
 					sequenceChanged = true;
 				}
 
@@ -1528,7 +1594,9 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 				ImGui::SameLine();
 				if (ImGui::Button("Delete")) {
 					activeGroupSettings.presetSequence.erase(activeGroupSettings.presetSequence.begin() + i);
+					ImGui::PopID();
 					sequenceChanged = true;
+					break;
 				}
 
 				// 次のプリセットの開始インデックスを計算
@@ -1551,18 +1619,22 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 
 			ImGui::Spacing();
 			ImGui::Text("Append Preset:");
+			ImGui::BeginDisabled(railPointIndices.empty());
 			for (const auto& preset : level->GetRailPresets()) {
-				if (ImGui::Button(("+ " + preset.presetName).c_str())) {
+				if (ImGui::Button(("+ " + preset.presetName).c_str()) && !sequenceChanged) {
 					// 文字列の代わりに TrackSequenceItem を作成して追加する
 					TrackSequenceItem newItem;
 					newItem.presetName = preset.presetName;
 					newItem.localRotate = { 0.0f, 0.0f, 0.0f };
 
 					activeGroupSettings.presetSequence.push_back(newItem);
-					sequenceChanged = true;
+					// 既存の区間を再生成せず、終点から新しい区間だけを追加する。
+					AppendRailPreset(preset);
+					railCamera->StopRail();
 				}
 				ImGui::SameLine();
 			}
+			ImGui::EndDisabled();
 			ImGui::NewLine();
 
 			// シーケンスに変更があった場合、自動的にレールを再構築する
@@ -2729,7 +2801,7 @@ void GamePlayScene::Update(float deltaTime, float unscaledDeltaTime) {
 						ImGui::Spacing();
 
 						// プルダウン（Combo）に表示する敵の種類のリスト
-						const char* enemyTypes[] = { "FighterJet","MachineGun", "BOSS"};
+						const char* enemyTypes[] = { "FighterJet","MachineGun", "Tank" , "BOSS"};
 						// プルダウン（Combo）に表示する移動パターンのリスト
 						const char* movePatterns[] = { "IDRE", "STRAIGHT", "WAVE", "HOMING", "PATH", "RAIL_FORWARD" };
 
@@ -3214,6 +3286,7 @@ void GamePlayScene::CreateRailPresetFromGroup(const std::string& groupName, cons
 	Matrix4x4 invStartMat = Inverse(startMat);
 
 	// 始点を基準としたローカル座標に変換して保存
+	Vector3 previousLocalRotation{};
 	for (const auto& worldTransform : groupTransforms) {
 		Matrix4x4 worldMat = MakeRotateMatrix(worldTransform.rotate) * MakeTranslateMatrix(worldTransform.translate);
 		Matrix4x4 localMat = worldMat * invStartMat;
@@ -3224,11 +3297,8 @@ void GamePlayScene::CreateRailPresetFromGroup(const std::string& groupName, cons
 		ImGuizmo::DecomposeMatrixToComponents(&localMat.m[0][0], translation, rotation, scale);
 
 		localTransform.translate = { translation[0], translation[1], translation[2] };
-		localTransform.rotate = {
-			rotation[0] * (3.14159265f / 180.0f),
-			rotation[1] * (3.14159265f / 180.0f),
-			rotation[2] * (3.14159265f / 180.0f)
-		};
+		localTransform.rotate = RailRotationFromMatrix(localMat, previousLocalRotation);
+		previousLocalRotation = localTransform.rotate;
 		localTransform.scale = { 1.0f, 1.0f, 1.0f };
 		preset.localTransforms.push_back(localTransform);
 	}
@@ -3262,6 +3332,7 @@ void GamePlayScene::AppendRailPreset(const RailPresetData& preset) {
 	Matrix4x4 baseMat = MakeRotateMatrix(baseTransform.rotate) * MakeTranslateMatrix(baseTransform.translate);
 
 	// プリセットの始点は baseTransform と重なるため、インデックス1から生成する
+	Vector3 previousRotation = baseTransform.rotate;
 	for (size_t i = 1; i < preset.localTransforms.size(); ++i) {
 		Matrix4x4 localMat = MakeRotateMatrix(preset.localTransforms[i].rotate) * MakeTranslateMatrix(preset.localTransforms[i].translate);
 		Matrix4x4 newWorldMat = localMat * baseMat;
@@ -3275,11 +3346,8 @@ void GamePlayScene::AppendRailPreset(const RailPresetData& preset) {
 		auto transformComp = newObject->AddComponent<TransformComponent>();
 
 		transformComp->SetTranslate({ translation[0], translation[1], translation[2] });
-		transformComp->SetRotate({
-			rotation[0] * (3.14159265f / 180.0f),
-			rotation[1] * (3.14159265f / 180.0f),
-			rotation[2] * (3.14159265f / 180.0f)
-			});
+		previousRotation = RailRotationFromMatrix(newWorldMat, previousRotation);
+		transformComp->SetRotate(previousRotation);
 		transformComp->SetScale({ 1.0f, 1.0f, 1.0f });
 
 		auto modelRenderer = newObject->AddComponent<ModelRendererComponent>();
@@ -3335,13 +3403,14 @@ void GamePlayScene::RebuildRailGroupFromSequence(const std::string& groupName) {
 	// 4. シーケンスに従ってプリセットを再生成
 	RailCameraGroupData& railSettings = GetOrCreateRailCameraGroup(*level->GetLevelData(), groupName);
 	Transform currentEndTransform = baseStartTransform;
+	size_t currentEndIndex = static_cast<size_t>(groupPointIndices[0]);
 
 	constexpr float deg2rad = 3.14159265f / 180.0f;
 
 	// 一番最初のプリセットかどうかを判定するフラグ
 	bool isFirstPreset = true;
 
-	for (const auto& item : railSettings.presetSequence) {
+	for (auto& item : railSettings.presetSequence) {
 		const RailPresetData* targetPreset = nullptr;
 		for (const auto& p : level->GetRailPresets()) {
 			if (p.presetName == item.presetName) {
@@ -3352,6 +3421,10 @@ void GamePlayScene::RebuildRailGroupFromSequence(const std::string& groupName) {
 		if (!targetPreset || targetPreset->localTransforms.empty()) continue;
 
 		// 追加回転角（度数法→ラジアン）を加算した基準姿勢を作成
+		if (isFirstPreset) {
+			// 始点の姿勢は既に実際の回転なので、再構築時に加算し直さない。
+			item.localRotate = { 0.0f, 0.0f, 0.0f };
+		}
 		Vector3 sectionRotate = {
 			currentEndTransform.rotate.x + item.localRotate.x * deg2rad,
 			currentEndTransform.rotate.y + item.localRotate.y * deg2rad,
@@ -3365,11 +3438,16 @@ void GamePlayScene::RebuildRailGroupFromSequence(const std::string& groupName) {
 				transformComp->SetRotate(sectionRotate);
 			}
 			isFirstPreset = false;
+		} else {
+			// 接続点は前の区間の終点と共有する。
+			level->GetLevelData()->objects[currentEndIndex].transform.rotate = sectionRotate;
+			levelObjects[currentEndIndex]->GetTransformComponent()->SetRotate(sectionRotate);
 		}
 
 		Matrix4x4 baseMat = MakeRotateMatrix(sectionRotate) * MakeTranslateMatrix(currentEndTransform.translate);
 
 		// インデックス1以降のポイントをワールド座標に変換して追加
+		Vector3 previousRotation = sectionRotate;
 		for (size_t i = 1; i < targetPreset->localTransforms.size(); ++i) {
 			Matrix4x4 localMat = MakeRotateMatrix(targetPreset->localTransforms[i].rotate) * MakeTranslateMatrix(targetPreset->localTransforms[i].translate);
 			Matrix4x4 newWorldMat = localMat * baseMat;
@@ -3379,11 +3457,8 @@ void GamePlayScene::RebuildRailGroupFromSequence(const std::string& groupName) {
 
 			Transform newTrans;
 			newTrans.translate = { translation[0], translation[1], translation[2] };
-			newTrans.rotate = {
-				rotation[0] * deg2rad,
-				rotation[1] * deg2rad,
-				rotation[2] * deg2rad
-			};
+			newTrans.rotate = RailRotationFromMatrix(newWorldMat, previousRotation);
+			previousRotation = newTrans.rotate;
 			newTrans.scale = { 1.0f, 1.0f, 1.0f };
 
 			// 新規 GameObject の生成
@@ -3408,10 +3483,12 @@ void GamePlayScene::RebuildRailGroupFromSequence(const std::string& groupName) {
 
 			level->GetLevelData()->objects.push_back(newObjectData);
 			levelObjects.push_back(std::move(newObject));
+			currentEndIndex = levelObjects.size() - 1;
 
 			// 繋いだ最後のポイントを、次のプリセットの基準点として更新
 			currentEndTransform = newTrans;
 		}
+		if (targetPreset->localTransforms.size() == 1) currentEndTransform.rotate = sectionRotate;
 	}
 #endif
 }
@@ -3942,6 +4019,8 @@ void GamePlayScene::GizmoUpdate(bool showEditorControls) {
 					if (currentObjData.spawnDataList[i].type == "FighterJet")
 						renderer->SetModel("F-16A_FightingFalcon.dat.obj");
 					if (currentObjData.spawnDataList[i].type == "MachineGun")
+						renderer->SetModel("cube.gltf");
+					if (currentObjData.spawnDataList[i].type == "Tank")
 						renderer->SetModel("cube.gltf");
 					if (currentObjData.spawnDataList[i].type == "BOSS")
 						renderer->SetModel("F-16A_FightingFalcon.dat.obj");

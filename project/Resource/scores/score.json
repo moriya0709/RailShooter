@@ -2,6 +2,10 @@
     "ranking": [
         {
             "name": "PLAYER",
+            "score": 132599
+        },
+        {
+            "name": "PLAYER",
             "score": 120205
         },
         {
@@ -26,19 +30,15 @@
         },
         {
             "name": "PLAYER",
+            "score": 55070
+        },
+        {
+            "name": "PLAYER",
             "score": 53249
         },
         {
             "name": "PLAYER",
             "score": 49050
-        },
-        {
-            "name": "PLAYER",
-            "score": 47319
-        },
-        {
-            "name": "PLAYER",
-            "score": 46549
         }
     ]
 }

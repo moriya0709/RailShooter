@@ -264,7 +264,7 @@ enum class RailCameraDirectionMode : int {
 // シーケンス項目の構造体を新設
 struct TrackSequenceItem {
     std::string presetName;
-    Vector3 localRotate = { 0.0f, 0.0f, 0.0f }; // このブロックの追加回転（主にY軸:Yawを使う）
+    Vector3 localRotate = { 0.0f, 0.0f, 0.0f }; // このブロックの追加回転（度数法）
 };
 
 struct RailCameraGroupData {

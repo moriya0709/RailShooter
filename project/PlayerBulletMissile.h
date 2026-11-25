@@ -68,7 +68,7 @@ private:
 	Vector3 centerPos = { 0.0f, 0.0f, 0.0f }; // 螺旋の中心軸座標
 	float spiralAngle = 0.0f;                 // 現在の回転角度
 	float spiralSpeed = 5.0f;                // 周囲を回る速度
-	float spiralRadius = 5.5f;                // 螺旋（竜巻）の太さ（半径）
+	float spiralRadius = 0.5f;                // 螺旋（竜巻）の太さ（半径）
 	float spiralDirection = 1.0f;				// 回転方向用フラグ（1.0f: 時計回り, -1.0f: 反時計回り）
 
 	std::shared_ptr<TrailEffect> trailEffect;
